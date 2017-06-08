@@ -687,17 +687,17 @@ class GitMethods():
                         (dest, branch), timeout=timeout, executor=executor)
 
             else:
-
                 if branch is None and tag is None:
                     branch = branchFound
 
                 # pull
-                self.logger.info(("git pull %s -> %s" % (url, dest)))
+                self.logger.info(("git checkout [%s] %s -> %s" % (branch, url, dest)))
                 if url.find("http") != -1:
-                    cmd = "mkdir -p %s;cd %s;git -c http.sslVerify=false pull origin %s" % (
+                    cmd = "mkdir -p %s;cd %s;git -c http.sslVerify=false fetch; git checkout %s" % (
                         dest, dest, branch)
                 else:
-                    cmd = "cd %s;git pull origin %s" % (dest, branch)
+                    cmd = "cd %s;git fetch; git checkout %s" % (dest, branch)
+
                 self.logger.info(cmd)
                 self.execute(cmd, timeout=timeout, executor=executor)
         else:
