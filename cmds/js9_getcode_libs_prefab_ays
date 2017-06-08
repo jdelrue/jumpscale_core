@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 from js9 import j
-
+import os
 import sys
 
 print(j.do.mascot)
@@ -9,9 +9,11 @@ j.clients.redis.start4core()
 
 j.tools.jsloader.removeEggs()
 
+branch = os.environ.get('GIGBRANCH') if os.environ.get('GIGBRANCH') else "master"
+
 for item in ["core9", "lib9", "ays9", "prefab9"]:
 
-    j.clients.git.pullGitRepo("git@github.com:Jumpscale/%s.git" % item)
+    j.clients.git.pullGitRepo("git@github.com:Jumpscale/%s.git" % item, branch=branch)
     path = "%s/github/jumpscale/%s" % (j.dirs.CODEDIR, item)
     # removes the egg dirs, this to make sure we re-pip, ...
     for dpath in [item for item in j.sal.fs.listDirsInDir(path) if item.lower().find("egg") != -1]:
