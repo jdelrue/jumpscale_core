@@ -4,9 +4,9 @@ from js9 import j
 
 print(j.do.mascot)
 
-branch = os.environ.get('GIGBRANCH') if os.environ.get('GIGBRANCH') else "master"
+branch = os.environ.get('GIGBRANCH', 'master')
 
-j.clients.git.pullGitRepo("git@github.com:Jumpscale/portal9.git")
+j.clients.git.pullGitRepo("git@github.com:Jumpscale/portal9.git", branch=branch)
 
 
 path = "%s/github/jumpscale/portal9" % j.dirs.CODEDIR

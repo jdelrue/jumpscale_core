@@ -9,7 +9,7 @@ j.clients.redis.start4core()
 
 j.tools.jsloader.removeEggs()
 
-branch = os.environ.get('GIGBRANCH') if os.environ.get('GIGBRANCH') else "master"
+branch = os.environ.get('GIGBRANCH', 'master')
 
 for item in ["core9", "lib9", "ays9", "prefab9"]:
 
