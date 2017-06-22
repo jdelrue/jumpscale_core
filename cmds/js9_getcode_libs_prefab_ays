@@ -2,6 +2,7 @@
 from js9 import j
 
 import sys
+import requests
 
 print(j.do.mascot)
 
@@ -12,12 +13,41 @@ j.clients.redis.start4core()
 
 j.tools.jsloader.removeEggs()
 
-for item in ["core9", "lib9", "ays9", "prefab9"]:
+no_init = True
+if 'noinit' in sys.argv:
+    no_init = False
+    sys.argv.pop()
+
+base_repo_url = 'https://github.com/Jumpscale/%s%s'
+branch_query_url = '%s/tree/%%s' % base_repo_url
+
+if len(sys.argv) > 1:
+    branch = sys.argv[-1]
+
+def branch_exist(repo, branch):
+    """
+    Checks if a branch exist in a git repository
+    """
+    url = branch_query_url % (repo, '', branch)
+    response = None
     try:
-        j.clients.git.pullGitRepo("git@github.com:Jumpscale/%s.git" % item)
+        response = requests.api.get(url)
+        if response.status_code != 200:
+            return False
+    except Exception:
+        pass
+    if response is None:
+        return False
+    return True
+
+for item in ["core9", "lib9", "ays9", "prefab9"]:
+    if not branch_exist(item, branch):
+        branch = 'master'
+    try:
+        j.clients.git.pullGitRepo("git@github.com:Jumpscale/%s.git" % item, branch=branch)
     except Exception:
         # try with https
-        j.clients.git.pullGitRepo('https://github.com/Jumpscale/%s.git' % item)
+        j.clients.git.pullGitRepo(base_repo_url % (item, '.git'), branch=branch)
 
     path = "%s/github/jumpscale/%s" % (j.dirs.CODEDIR, item)
     # removes the egg dirs, this to make sure we re-pip, ...
@@ -26,6 +56,6 @@ for item in ["core9", "lib9", "ays9", "prefab9"]:
     j.do.execute("cd %s;sh install.sh" % path)
 
 
-if 'noinit' not in sys.argv:
+if no_init is False:
     print("* init jumpscale 9")
     j.do.execute("js9_init")
