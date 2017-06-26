@@ -79,6 +79,13 @@ class RedisFactory:
             db = Redis(unix_socket_path=unix_socket_path)
         elif self._tcpPortConnectionTest("localhost", 6379, timeout=None):
             db = Redis()
+
+        # try:
+        #     j.core.db.set("internal.last", 0)
+        #     return True
+        # except:
+        #     db = None
+
         return db
 
     def _tcpPortConnectionTest(self, ipaddr, port, timeout=None):
