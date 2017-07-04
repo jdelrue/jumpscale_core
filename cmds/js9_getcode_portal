@@ -3,6 +3,11 @@ import sys
 import requests
 from js9 import j
 
+
+base_repo_url = 'https://github.com/Jumpscale/%s%s'
+branch_query_url = '%s/tree/%%s' % base_repo_url
+
+
 def branch_exist(repo, branch):
     """
     Checks if a branch exist in a git repository
@@ -19,6 +24,7 @@ def branch_exist(repo, branch):
         return False
     return True
 
+
 print(j.do.mascot)
 
 if j.do.exists('/optvar/private/pubsshkeys/id_rsa'):
@@ -29,9 +35,6 @@ if 'noinit' in sys.argv:
     no_init = False
     sys.argv.pop()
 
-
-base_repo_url = 'https://github.com/Jumpscale/%s%s'
-branch_query_url = 'https://github.com/Jumpscale/tree/%s%s/%s'
 
 if len(sys.argv) > 1:
     branch = sys.argv[-1]

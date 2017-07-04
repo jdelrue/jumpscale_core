@@ -21,8 +21,6 @@ if 'noinit' in sys.argv:
 base_repo_url = 'https://github.com/Jumpscale/%s%s'
 branch_query_url = '%s/tree/%%s' % base_repo_url
 
-if len(sys.argv) > 1:
-    branch = sys.argv[-1]
 
 def branch_exist(repo, branch):
     """
@@ -39,6 +37,11 @@ def branch_exist(repo, branch):
     if response is None:
         return False
     return True
+
+
+if len(sys.argv) > 1:
+    branch = sys.argv[-1]
+
 
 for item in ["core9", "lib9", "ays9", "prefab9"]:
     if not branch_exist(item, branch):
