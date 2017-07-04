@@ -16,4 +16,4 @@ import sys
 print(j.do.mascot)
 
 j.do.debug = False
-j.tools.jsloader.generatePlugins()
+j.tools.jsloader.generateJumpscalePlugins()
