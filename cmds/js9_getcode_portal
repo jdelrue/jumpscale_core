@@ -36,7 +36,11 @@ branch_query_url = 'https://github.com/Jumpscale/tree/%s%s/%s'
 if len(sys.argv) > 1:
     branch = sys.argv[-1]
 
+print("====================\n\n\n\n")
+print("BRANCH : ", branch)
 if not branch_exist(repo='portal9', branch=branch):
+
+    print("BRANCH DOESNT EXISTS FALLING BACK TO MASTER::::::::")
     branch = 'master'
 
 j.clients.git.pullGitRepo("git@github.com:Jumpscale/portal9.git", branch=branch)
