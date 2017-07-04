@@ -43,7 +43,7 @@ j.clients.git.pullGitRepo("git@github.com:Jumpscale/portal9.git", branch=branch)
 
 
 path = "%s/github/jumpscale/portal9" % j.dirs.CODEDIR
-j.do.execute("cd %s;sh install.sh" % path)
+j.do.execute("export GIGBRANCH=%s ; cd %s;sh install.sh" % (branch, path))
 
 if no_init is False:
     print("* init jumpscale 9")
