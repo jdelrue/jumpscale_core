@@ -29,7 +29,7 @@ def _post_install(libname, libpath):
     #     for item in install_requires:
     #         j.do.execute("pip3 install %s 2>&1 > /tmp/install.log" % item)
 
-    j.tools.jsloader.generatePlugins()
+    j.tools.jsloader.generateJumpscalePlugins()
 
 
 class install(_install):
