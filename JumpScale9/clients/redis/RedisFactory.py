@@ -164,7 +164,6 @@ class RedisFactory:
             "redis-server --port 6379 --unixsocket %s/redis.sock --maxmemory 100000000 --daemonize yes" % tmpdir)
         limit_timeout = time.time() + timeout
         while time.time() < limit_timeout:
-            j.core.db = self.get4core()
             if j.core.db:
                 break
             time.sleep(2)

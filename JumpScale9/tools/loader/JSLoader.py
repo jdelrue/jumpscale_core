@@ -85,7 +85,6 @@ j.dirs = j.core.dirs
 j.errorhandler = j.core.errorhandler
 j.exceptions = j.core.errorhandler.exceptions
 j.events = j.core.events
-j.core.db = j.clients.redis.get4core()
 from JumpScale9.tools.loader.JSLoader import JSLoader
 j.tools.jsloader = JSLoader()
 
