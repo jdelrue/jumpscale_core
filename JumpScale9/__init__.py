@@ -22,8 +22,13 @@ class Clients():
 
 class Core():
     def __init__(self):
-        pass
-
+        self._db  = None
+    
+    @property
+    def db(self):
+        if not self._db:
+            self._db = j.clients.redis.get4core()
+        return self._db
 
 class Servers():
     def __init__(self):
@@ -175,7 +180,6 @@ j.tools.console = Console()
 from JumpScale9.errorhandling import JSExceptions
 j.exceptions = JSExceptions
 # j.events = j.core.events
-j.core.db = j.clients.redis.get4core()
 
 j.core.logger = j.logger
 logging_cfg = j.core.state.configGet('logging', {})
