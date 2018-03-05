@@ -40,21 +40,21 @@ class TreeItem():
         return self.__str__()
 
     def __str__(self):
-        if self.selected==True:
-            selected="X"
+        if self.selected == True:
+            selected = "X"
         else:
-            selected=" "
-        cat="%s"%self.cat
-        return ("%-60s  %-20s  [%s]" % (self.path, cat,selected))
+            selected = " "
+        cat = "%s" % self.cat
+        return ("%-60s  %-20s  [%s]" % (self.path, cat, selected))
 
 
 class Tree():
 
-    def __init__(self,data=None):
+    def __init__(self, data=None):
         self.items = {}
         self.changed = False
         self.set("")  # will set the root
-        if data!=None:
+        if data != None:
             self.loads(data)
 
     @property
@@ -65,30 +65,30 @@ class Tree():
         path = path.strip()
         return path
 
-    def setDeleteState(self,state=True):
+    def setDeleteState(self, state=True):
         for key in self.items.keys():
-            self.items[key].deleted=state
+            self.items[key].deleted = state
 
     def getDeletedItems(self):
-        res=[]
+        res = []
         for key in self.items.keys():
-            item=self.items[key]
-            if item.deleted and item.path!="":
+            item = self.items[key]
+            if item.deleted and item.path != "":
                 res.append(item)
         return res
 
     def removeDeletedItems(self):
-        res=self.getDeletedItems()
+        res = self.getDeletedItems()
         for item in res:
             self.items.pop(item.path)
-                
+
         return res
 
     def exists(self, path):
         path = self._pathNormalize(path)
         return path in self.items
 
-    def set(self, path, id=None, cat=None, selected=None, description=None, item=None,data=None):
+    def set(self, path, id=None, cat=None, selected=None, description=None, item=None, data=None):
         """
         @param item, item is any object you want to remember but keep in mind that this will not be serialized
         @path is dot separated path e.g. root.child.childsub
@@ -125,7 +125,7 @@ class Tree():
         ti.path = path
         ti.tree = self
 
-        ti.deleted=False
+        ti.deleted = False
 
         if ti.changed:
             self.changed = True
@@ -137,11 +137,11 @@ class Tree():
             id = val.id or ""
             data = val.data or ""
             description = val.description or ""
-            if  val.selected:
+            if val.selected:
                 selected = "1"
             else:
                 selected = "0"
-            line = "%s:%s:%s:%s:%s:%s" % (val.path, cat, id, selected, description,data)
+            line = "%s:%s:%s:%s:%s:%s" % (val.path, cat, id, selected, description, data)
             r.append(line)
         r.sort()
 
@@ -157,8 +157,8 @@ class Tree():
         self.items = {}
         self.set(path="")
         for line in lines:
-            path, cat, id, selected, descr,data = line.split(":")
-            selected= selected.strip().casefold()=="true" or selected.strip().casefold()=="1"
+            path, cat, id, selected, descr, data = line.split(":")
+            selected = selected.strip().casefold() == "true" or selected.strip().casefold() == "1"
             path = path.strip()
 
             id = id.strip()
@@ -178,9 +178,9 @@ class Tree():
                 descr = None
             if cat == "":
                 cat = None
-            self.set(path=path, id=id, cat=cat, description=descr, item=None, selected=selected,data=data)
+            self.set(path=path, id=id, cat=cat, description=descr, item=None, selected=selected, data=data)
 
-    def find(self, partOfPath="", maxAmount=200, getItems=False, selected=None,cat=None):
+    def find(self, partOfPath="", maxAmount=400, getItems=False, selected=None, cat=None):
         """
         @param if getItems True then will return the items in the treeobj
         """
@@ -198,7 +198,7 @@ class Tree():
         if getItems:
             r = [item.item for item in r if item.item is not None]
 
-        if  selected is not None:
+        if selected is not None:
             r = [item for item in r if item.selected == selected]
 
         if cat is not None:
@@ -208,7 +208,7 @@ class Tree():
 
     def findOne(self, path, getItems=False):
         for key in self.items.keys():
-            if key==path:
+            if key == path:
                 return self.items[key]
         raise j.exceptions.Input("could not find %s in \n%s" % (path, self))
 
@@ -222,9 +222,9 @@ class Tree():
         return self.__str__()
 
     def __str__(self):
-        out=""
-        for item,val in self.items.items():
-            out+="%s\n"%val
+        out = ""
+        for item, val in self.items.items():
+            out += "%s\n" % val
 
         return (out)
 
@@ -234,13 +234,12 @@ class TreemanagerFactory:
     def __init__(self):
         self.__jslocation__ = "j.data.treemanager"
 
-    def get(self,data=""):
+    def get(self, data=""):
         return Tree(data=data)
-
 
     def _test(self):
 
-        t=self.get()
+        t = self.get()
         t.set("root.test", id="1", cat="acat", selected=False, description="my descriptio1n", item=None)
         t.set("root.test.sub", id="2", cat="acat", selected=True, description="my description2", item=None)
         t.set("root.test2.sub", id="3", cat="acat2", selected=False, description="my description3", item=None)
@@ -249,23 +248,23 @@ class TreemanagerFactory:
         dumped = t.dumps()
 
         print(dumped)
-        
-        t2=self.get(dumped)
 
-        ee=t2.findOne("root.test.sub")
-        assert ee.id=="2"
-        assert ee.selected==True
-        assert ee.description=="my description2"
+        t2 = self.get(dumped)
 
-        ee=t2.find("root.test.sub", maxAmount=200, getItems=False, selected=None)[0]
-        assert ee.id=="2"
-        assert ee.selected==True
+        ee = t2.findOne("root.test.sub")
+        assert ee.id == "2"
+        assert ee.selected == True
+        assert ee.description == "my description2"
 
-        ee=t2.findOne("root.test")
-        assert ee.id=="1"
-        assert ee.selected==False
+        ee = t2.find("root.test.sub", maxAmount=200, getItems=False, selected=None)[0]
+        assert ee.id == "2"
+        assert ee.selected == True
 
-        ee=t2.find("", maxAmount=200, getItems=False, selected=True)
-        assert len(ee)==2
+        ee = t2.findOne("root.test")
+        assert ee.id == "1"
+        assert ee.selected == False
+
+        ee = t2.find("", maxAmount=200, getItems=False, selected=True)
+        assert len(ee) == 2
 
         print("TEST OK")
