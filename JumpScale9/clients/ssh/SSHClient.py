@@ -390,7 +390,7 @@ class SSHClient:
         if remoteothers==True: then other keys will be removed
         """
         j.clients.ssh.load_ssh_key(sshkey_path, True)
-        key = j.clients.ssh.SSHKeyGetFromAgentPub(sshkey_name)
+        key = j.clients.ssh.SSHKeyGetFromAgentPub(keypath=sshkey_path)
 
         ftp = self.client.open_sftp()
 
