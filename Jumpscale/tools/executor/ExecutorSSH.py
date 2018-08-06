@@ -36,7 +36,7 @@ class ExecutorSSH(ExecutorBase):
     def executeRaw(self, cmd, die=True, showout=False):
         return self.sshclient.execute(cmd, die=die, showout=showout)
 
-    def execute(self, cmds, die=True, checkok=False, showout=True, timeout=0, env={}, asScript=True, sudo=False, shell=False):
+    def execute(self, cmds, die=True, checkok=False, showout=True, timeout=1000, env={}, asScript=True, sudo=False, shell=False):
         """
         return (rc,out,err)
         """
@@ -62,7 +62,7 @@ class ExecutorSSH(ExecutorBase):
         if sudo:
             cmds2 = self.sudo_cmd(cmds2)
         rc, out, err = self.sshclient.execute(
-            cmds2, die=die, showout=showout)
+            cmds2, die=die, showout=showout, timeout=timeout)
 
         if showout:
             self.logger.debug("EXECUTE OK")
