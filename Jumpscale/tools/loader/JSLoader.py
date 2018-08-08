@@ -417,7 +417,8 @@ class JSLoader():
             if line.find("self.__jslocation__") != -1 and locfound == False:
                 if classname is None:
                     raise RuntimeError(
-                        "Could not find class in %s while loading jumpscale lib." %
+                        "Could not find class in %s " +
+                        "while loading jumpscale lib." %
                         path)
                 location = line.split(
                     "=",
@@ -435,7 +436,8 @@ class JSLoader():
             if line.find("self.__imports__") != -1:
                 if classname is None:
                     raise RuntimeError(
-                        "Could not find class in %s while loading jumpscale lib." %
+                        "Could not find class in %s " +
+                        "while loading jumpscale lib." %
                         path)
                 importItems = line.split(
                     "=",
@@ -510,8 +512,8 @@ class JSLoader():
 
     def _copyPyLibs(self, autocompletepath=None):
         """
-        this looks for python libs (non jumpscale) and copies them to our gig lib dir
-        which can be use outside of docker for e.g. code completion
+        this looks for python libs (non jumpscale) and copies them to our gig
+        lib dir which can be use outside of docker for e.g. code completion
 
         NOT NEEDED NOW
         """
