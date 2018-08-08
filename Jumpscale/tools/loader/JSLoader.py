@@ -445,7 +445,8 @@ class JSLoader():
                     "'",
                     "").strip()
                 importItems = [
-                    item.strip() for item in importItems.split(",") if item.strip() != ""]
+                    item.strip() for item in importItems.split(",")
+                    if item.strip() != ""]
                 if classname not in res:
                     res[classname] = {}
                 res[classname]["import"] = importItems
