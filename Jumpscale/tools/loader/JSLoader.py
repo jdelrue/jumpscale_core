@@ -4,6 +4,7 @@ import sys
 import importlib
 import json
 import fcntl
+import pystache
 from subprocess import Popen, PIPE
 
 GEN_START = """\
@@ -118,8 +119,6 @@ j.{{from}} = j.{{to}}
 {{/patchers}}
 
 """
-
-import pystache
 
 setup_cmd = r"""\
 from setuptools import setup
