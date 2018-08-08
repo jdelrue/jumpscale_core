@@ -3,6 +3,8 @@ import os
 import sys
 import importlib
 import json
+import fcntl
+from subprocess import Popen, PIPE
 
 GEN_START = """
 from Jumpscale.core.JSBase import JSBase
@@ -91,6 +93,62 @@ j.tools.jsloader = JSLoader()
 """
 
 import pystache
+
+setup_cmd = r"""\
+from setuptools import setup
+
+setup(
+    name='jumpscale',
+    py_modules=['jumpscale'],
+)
+"""
+
+def setNonBlocking(fd):
+    """
+    Set the file description of the given file descriptor to non-blocking.
+    """
+    flags = fcntl.fcntl(fd, fcntl.F_GETFL)
+    flags = flags | os.O_NONBLOCK
+    fcntl.fcntl(fd, fcntl.F_SETFL, flags)
+
+def readwrite(p, sendto):
+    out1 = ''
+    p.stdin.write(sendto.encode())
+    while True:
+        try:
+            out = p.stdout.read()
+            if out is None:
+                break
+            out1 += out.decode('utf-8')
+        except IOError:
+            continue
+        else:
+            break
+    return out1
+
+def pipecmd(cmd, cwd, sendto):
+    p = Popen(cmd, cwd=cwd,
+              stdin = PIPE, stdout = PIPE, stderr = PIPE, bufsize = 1)
+    setNonBlocking(p.stdout)
+    setNonBlocking(p.stderr)
+    readwrite(p, sendto)
+
+def jumpscale_py_setup(location):
+    """ installs jumpscale.py from directory <location> by
+        creating, then running, then deleting, a jscale_setup.py
+        in the same subdirectory.
+
+        --old-and-unmanageable is the rather arrogant name
+        given by the python developers to the way to get
+        setuptools to stop putting python files into .eggs
+        where you then can't edit them and check what they do
+    """
+    setup_script = os.path.join(location, "jscale_setup.py")
+    with open(setup_script, "w") as f:
+        f.write(setup_cmd)
+    pipecmd(["/usr/bin/env", "python3", "jscale_setup.py",
+                "install", "--old-and-unmanageable"], location, "")
+    os.unlink(setup_script)
 
 
 class JSLoader():
@@ -283,8 +341,9 @@ class JSLoader():
         self.logger.info("wrote jumpscale autocompletion file in %s" % outCC)
         j.sal.fs.writeFile(outCC, contentCC)
 
-        self.logger.info("wrote jumpscale file in %s" % out)
-        j.sal.fs.writeFile(out, content)
+        self.logger.info("installing jumpscale.py file using setuptools")
+        autodir = os.path.join(j.dirs.HOSTDIR, "autocomplete")
+        jumpscale_py_setup(autodir)
 
     def _pip_installed(self):
         "return the list of all installed pip packages"
