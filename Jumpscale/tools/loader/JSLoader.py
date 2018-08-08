@@ -6,11 +6,32 @@ import json
 import fcntl
 from subprocess import Popen, PIPE
 
-GEN_START = """
+GEN_START = """\
 from Jumpscale.core.JSBase import JSBase
 import os
 os.environ["LC_ALL"]='en_US.UTF-8'
 from Jumpscale import j
+
+import functools
+
+def lazyprop(fn):
+    attr_name = '_lazy_' + fn.__name__
+
+    @property
+    @functools.wraps(fn)
+    def _lazyprop(self):
+        if not hasattr(self, attr_name):
+            setattr(self, attr_name, fn(self))
+        return getattr(self, attr_name)
+
+    return _lazyprop
+
+"""
+
+IMPORTFN = r"""
+def {0}:
+    from {1} import {2}
+    return {2}()
 """
 
 GEN = """
@@ -45,21 +66,27 @@ if not hasattr(j.{{jname}},"{{name}}"):
 
  """
 
-GEN2 = """
+GEN2 = r"""
 {{#locationsubserror}}
 {{classname}}=JSBase
 {{/locationsubserror}}
 
 {{#locationsubs}}
-from {{importlocation}} import {{classname}}
+def {{classname}}():
+    from {{importlocation}} \
+                            import {{classname}} \
+                            as _{{classname}}
+    return _{{classname}}()
+
 {{/locationsubs}}
 
 class {{jname}}:
 
-    def __init__(self):
-        {{#locationsubs}}
-        self.{{name}} = {{classname}}()
-        {{/locationsubs}}
+    {{#locationsubs}}
+    @lazyprop
+    def {{name}}(self):
+        return {{classname}}()
+    {{/locationsubs}}
 
 """
 
@@ -69,26 +96,23 @@ GEN_END = """
 
 """
 
+
 # CODE GENERATION ONLY
-GEN_END2 = """
+GEN_END2 = r"""
 
-class Jumpscale():
+class Jumpscale(object):
 
-    def __init__(self):
-        {{#locations}}
-        self.{{name}}={{name}}()
-        {{/locations}}
+    {{#locations}}
+    @lazyprop
+    def {{name}}(self):
+        return {{name}}()
+    {{/locations}}
 
 j = Jumpscale()
 
-j.logger=j.core.logger
-j.application=j.core.application
-j.dirs = j.core.dirs
-j.errorhandler = j.core.errorhandler
-j.exceptions = j.core.errorhandler.exceptions
-j.events = j.core.events
-from Jumpscale.tools.loader.JSLoader import JSLoader
-j.tools.jsloader = JSLoader()
+{{#patchers}}
+j.{{from}} = j.{{to}}
+{{/patchers}}
 
 """
 
@@ -124,14 +148,20 @@ def readwrite(p, sendto):
             continue
         else:
             break
+    err = p.stderr.read() # deliberately block on stderr to wait for cmd
+    out = p.stdout.read() # read last of cmd
+    if out:
+        out1 += out.decode('utf-8')
     return out1
 
 def pipecmd(cmd, cwd, sendto):
     p = Popen(cmd, cwd=cwd,
               stdin = PIPE, stdout = PIPE, stderr = PIPE, bufsize = 1)
     setNonBlocking(p.stdout)
-    setNonBlocking(p.stderr)
-    readwrite(p, sendto)
+    #setNonBlocking(p.stderr)
+    out = readwrite(p, sendto)
+    print ("pipecmd")
+    print(out)
 
 def jumpscale_py_setup(location):
     """ installs jumpscale.py from directory <location> by
@@ -143,12 +173,15 @@ def jumpscale_py_setup(location):
         setuptools to stop putting python files into .eggs
         where you then can't edit them and check what they do
     """
+    cwd = os.getcwd()
+    os.chdir(location)
     setup_script = os.path.join(location, "jscale_setup.py")
     with open(setup_script, "w") as f:
         f.write(setup_cmd)
-    pipecmd(["/usr/bin/env", "python3", "jscale_setup.py",
+    pipecmd(["/usr/bin/env", "python3", setup_script,
                 "install", "--old-and-unmanageable"], location, "")
-    os.unlink(setup_script)
+    #os.unlink(setup_script)
+    os.chdir(cwd)
 
 
 class JSLoader():
@@ -307,6 +340,14 @@ class JSLoader():
                     (jlocationRoot, jlocationRootDict))
 
             jlocations["locations"].append({"name": jlocationRoot[2:]})
+            jlocations["patchers"] = [
+             {'from': 'application',  'to': 'core.application'},
+             {'from': 'dirs',         'to': 'core.dirs'},
+             {'from': 'errorhandler',  'to': 'core.errorhandler'},
+             {'from': 'exceptions',     'to': 'core.errorhandler.exceptions'},
+             {'from': 'events',         'to': 'core.events'},
+             {'from': 'tools.jsloader', 'to': 'tools.loader.jsloader'}
+            ]
 
             generationParams = {}
             generationParams["locationsubserror"] = []
