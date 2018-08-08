@@ -222,11 +222,6 @@ class JSLoader():
         path = self._findSitePath() + "/jumpscale.py"
         # print("initpath:%s" % path)
         j.sal.fs.remove(path)
-        # if not j.sal.fs.exists(path, followlinks=True):
-        j.sal.fs.writeFile(
-            filename=path,
-            contents="from Jumpscale import j\n",
-            append=False)
 
         return path
 
