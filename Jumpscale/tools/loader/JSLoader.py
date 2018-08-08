@@ -331,7 +331,6 @@ class JSLoader():
         j.sal.fs.writeFile(outJSON, modlistout_json)
 
         for jlocationRoot, jlocationRootDict in moduleList.items():
-
             # is per item under j e.g. j.clients
 
             if not jlocationRoot.startswith("j."):
@@ -343,10 +342,12 @@ class JSLoader():
             jlocations["patchers"] = [
              {'from': 'application',  'to': 'core.application'},
              {'from': 'dirs',         'to': 'core.dirs'},
-             {'from': 'errorhandler',  'to': 'core.errorhandler'},
-             {'from': 'exceptions',     'to': 'core.errorhandler.exceptions'},
-             {'from': 'events',         'to': 'core.events'},
-             {'from': 'tools.jsloader', 'to': 'tools.loader.jsloader'}
+             {'from': 'errorhandler', 'to': 'core.errorhandler'},
+             {'from': 'exceptions',   'to': 'core.errorhandler.exceptions'},
+             {'from': 'events',       'to': 'core.events'},
+             {'from': 'logger',       'to': 'core.logger'},
+             {'from': 'core.state',   'to': 'tools.executorLocal.state'},
+             #{'from': 'tools.jsloader', 'to': 'tools.loader.jsloader'}
             ]
 
             generationParams = {}
@@ -473,7 +474,7 @@ class JSLoader():
             basename = j.sal.fs.getBaseName(classfile)
             if basename.startswith("_"):
                 continue
-            if "jsloader" in basename.lower() or "actioncontroller" in basename.lower():
+            if "actioncontroller" in basename.lower():
                 continue
             # look for files starting with Capital
             if str(basename[0]) != str(basename[0].upper()):
