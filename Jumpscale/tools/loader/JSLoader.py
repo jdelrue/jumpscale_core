@@ -127,6 +127,7 @@ setup(
 )
 """
 
+
 def setNonBlocking(fd):
     """
     Set the file description of the given file descriptor to non-blocking.
@@ -134,6 +135,7 @@ def setNonBlocking(fd):
     flags = fcntl.fcntl(fd, fcntl.F_GETFL)
     flags = flags | os.O_NONBLOCK
     fcntl.fcntl(fd, fcntl.F_SETFL, flags)
+
 
 def readwrite(p, sendto):
     out1 = ''
@@ -148,20 +150,22 @@ def readwrite(p, sendto):
             continue
         else:
             break
-    err = p.stderr.read() # deliberately block on stderr to wait for cmd
-    out = p.stdout.read() # read last of cmd
+    err = p.stderr.read()  # deliberately block on stderr to wait for cmd
+    out = p.stdout.read()  # read last of cmd
     if out:
         out1 += out.decode('utf-8')
     return out1
 
+
 def pipecmd(cmd, cwd, sendto):
     p = Popen(cmd, cwd=cwd,
-              stdin = PIPE, stdout = PIPE, stderr = PIPE, bufsize = 1)
+              stdin=PIPE, stdout=PIPE, stderr=PIPE, bufsize=1)
     setNonBlocking(p.stdout)
-    #setNonBlocking(p.stderr)
+    # setNonBlocking(p.stderr)
     out = readwrite(p, sendto)
     print ("pipecmd")
     print(out)
+
 
 def jumpscale_py_setup(location):
     """ installs jumpscale.py from directory <location> by
@@ -179,8 +183,8 @@ def jumpscale_py_setup(location):
     with open(setup_script, "w") as f:
         f.write(setup_cmd)
     pipecmd(["/usr/bin/env", "python3", setup_script,
-                "install", "--old-and-unmanageable"], location, "")
-    #os.unlink(setup_script)
+             "install", "--old-and-unmanageable"], location, "")
+    # os.unlink(setup_script)
     os.chdir(cwd)
 
 
@@ -335,14 +339,14 @@ class JSLoader():
 
             jlocations["locations"].append({"name": jlocationRoot[2:]})
             jlocations["patchers"] = [
-             {'from': 'application',  'to': 'core.application'},
-             {'from': 'dirs',         'to': 'core.dirs'},
-             {'from': 'errorhandler', 'to': 'core.errorhandler'},
-             {'from': 'exceptions',   'to': 'core.errorhandler.exceptions'},
-             {'from': 'events',       'to': 'core.events'},
-             {'from': 'logger',       'to': 'core.logger'},
-             {'from': 'core.state',   'to': 'tools.executorLocal.state'},
-             #{'from': 'tools.jsloader', 'to': 'tools.loader.jsloader'}
+                {'from': 'application', 'to': 'core.application'},
+                {'from': 'dirs', 'to': 'core.dirs'},
+                {'from': 'errorhandler', 'to': 'core.errorhandler'},
+                {'from': 'exceptions', 'to': 'core.errorhandler.exceptions'},
+                {'from': 'events', 'to': 'core.events'},
+                {'from': 'logger', 'to': 'core.logger'},
+                {'from': 'core.state', 'to': 'tools.executorLocal.state'},
+                #{'from': 'tools.jsloader', 'to': 'tools.loader.jsloader'}
             ]
 
             generationParams = {}
