@@ -79,7 +79,7 @@ class RsyncServer(JSBASE):
         secrets file = /etc/rsync/users
 
         """
-                D = """
+        D = """
         [$secret]
         exclude = *.pyc .git
         path = $root/root/$name
