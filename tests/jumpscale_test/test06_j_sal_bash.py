@@ -1,6 +1,9 @@
 from jumpscale import j
-import os, random, unittest
+import os
+import random
+import unittest
 from .testcases_base import TestcasesBase
+
 
 class TestBASH(TestcasesBase):
 
@@ -16,9 +19,12 @@ class TestBASH(TestcasesBase):
         #. Get all environment variables using bash.env.
         #. Check that all environment variables exsits.
         """
-        self.assertDictEqual(self.bash.env.__dict__['_data'], os.environ.__dict__['_data'])
-    
-    @unittest.skip('https://github.com/threefoldtech/jumpscale_core/issues/175')
+        self.assertDictEqual(
+            self.bash.env.__dict__['_data'],
+            os.environ.__dict__['_data'])
+
+    @unittest.skip(
+        'https://github.com/threefoldtech/jumpscale_core/issues/175')
     def test002_get_env(self):
         """ JS-039
 
@@ -26,15 +32,17 @@ class TestBASH(TestcasesBase):
         #. Get specific environment variable and validate its value, should succeed.
         #. Get non-existing environment variable, should fail.
         """
-        self.lg.info('Get specific environment variable and validate its value, should succeed')
+        self.lg.info(
+            'Get specific environment variable and validate its value, should succeed')
         env_var = random.choice(list(self.bash.env.keys()))
         self.assertEqual(self.bash.envGet(env_var), os.getenv(env_var))
 
         self.lg.info('Get non-existing environment variable, should fail')
         with self.assertRaises(KeyError):
             self.bash.envGet(self.random_string())
-    
-    @unittest.skip('https://github.com/threefoldtech/jumpscale_core/issues/175')
+
+    @unittest.skip(
+        'https://github.com/threefoldtech/jumpscale_core/issues/175')
     def test003_set_env(self):
         """ JS-040
 
@@ -48,15 +56,17 @@ class TestBASH(TestcasesBase):
         value = self.random_string()
         self.bash.envSet(key, value)
 
-        self.lg.info('Check that the new environment variable is added, should succeed')
+        self.lg.info(
+            'Check that the new environment variable is added, should succeed')
         self.assertEqual(self.bash.envGet(key), value)
         self.assertEqual(self.bash.env[key], value)
 
-        self.lg.info('Update existing environment variable\'s value, should succeed')
+        self.lg.info(
+            'Update existing environment variable\'s value, should succeed')
         new_value = self.random_string()
         self.bash.envSet(key, new_value)
         self.assertEqual(self.bash.envGet(key), value)
-        self.assertEqual(self.bash.env[key], value) 
+        self.assertEqual(self.bash.env[key], value)
 
     def test004_delete_env(self):
         """ JS-041
@@ -79,7 +89,8 @@ class TestBASH(TestcasesBase):
 
         with self.assertRaises(KeyError):
             self.bash.envGet(key)
-   
+
+
 class TestPROFILEJS(TestcasesBase):
     @classmethod
     def setUpClass(cls):
@@ -93,19 +104,23 @@ class TestPROFILEJS(TestcasesBase):
         **Test Scenario:**
         #. Set new environment variables.
         #. Check that the environment variable in profilejs, should succeed.
-        #. Get the environment variable, should succeed.        
+        #. Get the environment variable, should succeed.
         """
         self.lg.info('Set new environment variables')
         key = self.random_string()
         value = self.random_string()
         self.profileJS.envSet(key, value)
 
-        self.lg.info('Check that the environment variable in profilejs, should succeed')
+        self.lg.info(
+            'Check that the environment variable in profilejs, should succeed')
         self.assertEqual(self.profileJS.envGet(key), value)
-        self.assertIn('{0}="{1}"\nexport {0}'.format(key, value), str(self.profileJS))
+        self.assertIn(
+            '{0}="{1}"\nexport {0}'.format(
+                key, value), str(
+                self.profileJS))
 
         self.lg.info('Get the environment variable, should succeed')
-        self.assertEqual(self.profileJS.env[key], value)        
+        self.assertEqual(self.profileJS.env[key], value)
         self.assertEqual(self.profileJS.envGet(key), value)
 
     def test02_env_get(self):
@@ -117,7 +132,9 @@ class TestPROFILEJS(TestcasesBase):
         """
         env_vars = self.profileJS.env
         random_key = random.choice(list(env_vars.keys()))
-        self.assertEqual(self.profileJS.envGet(random_key), self.profileJS.env[random_key])
+        self.assertEqual(
+            self.profileJS.envGet(random_key),
+            self.profileJS.env[random_key])
 
     def test03_env_exists(self):
         """ JS-046
@@ -131,10 +148,12 @@ class TestPROFILEJS(TestcasesBase):
         env_vars = self.profileJS.env
         random_key = random.choice(list(env_vars.keys()))
 
-        self.lg.info(' Check if the environment variable exists, should return true')
+        self.lg.info(
+            ' Check if the environment variable exists, should return true')
         self.assertTrue(self.profileJS.envExists(random_key))
 
-        self.lg.info('Check if false environment variable exists, should return false')
+        self.lg.info(
+            'Check if false environment variable exists, should return false')
         self.assertFalse(self.profileJS.envExists(self.random_string()))
 
     def test04_env_delete(self):
@@ -153,8 +172,12 @@ class TestPROFILEJS(TestcasesBase):
         self.lg.info('Delete environment variable, should succeed')
         self.profileJS.envDelete(key)
 
-        self.lg.info('Check that the environment variable is removed from profilejs, should succeed')
-        self.assertNotIn('{0}="{1}"\nexport {0}'.format(key, value), str(self.profileJS))
+        self.lg.info(
+            'Check that the environment variable is removed from profilejs, should succeed')
+        self.assertNotIn(
+            '{0}="{1}"\nexport {0}'.format(
+                key, value), str(
+                self.profileJS))
 
         with self.assertRaises(KeyError):
             self.profileJS.envGet(key)
@@ -174,7 +197,8 @@ class TestPROFILEJS(TestcasesBase):
         path = self.random_string()
         self.profileJS.addPath(path)
 
-        self.lg.info('Check that the new path is added to paths list, should succeed')
+        self.lg.info(
+            'Check that the new path is added to paths list, should succeed')
         self.assertIn(path, self.profileJS.paths)
 
     def test06_delete_path(self):
@@ -188,9 +212,10 @@ class TestPROFILEJS(TestcasesBase):
         path = self.random_string()
         self.profileJS.addPath(path)
 
-        self.lg.info('Delete the new path, should succeed')   
+        self.lg.info('Delete the new path, should succeed')
         self.profileJS.pathDelete(path)
         self.assertNotIn(path, self.profileJS.paths)
+
 
 class TestPROFILEDEFAULT(TestcasesBase):
     @classmethod
@@ -205,19 +230,23 @@ class TestPROFILEDEFAULT(TestcasesBase):
         **Test Scenario:**
         #. Set new environment variables.
         #. Check that the environment variable in profileDefault, should succeed.
-        #. Get the environment variable, should succeed.        
+        #. Get the environment variable, should succeed.
         """
         self.lg.info('Set new environment variables')
         key = self.random_string()
         value = self.random_string()
         self.profileDefault.envSet(key, value)
 
-        self.lg.info('Check that the environment variable in profileDefault, should succeed')
+        self.lg.info(
+            'Check that the environment variable in profileDefault, should succeed')
         self.assertEqual(self.profileDefault.envGet(key), value)
-        self.assertIn('{0}="{1}"\nexport {0}'.format(key, value), str(self.profileDefault))
+        self.assertIn(
+            '{0}="{1}"\nexport {0}'.format(
+                key, value), str(
+                self.profileDefault))
 
         self.lg.info('Get the environment variable, should succeed')
-        self.assertEqual(self.profileDefault.env[key], value)        
+        self.assertEqual(self.profileDefault.env[key], value)
         self.assertEqual(self.profileDefault.envGet(key), value)
 
     def test02_env_get(self):
@@ -229,7 +258,9 @@ class TestPROFILEDEFAULT(TestcasesBase):
         """
         env_vars = self.profileDefault.env
         random_key = random.choice(list(env_vars.keys()))
-        self.assertEqual(self.profileDefault.envGet(random_key), self.profileDefault.env[random_key])
+        self.assertEqual(
+            self.profileDefault.envGet(random_key),
+            self.profileDefault.env[random_key])
 
     def test03_env_exists(self):
         """ JS-052
@@ -243,10 +274,12 @@ class TestPROFILEDEFAULT(TestcasesBase):
         env_vars = self.profileDefault.env
         random_key = random.choice(list(env_vars.keys()))
 
-        self.lg.info(' Check if the environment variable exists, should return true')
+        self.lg.info(
+            ' Check if the environment variable exists, should return true')
         self.assertTrue(self.profileDefault.envExists(random_key))
 
-        self.lg.info('Check if false environment variable exists, should return false')
+        self.lg.info(
+            'Check if false environment variable exists, should return false')
         self.assertFalse(self.profileDefault.envExists(self.random_string()))
 
     def test04_env_delete(self):
@@ -265,8 +298,12 @@ class TestPROFILEDEFAULT(TestcasesBase):
         self.lg.info('Delete environment variable, should succeed')
         self.profileDefault.envDelete(key)
 
-        self.lg.info('Check that the environment variable is removed from profileDefault, should succeed')
-        self.assertNotIn('{0}="{1}"\nexport {0}'.format(key, value), str(self.profileDefault))
+        self.lg.info(
+            'Check that the environment variable is removed from profileDefault, should succeed')
+        self.assertNotIn(
+            '{0}="{1}"\nexport {0}'.format(
+                key, value), str(
+                self.profileDefault))
 
         with self.assertRaises(KeyError):
             self.profileDefault.envGet(key)
@@ -296,7 +333,8 @@ class TestPROFILEDEFAULT(TestcasesBase):
         path = self.random_string()
         self.profileDefault.addPath(path)
 
-        self.lg.info('Check that the new path is added to paths list, should succeed')
+        self.lg.info(
+            'Check that the new path is added to paths list, should succeed')
         self.assertIn(path, self.profileDefault.paths)
 
     def test07_delete_path(self):
@@ -310,6 +348,6 @@ class TestPROFILEDEFAULT(TestcasesBase):
         path = self.random_string()
         self.profileDefault.addPath(path)
 
-        self.lg.info('Delete the new path, should succeed')   
+        self.lg.info('Delete the new path, should succeed')
         self.profileDefault.pathDelete(path)
         self.assertNotIn(path, self.profileDefault.paths)

@@ -1,6 +1,11 @@
 from .testcases_base import TestcasesBase
-import os, random, pytoml, unittest, uuid
+import os
+import random
+import pytoml
+import unittest
+import uuid
 from jumpscale import j
+
 
 class TestJCONFIG(TestcasesBase):
 
@@ -14,7 +19,7 @@ class TestJCONFIG(TestcasesBase):
     def reset_config(cls):
         with open(cls.config_path, 'w') as f:
             pytoml.dump(cls.config_file_content, f)
-    
+
     @classmethod
     def update_config(cls, data):
         content = dict(cls.config_file_content)
@@ -34,12 +39,12 @@ class TestJCONFIG(TestcasesBase):
         super().setUp()
         self.lg.info('Add test configration (setUp)')
         test_config = {
-            'key_1':'value_1',
-            'key_2':'value_2',
-            'dict_1':{
-                'd_key_1':'d_value_1',
-                'd_key_2':True,
-                'd_key_3':False
+            'key_1': 'value_1',
+            'key_2': 'value_2',
+            'dict_1': {
+                'd_key_1': 'd_value_1',
+                'd_key_2': True,
+                'd_key_3': False
             }
         }
         self.client._configJS = self.update_config(test_config)
@@ -69,19 +74,21 @@ class TestJCONFIG(TestcasesBase):
         self.lg.info('Get the value of a non-existing key')
         with self.assertRaises(j.exceptions.Input) as e:
             self.client.configGet('new_key')
-        
-        self.lg.info('Get the value of a non-existing key with default value and set is false')
+
+        self.lg.info(
+            'Get the value of a non-existing key with default value and set is false')
         value = self.client.configGet('new_key', defval='new_value')
         self.assertEqual(value, 'new_value')
 
         with self.assertRaises(j.exceptions.Input) as e:
             self.client.configGet('new_value')
 
-        self.lg.info('Get the value of non existing key with default value and set is true')
+        self.lg.info(
+            'Get the value of non existing key with default value and set is true')
         value = self.client.configGet('new_key', defval='new_value', set=True)
         self.assertEqual(value, 'new_value')
         self.assertEqual(self.client.configGet('new_key'), 'new_value')
-    
+
     def test002_config_get_form_dict(self):
         """ JS-017
         **Test Scenario:**
@@ -93,17 +100,21 @@ class TestJCONFIG(TestcasesBase):
         value = self.client.configGetFromDict('dict_1', 'd_key_1')
         self.assertEqual(value, 'd_value_1')
 
-        self.lg.info('Get the value of a non-existing key from non-existing dict')
+        self.lg.info(
+            'Get the value of a non-existing key from non-existing dict')
         with self.assertRaises(RuntimeError) as e:
             self.client.configGetFromDict('new_dict', 'new_dict_key')
 
         self.assertEqual(self.client.configGet('new_dict'), {})
 
-        self.lg.info('Get the value of an non-existing key from existing dict with default value')
-        value = self.client.configGetFromDict('new_dict', 'new_dict_key', default='new_dict_value')
+        self.lg.info(
+            'Get the value of an non-existing key from existing dict with default value')
+        value = self.client.configGetFromDict(
+            'new_dict', 'new_dict_key', default='new_dict_value')
         self.assertEqual(value, 'new_dict_value')
 
-    @unittest.skip('https://github.com/threefoldtech/jumpscale_core/issues/157')
+    @unittest.skip(
+        'https://github.com/threefoldtech/jumpscale_core/issues/157')
     def test003_config_get_form_dict_bool(self):
         """ JS-018
         **Test Scenario:**
@@ -116,14 +127,17 @@ class TestJCONFIG(TestcasesBase):
         self.assertEqual(value, 'd_value_1')
         self.assertTrue(isinstance(value, bool))
 
-        self.lg.info('Get the value of a non-existing key from non-existing dict')
+        self.lg.info(
+            'Get the value of a non-existing key from non-existing dict')
         with self.assertRaises(RuntimeError) as e:
             self.client.configGetFromDictBool('new_dict', 'new_dict_key')
 
         self.assertEqual(self.client.config.get('new_dict'), {})
 
-        self.lg.info('Get the value of an non-existing key from existing dict with default value')
-        value = self.client.configGetFromDictBool('new_dict', 'new_dict_key', default=1)
+        self.lg.info(
+            'Get the value of an non-existing key from existing dict with default value')
+        value = self.client.configGetFromDictBool(
+            'new_dict', 'new_dict_key', default=1)
         self.assertEqual(value, 'new_dict_value')
         self.assertTrue(isinstance(value, bool))
 
@@ -218,7 +232,8 @@ class TestJCONFIG(TestcasesBase):
         self.lg.info('check that new key, value were added to the config file')
         self.assertEqual(self.get_config().get(key), value)
 
-    @unittest.skip('https://github.com/threefoldtech/jumpscale_core/issues/159')
+    @unittest.skip(
+        'https://github.com/threefoldtech/jumpscale_core/issues/159')
     def test08_config_update(self):
         """ JS-023
         **Test Scenario:**
@@ -228,12 +243,12 @@ class TestJCONFIG(TestcasesBase):
         self.lg.info('update config with new key')
         key = str(uuid.uuid4()).replace('-', '')[:10]
         value = str(uuid.uuid4()).replace('-', '')[:10]
-        ddict = {key:value}
+        ddict = {key: value}
         self.client.configUpdate(ddict)
         self.assertEqual(self.get_config()[key], value)
 
         self.lg.info('Update existing key and overwrite')
-        ddict = {'key_1':'new_value_1'}
+        ddict = {'key_1': 'new_value_1'}
         self.client.configUpdate(ddict, overwrite=True)
         self.assertEqual(self.get_config()['key_1'], 'new_value_1')
 

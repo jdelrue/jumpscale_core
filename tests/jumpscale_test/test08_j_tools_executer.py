@@ -1,7 +1,12 @@
-import os, unittest, random, platform, sys
+import os
+import unittest
+import random
+import platform
+import sys
 from .testcases_base import TestcasesBase
 from jumpscale import j
 from parameterized import parameterized
+
 
 class EXECUTER(TestcasesBase):
 
@@ -66,7 +71,7 @@ class EXECUTER(TestcasesBase):
             self.executer.upload(source_dir, dest_dir)
         elif method == 'download':
             self.executer.download(source_dir, dest_dir)
-        
+
         files = os.listdir(dest_dir)
         self.assertEqual(set(source_files), set(files))
         os.system('rm -rf {}'.format(' '.join([source_dir, dest_dir])))
@@ -79,7 +84,7 @@ class EXECUTER(TestcasesBase):
         """
         path = '/root'
         self.assertTrue(self.executer.exists(path))
-        
+
         path = self.random_string()
         self.assertFalse(self.executer.exists(path))
 
@@ -89,14 +94,14 @@ class EXECUTER(TestcasesBase):
         #. Check system architecture.
         """
         architecture = platform.architecture()[0]
-        if  architecture == '64bit':
+        if architecture == '64bit':
             self.assertTrue(self.executer.platformtype.is64bit)
             self.assertFalse(self.executer.platformtype.is32bit)
-            
+
         elif architecture == '32bit':
             self.assertTrue(self.executer.platformtype.is32bit)
             self.assertFalse(self.executer.platformtype.is64bit)
-        
+
     def test06_env(self):
         """ JS-066
         **Test Scenario:**

@@ -1,6 +1,11 @@
 from .testcases_base import TestcasesBase
-import os, random, pytoml, unittest, uuid
+import os
+import random
+import pytoml
+import unittest
+import uuid
 from jumpscale import j
+
 
 class TestJSTATE(TestcasesBase):
 
@@ -14,7 +19,7 @@ class TestJSTATE(TestcasesBase):
     def reset_state(cls):
         with open(cls.state_path, 'w') as f:
             pytoml.dump(cls.state_file_content, f)
-    
+
     @classmethod
     def update_state(cls, data):
         content = dict(cls.state_file_content)
@@ -39,12 +44,12 @@ class TestJSTATE(TestcasesBase):
         super().setUp()
         self.lg.info('Add test state (setUp)')
         test_state = {
-            'key_1':'value_1',
-            'key_2':'value_2',
-            'dict_1':{
-                'd_key_1':'d_value_1',
-                'd_key_2':True,
-                'd_key_3':False
+            'key_1': 'value_1',
+            'key_2': 'value_2',
+            'dict_1': {
+                'd_key_1': 'd_value_1',
+                'd_key_2': True,
+                'd_key_3': False
             }
         }
         self.client._configState = self.update_state(test_state)
@@ -69,15 +74,17 @@ class TestJSTATE(TestcasesBase):
         self.lg.info('Get the value of a non-existing key')
         with self.assertRaises(j.exceptions.Input) as e:
             self.client.stateGet('new_key')
-        
-        self.lg.info('Get the value of a non-existing key with default value and set is false')
+
+        self.lg.info(
+            'Get the value of a non-existing key with default value and set is false')
         value = self.client.stateGet('new_key', defval='new_value')
         self.assertEqual(value, 'new_value')
 
         with self.assertRaises(j.exceptions.Input) as e:
             self.client.stateGet('new_value')
 
-        self.lg.info('Get the value of non existing key with default value and set is true')
+        self.lg.info(
+            'Get the value of non existing key with default value and set is true')
         value = self.client.stateGet('new_key', defval='new_value', set=True)
         self.assertEqual(value, 'new_value')
         self.assertEqual(self.client.stateGet('new_key'), 'new_value')
@@ -93,17 +100,21 @@ class TestJSTATE(TestcasesBase):
         value = self.client.stateGetFromDict('dict_1', 'd_key_1')
         self.assertEqual(value, 'd_value_1')
 
-        self.lg.info('Get the value of a non-existing key from non-existing dict')
+        self.lg.info(
+            'Get the value of a non-existing key from non-existing dict')
         with self.assertRaises(RuntimeError) as e:
             self.client.stateGetFromDict('new_dict', 'new_dict_key')
 
         self.assertEqual(self.client.stateGet('new_dict'), {})
 
-        self.lg.info('Get the value of an non-existing key from existing dict with default value')
-        value = self.client.stateGetFromDict('new_dict', 'new_dict_key', default='new_dict_value')
+        self.lg.info(
+            'Get the value of an non-existing key from existing dict with default value')
+        value = self.client.stateGetFromDict(
+            'new_dict', 'new_dict_key', default='new_dict_value')
         self.assertEqual(value, 'new_dict_value')
 
-    @unittest.skip('https://github.com/threefoldtech/jumpscale_core/issues/157')
+    @unittest.skip(
+        'https://github.com/threefoldtech/jumpscale_core/issues/157')
     def test003_state_get_form_dict_bool(self):
         """ JS-010
         **Test Scenario:**
@@ -116,14 +127,17 @@ class TestJSTATE(TestcasesBase):
         self.assertEqual(value, 'd_value_1')
         self.assertTrue(isinstance(value, bool))
 
-        self.lg.info('Get the value of a non-existing key from non-existing dict')
+        self.lg.info(
+            'Get the value of a non-existing key from non-existing dict')
         with self.assertRaises(RuntimeError) as e:
             self.client.stateGetFromDictBool('new_dict', 'new_dict_key')
 
         self.assertEqual(self.client.stateGet('new_dict'), {})
 
-        self.lg.info('Get the value of an non-existing key from existing dict with default value')
-        value = self.client.stateGetFromDictBool('new_dict', 'new_dict_key', default=1)
+        self.lg.info(
+            'Get the value of an non-existing key from existing dict with default value')
+        value = self.client.stateGetFromDictBool(
+            'new_dict', 'new_dict_key', default=1)
         self.assertEqual(value, 'new_dict_value')
         self.assertTrue(isinstance(value, bool))
 

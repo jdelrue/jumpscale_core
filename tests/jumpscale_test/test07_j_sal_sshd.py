@@ -1,6 +1,9 @@
 from jumpscale import j
-import os, random, unittest
+import os
+import random
+import unittest
 from .testcases_base import TestcasesBase
+
 
 class TestSALLSSHD(TestcasesBase):
 
@@ -9,7 +12,7 @@ class TestSALLSSHD(TestcasesBase):
         path = str(cls.sshd.SSH_AUTHORIZED_KEYS)
         with open(path, 'r') as f:
             lines = [x.strip() for x in f.readlines()]
-            return lines 
+            return lines
 
     @classmethod
     def setUpClass(cls):
@@ -21,7 +24,6 @@ class TestSALLSSHD(TestcasesBase):
     def tearDownClass(cls):
         cls.sshd.SSH_AUTHORIZED_KEYS.write_lines(cls.authorized_keys)
         super().tearDownClass()
-
 
     def test01_keys(self):
         """ JS-057

@@ -1,4 +1,5 @@
-import os, shutil
+import os
+import shutil
 from random import randint
 from .testcases_base import TestcasesBase
 from jumpscale import j
@@ -113,7 +114,7 @@ class TestJSALFS(TestcasesBase):
         self.file_name = new_file_name
         self.assertTrue(os.path.isfile(new_file_name))
 
-    @parameterized.expand(['/test/xTremX','@3%6123', 'Запомните'])
+    @parameterized.expand(['/test/xTremX', '@3%6123', 'Запомните'])
     def test008_checkDirParam(self, dir_name):
         """ JS-037
 
