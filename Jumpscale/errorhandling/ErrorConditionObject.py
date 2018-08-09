@@ -47,7 +47,8 @@ class ErrorConditionObject(BaseException, JSBASE):
                 self.__dict__.setdefault(k, v)
             self.__dict__.update(ddict)
         else:
-            btkis, filename0, linenr0, func0 = j.errorhandler.getErrorTraceKIS(tb=tb)
+            btkis, filename0, linenr0, func0 = j.errorhandler.getErrorTraceKIS(
+                tb=tb)
 
             # if len(btkis)>1:
             #     self.backtrace=self.getBacktrace(btkis,filename0,linenr0,func0)
@@ -127,8 +128,10 @@ class ErrorConditionObject(BaseException, JSBASE):
 
     def printTraceback(self):
         if pygmentsObj:
-            formatter = pygments.formatters.Terminal256Formatter(style=pygments.styles.get_style_by_name("vim"))
-            lexer = pygments.lexers.get_lexer_by_name("pytb", stripall=True)  # pytb
+            formatter = pygments.formatters.Terminal256Formatter(
+                style=pygments.styles.get_style_by_name("vim"))
+            lexer = pygments.lexers.get_lexer_by_name(
+                "pytb", stripall=True)  # pytb
             tb_colored = pygments.highlight(self.traceback, lexer, formatter)
             sys.stderr.write(tb_colored)
         else:
@@ -140,11 +143,16 @@ class ErrorConditionObject(BaseException, JSBASE):
         return unique key for object, is used to define unique id
         """
         if self.category != "":
-            C = "%s_%s_%s_%s_%s_%s" % (self.category, self.level,
-                                       self.funcname, self.funcfilename, self.appname, self.type)
+            C = "%s_%s_%s_%s_%s_%s" % (
+                self.category, self.level, self.funcname, self.funcfilename,
+                self.appname, self.type)
         else:
             C = "%s_%s_%s_%s_%s_%s" % (self.errormessage,
-                                       self.level, self.funcname, self.funcfilename, self.appname, self.type)
+                                       self.level,
+                                       self.funcname,
+                                       self.funcfilename,
+                                       self.appname,
+                                       self.type)
         self.uniquekey = j.data.hash.md5_string(C)
         return self.uniquekey
 
@@ -179,7 +187,8 @@ class ErrorConditionObject(BaseException, JSBASE):
     def process(self):
         self._toAscii()
 
-        if self.type in ["INPUT", "MONITORING", "OPERATIONS", "PERFORMANCE"] and j.application.debug is False:
+        if self.type in ["INPUT", "MONITORING", "OPERATIONS",
+                         "PERFORMANCE"] and j.application.debug is False:
             self.tb = ""
             self.code = ""
             self.backtrace = ""
@@ -196,8 +205,10 @@ class ErrorConditionObject(BaseException, JSBASE):
                 pass
             if not j.data.types.int.check(param.level):
                 self.level = 1
-                j.events.inputerror_warning("Errorcondition was thrown with wrong level, needs to be int.\n%s" % str(
-                    self.errormessage), "eco.check.level")
+                j.events.inputerror_warning(
+                    "Errorcondition was thrown with wrong level, needs to be int.\n%s" % str(
+                        self.errormessage),
+                    "eco.check.level")
 
         if self.level > 4:
             raise RuntimeError(
@@ -208,7 +219,6 @@ class ErrorConditionObject(BaseException, JSBASE):
         res = j.errorhandler._send2Redis(self)
         if res is not None:
             self.__dict__ = res
-
 
     @property
     def json(self):
@@ -236,7 +246,6 @@ class ErrorConditionObject(BaseException, JSBASE):
 
     def __repr__(self):
         return self.__str__()
-        
 
     def log2filesystem(self):
         """
@@ -244,8 +253,12 @@ class ErrorConditionObject(BaseException, JSBASE):
         """
         j.sal.fs.createDir(j.sal.fs.joinPaths(
             j.dirs.LOGDIR, "errors", j.application.appname))
-        path = j.sal.fs.joinPaths(j.dirs.LOGDIR, "errors", j.application.appname, "backtrace_%s.log" % (
-            j.data.time.getLocalTimeHRForFilesystem()))
+        path = j.sal.fs.joinPaths(
+            j.dirs.LOGDIR,
+            "errors",
+            j.application.appname,
+            "backtrace_%s.log" %
+            (j.data.time.getLocalTimeHRForFilesystem()))
 
         msg = "***ERROR BACKTRACE***\n"
         msg += "%s\n" % self.backtrace
@@ -325,8 +338,21 @@ class ErrorConditionObject(BaseException, JSBASE):
         try:
             k = "%s" % k
             v = "%s" % v
-            if k in ["re", "q", "jumpscale", "pprint", "qexec", "jshell", "Shell",
-                     "__doc__", "__file__", "__name__", "__package__", "i", "main", "page"]:
+            if k in [
+                "re",
+                "q",
+                "jumpscale",
+                "pprint",
+                "qexec",
+                "jshell",
+                "Shell",
+                "__doc__",
+                "__file__",
+                "__name__",
+                "__package__",
+                "i",
+                "main",
+                    "page"]:
                 return False
             if v.find("<module") != -1:
                 return False
