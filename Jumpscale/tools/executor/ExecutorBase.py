@@ -129,6 +129,13 @@ class ExecutorBase(JSBASE):
     @property
     def prefab(self):
         if self._prefab is None:
+            if not getattr(j.tools, "prefab", None):
+                # XXX TEMPORARY INCREDIBLY BAD HACK, see issue #50
+                from JumpscalePrefab.PrefabFactory \
+                                    import PrefabRootClassFactory \
+                                    as _PrefabRootClassFactory
+                j.tools.prefab = _PrefabRootClassFactory()
+
             self._prefab = j.tools.prefab.get(self)
         return self._prefab
 
