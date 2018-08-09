@@ -8,6 +8,7 @@ import tarantool
 from jumpscale import j
 JSBASE = j.application.jsbase_get_class()
 
+
 def unpack_long_long(value):
     return struct.unpack("<q", value)[0]
 
@@ -194,7 +195,7 @@ class Tube(object, JSBASE):
         self._serialize = None
         self._deserialize = None
 
-#----------------
+# ----------------
     @property
     def serialize(self):
         """
@@ -214,7 +215,7 @@ class Tube(object, JSBASE):
     @serialize.deleter
     def serialize(self):
         self._serialize = None
-#----------------
+# ----------------
 
     @property
     def deserialize(self):
@@ -235,7 +236,7 @@ class Tube(object, JSBASE):
     @deserialize.deleter
     def deserialize(self):
         self._deserialize = None
-#----------------
+# ----------------
 
     def update_options(self, **kwargs):
         """
@@ -389,7 +390,7 @@ class Queue(object, JSBASE):
         self._serialize = self.basic_serialize
         self._deserialize = self.basic_deserialize
 
-#----------------
+# ----------------
     @property
     def serialize(self):
         """
@@ -409,7 +410,7 @@ class Queue(object, JSBASE):
     @serialize.deleter
     def serialize(self):
         self._serialize = self.basic_serialize
-#----------------
+# ----------------
 
     @property
     def deserialize(self):
@@ -430,7 +431,7 @@ class Queue(object, JSBASE):
     @deserialize.deleter
     def deserialize(self):
         self._deserialize = self.basic_deserialize
-#----------------
+# ----------------
 
     @property
     def tnt(self):
@@ -568,11 +569,12 @@ class Queue(object, JSBASE):
         ans = {}
         if stat.rowcount > 0:
             for k, v in dict(zip(stat[0][0::2], stat[0][1::2])).iteritems():
-                k_t = re.split('space([^.]*)\.(.*)\.([^.]*)', k)[1:3]
+                k_t = re.split(r'space([^.]*)\.(.*)\.([^.]*)', k)[1:3]
                 task = False
                 if int(k_t[0]) != self.space:
                     continue
-                if k_t[-1] in ('total', 'ready', 'delayed', 'taken', 'buried', 'done'):
+                if k_t[-1] in ('total', 'ready', 'delayed',
+                               'taken', 'buried', 'done'):
                     k_t = map((lambda x: x[::-1]), k_t[1]
                               [::-1].split('.', 1))[::-1] + k_t[2:3]
                     task = True
