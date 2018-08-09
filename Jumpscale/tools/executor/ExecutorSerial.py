@@ -3,6 +3,7 @@ from .ExecutorBase import *
 import time
 import serial
 
+
 class ExecutorSerial(ExecutorBase):
     """
     This executor is primary made to communicate with devices (routers, switch, ...) over
@@ -10,7 +11,16 @@ class ExecutorSerial(ExecutorBase):
 
     Please note that default mode attempt to recognize a device with cisco like commands.
     """
-    def __init__(self, device, baudrate=9600, type="serial", parity="N", stopbits=1, bytesize=8, timeout=1):
+
+    def __init__(
+            self,
+            device,
+            baudrate=9600,
+            type="serial",
+            parity="N",
+            stopbits=1,
+            bytesize=8,
+            timeout=1):
         ExecutorBase.__init__(self, checkok=False)
         self.device = device
         self.baudrate = baudrate
@@ -39,14 +49,20 @@ class ExecutorSerial(ExecutorBase):
 
         return True
 
-
     @property
     def id(self):
         if self._id is None:
             self._id = 'serial.%s' % (self.device)
         return self._id
 
-    def execute(self, cmds, die=True, checkok=None, showout=True, timeout=0, env={}):
+    def execute(
+            self,
+            cmds,
+            die=True,
+            checkok=None,
+            showout=True,
+            timeout=0,
+            env={}):
         self.logger.debug("Serial command: %s" % cmds)
 
         if not cmds.endswith("\n"):
@@ -67,10 +83,21 @@ class ExecutorSerial(ExecutorBase):
         self.send(command)
         self.send("\n")
 
-    def _execute_script(self, content="", die=True, showout=True, checkok=None):
+    def _execute_script(
+            self,
+            content="",
+            die=True,
+            showout=True,
+            checkok=None):
         raise NotImplementedError()
 
-    def upload(self, source, dest, dest_prefix="", recursive=True, createdir=True):
+    def upload(
+            self,
+            source,
+            dest,
+            dest_prefix="",
+            recursive=True,
+            createdir=True):
         raise NotImplementedError()
 
     def download(self, source, dest, source_prefix="", recursive=True):

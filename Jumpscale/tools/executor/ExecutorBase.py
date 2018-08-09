@@ -64,7 +64,14 @@ class ExecutorBase(JSBASE):
         out = "\n".join(out.split("\n")[:-1]).rstrip() + "\n"
         return out
 
-    def commands_transform(self, cmds, die=True, checkok=False, env={}, sudo=False, shell=False):
+    def commands_transform(
+            self,
+            cmds,
+            die=True,
+            checkok=False,
+            env={},
+            sudo=False,
+            shell=False):
         # print ("TRANSF:%s"%cmds)
 
         if sudo or shell:
@@ -84,7 +91,7 @@ class ExecutorBase(JSBASE):
 
         if die:
             # first make sure not already one
-            if not "set -e" in cmds:
+            if "set -e" not in cmds:
                 # now only do if multicommands
                 if multicommand:
                     if self.debug:
@@ -137,7 +144,15 @@ class ExecutorBase(JSBASE):
         self.state.configSave()
 
     # interface to implement by child classes
-    def execute(self, cmds, die=True, checkok=None, showout=True, timeout=0, env={}, sudo=False):
+    def execute(
+            self,
+            cmds,
+            die=True,
+            checkok=None,
+            showout=True,
+            timeout=0,
+            env={},
+            sudo=False):
         raise NotImplementedError()
 
     def executeRaw(self, cmd, die=True, showout=False):
@@ -145,7 +160,11 @@ class ExecutorBase(JSBASE):
 
     @property
     def isDebug(self):
-        return self.state.configGetFromDict("system", "debug") == "1" or self.state.configGetFromDict("system", "debug") == 1 or self.state.configGetFromDict("system", "debug") == True or self.state.configGetFromDict("system", "debug") == "true"
+        return self.state.configGetFromDict(
+            "system", "debug") == "1" or self.state.configGetFromDict(
+            "system", "debug") == 1 or self.state.configGetFromDict(
+            "system", "debug") or self.state.configGetFromDict(
+            "system", "debug") == "true"
 
     @property
     def isContainer(self):
@@ -159,7 +178,6 @@ class ExecutorBase(JSBASE):
         """
         is dict of all relevant param's on system
         """
-
 
         def do():
 
@@ -189,7 +207,7 @@ class ExecutorBase(JSBASE):
             test -f /etc/redhat-release > /dev/null 2>&1 && echo 'OS_TYPE="redhat"'
             apk -v > /dev/null 2>&1 && echo 'OS_TYPE="alpine"'
             brew -v > /dev/null 2>&1 && echo 'OS_TYPE="darwin"'
-            opkg -v > /dev/null 2>&1 && echo 'OS_TYPE="LEDE"'            
+            opkg -v > /dev/null 2>&1 && echo 'OS_TYPE="LEDE"'
             cat /etc/os-release | grep "VERSION_ID"
 
             echo "CFG_JUMPSCALE = --TEXT--"
@@ -239,7 +257,7 @@ class ExecutorBase(JSBASE):
                     else:
                         try:
                             val = int(val)
-                        except:
+                        except BaseException:
                             pass
                     res[varname] = val
 
@@ -248,7 +266,8 @@ class ExecutorBase(JSBASE):
                     res["cfg_jumpscale"] = pytoml.loads(res["cfg_jumpscale"])
                 except Exception as e:
                     raise RuntimeError(
-                        "Could not load jumpscale config file (pytoml error)\n%s\n" % res["cfg_jumpscale"])
+                        "Could not load jumpscale config file (pytoml error)\n%s\n" %
+                        res["cfg_jumpscale"])
             else:
                 res["cfg_jumpscale"] = {}
             if res["cfg_state"].strip() != "":
@@ -256,7 +275,8 @@ class ExecutorBase(JSBASE):
                     res["cfg_state"] = pytoml.loads(res["cfg_state"])
                 except Exception as e:
                     raise RuntimeError(
-                        "Could not load jumpscale config file (pytoml error)\n%s\n" % res["cfg_state"])
+                        "Could not load jumpscale config file (pytoml error)\n%s\n" %
+                        res["cfg_state"])
 
             else:
                 res["cfg_state"] = {}
@@ -404,20 +424,30 @@ class ExecutorBase(JSBASE):
             out = ""
             for key, val in DIRPATHS.items():
                 out += "mkdir -p %s\n" % val
-    
+
             self.execute(out, sudo=True)
 
-            if self.exists("%s/github/threefoldtech/jumpscale_core/" % DIRPATHS["CODEDIR"]):
+            if self.exists(
+                "%s/github/threefoldtech/jumpscale_core/" %
+                    DIRPATHS["CODEDIR"]):
                 TT["plugins"]["Jumpscale"] = "%s/github/threefoldtech/jumpscale_core/Jumpscale/" % DIRPATHS["CODEDIR"]
                 # only check if core exists
-                if self.exists("%s/github/threefoldtech/jumpscale_lib/" % DIRPATHS["CODEDIR"]):
+                if self.exists(
+                    "%s/github/threefoldtech/jumpscale_lib/" %
+                        DIRPATHS["CODEDIR"]):
                     TT["plugins"]["JumpscaleLib"] = "%s/github/threefoldtech/jumpscale_lib/JumpscaleLib/" % DIRPATHS["CODEDIR"]
-                if self.exists("%s/github/threefoldtech/jumpscale_prefab/" % DIRPATHS["CODEDIR"]):
+                if self.exists(
+                    "%s/github/threefoldtech/jumpscale_prefab/" %
+                        DIRPATHS["CODEDIR"]):
                     TT["plugins"]["JumpscalePrefab"] = "%s/github/threefoldtech/jumpscale_prefab/JumpscalePrefab/" % DIRPATHS["CODEDIR"]
                 if self.type == "local":
                     src = "%s/github/threefoldtech/jumpscale_core/cmds/" % DIRPATHS["CODEDIR"]
-                    j.sal.fs.symlinkFilesInDir(src, "/usr/local/bin", delete=True,
-                                               includeDirs=False, makeExecutable=True)
+                    j.sal.fs.symlinkFilesInDir(
+                        src,
+                        "/usr/local/bin",
+                        delete=True,
+                        includeDirs=False,
+                        makeExecutable=True)
 
         if TT["system"]["container"] is True:
             self.state.configUpdate(TT, True)  # will overwrite
@@ -441,7 +471,10 @@ class ExecutorBase(JSBASE):
     @property
     def dir_paths(self):
         if not self._dirpaths_init:
-            if not self.exists(self.state.configJSPath) or self.state.configGet('dirs', {}) == {}:
+            if not self.exists(
+                    self.state.configJSPath) or self.state.configGet(
+                    'dirs',
+                    {}) == {}:
                 self.initEnv()
             self._dirpaths_init = True
         return self.state.configGet('dirs')
@@ -458,7 +491,9 @@ class ExecutorBase(JSBASE):
     def sudo_cmd(self, command):
 
         if "\n" in command:
-            raise RuntimeError("cannot do sudo when multiline script:%s" % command)
+            raise RuntimeError(
+                "cannot do sudo when multiline script:%s" %
+                command)
 
         if hasattr(self, 'sshclient'):
             login = self.sshclient.config.data['login']
@@ -474,10 +509,19 @@ class ExecutorBase(JSBASE):
 
         passwd = passwd or "\'\'"
 
-        cmd = 'echo %s | sudo -H -SE -p \'\' bash -c "%s"' % (passwd, command.replace('"', '\\"'))
+        cmd = 'echo %s | sudo -H -SE -p \'\' bash -c "%s"' % (
+            passwd, command.replace('"', '\\"'))
         return cmd
 
-    def file_write(self, path, content, mode=None, owner=None, group=None, append=False, sudo=False):
+    def file_write(
+            self,
+            path,
+            content,
+            mode=None,
+            owner=None,
+            group=None,
+            append=False,
+            sudo=False):
         """
         @param append if append then will add to file
 
@@ -500,7 +544,8 @@ class ExecutorBase(JSBASE):
             cmd = "set -e;mkdir -p %s\n" % parent
 
             content_base64 = base64.b64encode(content2).decode()
-            # cmd += 'echo "%s" | openssl base64 -D '%content_base64   #DONT KNOW WHERE THIS COMES FROM?
+            # cmd += 'echo "%s" | openssl base64 -D '%content_base64   #DONT
+            # KNOW WHERE THIS COMES FROM?
             cmd += 'echo "%s" | openssl base64 -A -d ' % content_base64
 
             if append:
@@ -535,7 +580,7 @@ class ExecutorBase(JSBASE):
         prev = None
         for i in range(10000):
             tmp = self.exists("/tmp")
-            if prev != None:
+            if prev is not None:
                 assert prev == tmp
             prev = tmp
 

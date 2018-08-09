@@ -36,7 +36,17 @@ class ExecutorSSH(ExecutorBase):
     def executeRaw(self, cmd, die=True, showout=False):
         return self.sshclient.execute(cmd, die=die, showout=showout)
 
-    def execute(self, cmds, die=True, checkok=False, showout=True, timeout=0, env={}, asScript=True, sudo=False, shell=False):
+    def execute(
+            self,
+            cmds,
+            die=True,
+            checkok=False,
+            showout=True,
+            timeout=0,
+            env={},
+            asScript=True,
+            sudo=False,
+            shell=False):
         """
         return (rc,out,err)
         """
@@ -44,20 +54,28 @@ class ExecutorSSH(ExecutorBase):
         #     raise RuntimeError("JJ")
         # if cmds.find("test -e /root/.bash_profile") != -1:
         #     raise RuntimeError("JJ")
-        cmds2 = self.commands_transform(cmds, die, checkok=checkok, env=env, sudo=sudo)
+        cmds2 = self.commands_transform(
+            cmds, die, checkok=checkok, env=env, sudo=sudo)
         if cmds.find("\n") != -1 and asScript:
             if showout:
-                self.logger.info("EXECUTESCRIPT} %s:%s:\n%s" %
-                                 (self.sshclient.addr, self.sshclient.port, cmds))
+                self.logger.info(
+                    "EXECUTESCRIPT} %s:%s:\n%s" %
+                    (self.sshclient.addr, self.sshclient.port, cmds))
             # sshkey = self.sshclient.key_filename or ""
-            return self._execute_script(content=cmds, showout=showout, die=die, checkok=checkok, sudo=sudo)
+            return self._execute_script(
+                content=cmds,
+                showout=showout,
+                die=die,
+                checkok=checkok,
+                sudo=sudo)
 
         if cmds.strip() == "":
             raise RuntimeError("cmds cannot be empty")
 
         # online command, we use prefab
         if showout:
-            self.logger.info("EXECUTE %s:%s: %s" % (self.sshclient.addr, self.sshclient.port, cmds))
+            self.logger.info("EXECUTE %s:%s: %s" %
+                             (self.sshclient.addr, self.sshclient.port, cmds))
 
         if sudo:
             cmds2 = self.sudo_cmd(cmds2)
@@ -72,7 +90,13 @@ class ExecutorSSH(ExecutorBase):
 
         return rc, out, err
 
-    def _execute_script(self, content="", die=True, showout=True, checkok=None, sudo=False):
+    def _execute_script(
+            self,
+            content="",
+            die=True,
+            showout=True,
+            checkok=None,
+            sudo=False):
         """
         @param remote can be ip addr or hostname of remote, if given will execute cmds there
         """
@@ -81,7 +105,11 @@ class ExecutorSSH(ExecutorBase):
             raise RuntimeError(content)
 
         if showout:
-            self.logger.info("EXECUTESCRIPT {}:{}:\n'''\n{}\n'''\n".format(self.sshclient.addr, self.sshclient.port, content))
+            self.logger.info(
+                "EXECUTESCRIPT {}:{}:\n'''\n{}\n'''\n".format(
+                    self.sshclient.addr,
+                    self.sshclient.port,
+                    content))
 
         if content[-1] != "\n":
             content += "\n"
@@ -93,15 +121,19 @@ class ExecutorSSH(ExecutorBase):
             login = self.sshclient.config.data['login']
             path = "/tmp/tmp_prefab_removeme_{}.sh".format(login)
         else:
-            path = "/tmp/prefab_{}.sh".format(j.data.idgenerator.generateRandomInt(1, 100000))
-        
+            path = "/tmp/prefab_{}.sh".format(
+                j.data.idgenerator.generateRandomInt(1, 100000))
+
         j.sal.fs.writeFile(path, content)
 
-        path2 = "/tmp/prefab_{}.sh".format(j.data.idgenerator.generateRandomInt(1, 100000)) # just in case of the same machine.
+        # just in case of the same machine.
+        path2 = "/tmp/prefab_{}.sh".format(
+            j.data.idgenerator.generateRandomInt(1, 100000))
         self.sshclient.copy_file(path, path2)  # is now always on tmp
         if sudo and "LEDE" not in j.core.platformtype.get(self).osname:
             passwd = self.sshclient.config.data['passwd_']
-            cmd = 'echo \'{}\' | sudo -H -SE -p \'\' bash "{}"'.format(passwd, path2)
+            cmd = 'echo \'{}\' | sudo -H -SE -p \'\' bash "{}"'.format(
+                passwd, path2)
         else:
             cmd = "bash {}".format(path2)
         rc, out, err = self.sshclient.execute(cmd, die=die, showout=showout)
@@ -113,8 +145,20 @@ class ExecutorSSH(ExecutorBase):
         self.sshclient.sftp.unlink(path2)
         return rc, out, err
 
-    def upload(self, source, dest, dest_prefix="", recursive=True, createdir=True,
-               rsyncdelete=True, ignoredir=['.egg-info', '.dist-info', '__pycache__', ".git"], keepsymlinks=False):
+    def upload(
+            self,
+            source,
+            dest,
+            dest_prefix="",
+            recursive=True,
+            createdir=True,
+            rsyncdelete=True,
+            ignoredir=[
+                '.egg-info',
+                '.dist-info',
+                '__pycache__',
+                ".git"],
+            keepsymlinks=False):
 
         if dest_prefix != "":
             dest = j.sal.fs.joinPaths(dest_prefix, dest)
@@ -164,6 +208,7 @@ class ExecutorSSH(ExecutorBase):
             recursive=recursive)
 
     def __repr__(self):
-        return ("Executor ssh: %s (%s)" % (self.sshclient.addr, self.sshclient.port))
+        return ("Executor ssh: %s (%s)" %
+                (self.sshclient.addr, self.sshclient.port))
 
     __str__ = __repr__

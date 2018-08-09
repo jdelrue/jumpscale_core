@@ -34,14 +34,31 @@ class ExecutorFactory(JSBASE):
         with self._lock:
             if j.data.types.string.check(sshclient):
                 sshclient = j.clients.ssh.get(instance=sshclient)
-            key = '%s:%s:%s' % (sshclient.config.data['addr'],
-                                sshclient.config.data['port'], sshclient.config.data['login'])
+            key = '%s:%s:%s' % (
+                sshclient.config.data['addr'],
+                sshclient.config.data['port'],
+                sshclient.config.data['login'])
             if key not in self._executors or self._executors[key].sshclient is None:
                 self._executors[key] = ExecutorSSH(sshclient=sshclient)
             return self._executors[key]
 
-    def serial_get(self, device, baudrate=9600, type="serial", parity="N", stopbits=1, bytesize=8, timeout=1):
-        return ExecutorSerial(device, baudrate=baudrate, type=type, parity=parity, stopbits=stopbits, bytesize=bytesize, timeout=timeout)
+    def serial_get(
+            self,
+            device,
+            baudrate=9600,
+            type="serial",
+            parity="N",
+            stopbits=1,
+            bytesize=8,
+            timeout=1):
+        return ExecutorSerial(
+            device,
+            baudrate=baudrate,
+            type=type,
+            parity=parity,
+            stopbits=stopbits,
+            bytesize=bytesize,
+            timeout=timeout)
 
     def asyncssh_get(self, sshclient):
         """
@@ -54,21 +71,16 @@ class ExecutorFactory(JSBASE):
         """
         if j.data.types.string.check(sshclient):
             sshclient = j.clients.ssh.get(instance=sshclient)
-        #@TODO: *1 needs to be fixed
+        # @TODO: *1 needs to be fixed
         raise RuntimeError("not implemented")
         with self._lock:
             key = '%s:%s:%s' % (addr, port, login)
             if key not in self._executors_async or usecache is False:
-                self._executors_async[key] = ExecutorAsyncSSH(addr=addr,
-                                                              port=port,
-                                                              login=login,
-                                                              passwd=passwd,
-                                                              debug=debug,
-                                                              allow_agent=allow_agent,
-                                                              look_for_keys=look_for_keys,
-                                                              timeout=timeout,
-                                                              key_filename=key_filename,
-                                                              passphrase=passphrase)
+                self._executors_async[key] = ExecutorAsyncSSH(
+                    addr=addr, port=port, login=login, passwd=passwd,
+                    debug=debug, allow_agent=allow_agent,
+                    look_for_keys=look_for_keys, timeout=timeout,
+                    key_filename=key_filename, passphrase=passphrase)
 
             return self._executors_async[key]
 
@@ -90,8 +102,10 @@ class ExecutorFactory(JSBASE):
             key = executor
         elif executor.type == 'ssh':
             sshclient = executor.sshclient
-            key = '%s:%s:%s' % (sshclient.config.data['addr'],
-                                sshclient.config.data['port'], sshclient.config.data['login'])
+            key = '%s:%s:%s' % (
+                sshclient.config.data['addr'],
+                sshclient.config.data['port'],
+                sshclient.config.data['login'])
         else:
             raise j.exceptions.Input(message='executor type not recognize.')
         with self._lock:

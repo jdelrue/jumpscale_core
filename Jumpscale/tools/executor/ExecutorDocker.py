@@ -17,12 +17,15 @@ class ExecutorDocker(ExecutorBase):
         ExecutorBase.__init__(self, debug=debug, checkok=checkok)
 
         if not isinstance(container, Container):
-            raise ValueError("Expected container variable as instance of running docker container")
+            raise ValueError(
+                "Expected container variable as instance of running docker container")
 
-        # Check if docker container is running and if the base image has bash installed
+        # Check if docker container is running and if the base image has bash
+        # installed
         result = container.exec_run('bash -c "echo test"')
         if result.exit_code != 0:
-            raise ValueError("Container does not have bash installed! Need bash for using prefab")
+            raise ValueError(
+                "Container does not have bash installed! Need bash for using prefab")
         self.container = container
         self.type = "docker"
 
@@ -43,7 +46,9 @@ class ExecutorDocker(ExecutorBase):
         for con in dockerd.containers.list():
             if id_or_name in (con.id, con.name):
                 return cls(con)
-        raise KeyError("Container with id or name '%s' not found!" % id_or_name)
+        raise KeyError(
+            "Container with id or name '%s' not found!" %
+            id_or_name)
 
     @property
     def logger(self):
@@ -97,8 +102,16 @@ class ExecutorDocker(ExecutorBase):
                     reader = tarf.extractfile(tari)
                     return reader.read().decode("utf8")
 
-    def file_write(self, path, content, mode=None, owner=None, group=None, append=False,
-                   hide=False, sudo=False):
+    def file_write(
+            self,
+            path,
+            content,
+            mode=None,
+            owner=None,
+            group=None,
+            append=False,
+            hide=False,
+            sudo=False):
         """
         Writes a file to the container
 
@@ -122,17 +135,19 @@ class ExecutorDocker(ExecutorBase):
             f.seek(0)
             tari = TarInfo(name=file_name)
             tari.size = length
-            if not mode is None:
+            if mode is not None:
                 tari.mode = mode
-            if not owner is None:
+            if owner is not None:
                 tari.uname = owner
-            if not group is None:
+            if group is not None:
                 tari.gname = group
             tarf.addfile(tari, f)
         if not self.exists(dir_name):
             result = self.container.exec_run("mkdir -p %s" % dir_name)
             if result.exit_code != 0:
-                raise RuntimeError("Could not create path %s!\n%s" % (dir_name, result.output))
+                raise RuntimeError(
+                    "Could not create path %s!\n%s" %
+                    (dir_name, result.output))
         self.container.put_archive(dir_name, buf.getvalue())
 
     def executeRaw(self, cmd, die=True, showout=False):
@@ -148,22 +163,26 @@ class ExecutorDocker(ExecutorBase):
         cmd_file = j.sal.fs.joinPaths("/", str(uuid.uuid4()))
         try:
             self.file_write(cmd_file, cmd)
-            result = self.container.exec_run('bash -c "bash %s 2> %s.stderr"' % \
+            result = self.container.exec_run('bash -c "bash %s 2> %s.stderr"' %
                                              (cmd_file, cmd_file))
             output = result.output.decode("utf8")
             err_output = self.file_read("%s.stderr" % cmd_file)
             if die and result.exit_code != 0:
-                raise RuntimeError("Error in:\n%s\n***\n%s\n%s" % (cmd, output, err_output))
+                raise RuntimeError(
+                    "Error in:\n%s\n***\n%s\n%s" %
+                    (cmd, output, err_output))
             if showout:
                 self.logger.info(output)
                 if err_output:
                     self.logger.info(err_output)
             return result.exit_code, output, err_output
         finally:
-            self.container.exec_run('bash -c "rm %s; rm %s.stderr"' % (cmd_file, cmd_file))
+            self.container.exec_run(
+                'bash -c "rm %s; rm %s.stderr"' %
+                (cmd_file, cmd_file))
 
-    def execute(self, cmds, die=True, checkok=False, showout=True, timeout=0, env=None, # pylint: disable=R0913
-                asScript=False, hide=False, sudo=False): # pylint: disable=W0613
+    def execute(self, cmds, die=True, checkok=False, showout=True, timeout=0, env=None,  # pylint: disable=R0913
+                asScript=False, hide=False, sudo=False):  # pylint: disable=W0613
         """
         Executes command in container
 
@@ -201,8 +220,16 @@ class ExecutorDocker(ExecutorBase):
 
         return exit_code, out, err
 
-    def upload(self, source, dest, dest_prefix="", recursive=True, createdir=True,
-               rsyncdelete=True, ignoredir=None, keepsymlinks=False):
+    def upload(
+            self,
+            source,
+            dest,
+            dest_prefix="",
+            recursive=True,
+            createdir=True,
+            rsyncdelete=True,
+            ignoredir=None,
+            keepsymlinks=False):
         """
         Uploads file to container
 
@@ -239,7 +266,9 @@ class ExecutorDocker(ExecutorBase):
                 createdir=True,
                 rsyncdelete=rsyncdelete)
             archiveid = str(uuid.uuid4())
-            j.sal.process.execute("tar -cvf %s.tar *" % archiveid, showout=False, cwd=tmpdir)
+            j.sal.process.execute(
+                "tar -cvf %s.tar *" %
+                archiveid, showout=False, cwd=tmpdir)
             with open(j.sal.fs.joinPaths(tmpdir, "%s.tar" % archiveid), 'rb') as fileh:
                 data = fileh.read()
             if createdir:
@@ -270,7 +299,9 @@ class ExecutorDocker(ExecutorBase):
             with open(tmptar, 'wb') as fileh:
                 for chunk in data:
                     fileh.write(chunk)
-            j.sal.process.execute("tar -xvf %s" % tmptar, showout=False, cwd=tmpdir)
+            j.sal.process.execute(
+                "tar -xvf %s" %
+                tmptar, showout=False, cwd=tmpdir)
             j.sal.fs.copyDirTree(
                 tmpdir,
                 dest,

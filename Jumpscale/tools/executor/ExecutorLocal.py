@@ -72,7 +72,8 @@ class ExecutorLocal(ExecutorBase):
             if "darwin" in sys.platform.lower():
                 res["os_type"] = "darwin"
             elif "linux" in sys.platform.lower():
-                res["os_type"] = "ubuntu"  # dirty hack, will need to do something better, but keep fast
+                # dirty hack, will need to do something better, but keep fast
+                res["os_type"] = "ubuntu"
             else:
                 print("need to fix for other types (check executorlocal")
                 sys.exit(1)
@@ -92,7 +93,7 @@ class ExecutorLocal(ExecutorBase):
 
             return res
 
-        if self._stateOnSystem == None:
+        if self._stateOnSystem is None:
             self._stateOnSystem = do()  # don't use cache
 
         return self._stateOnSystem
@@ -100,7 +101,15 @@ class ExecutorLocal(ExecutorBase):
     def executeRaw(self, cmd, die=True, showout=False):
         return self.execute(cmd, die=die, showout=showout)
 
-    def execute(self, cmds, die=True, checkok=None, showout=False, timeout=1000, env={}, sudo=False):
+    def execute(
+            self,
+            cmds,
+            die=True,
+            checkok=None,
+            showout=False,
+            timeout=1000,
+            env={},
+            sudo=False):
         """
         @RETURN rc, out, err
         """
@@ -112,9 +121,11 @@ class ExecutorLocal(ExecutorBase):
         if checkok is None:
             checkok = self.checkok
 
-        cmds2 = self.commands_transform(cmds, die=die, checkok=checkok, env=env, sudo=sudo)
+        cmds2 = self.commands_transform(
+            cmds, die=die, checkok=checkok, env=env, sudo=sudo)
 
-        rc, out, err = j.sal.process.execute(cmds2, die=die, showout=showout, timeout=timeout)
+        rc, out, err = j.sal.process.execute(
+            cmds2, die=die, showout=showout, timeout=timeout)
 
         if checkok:
             out = self._docheckok(cmds, out)
@@ -169,10 +180,18 @@ class ExecutorLocal(ExecutorBase):
     def file_read(self, path):
         return j.sal.fs.readFile(path)
 
-    def file_write(self, path, content, mode=None, owner=None, group=None, append=False, sudo=False):
+    def file_write(
+            self,
+            path,
+            content,
+            mode=None,
+            owner=None,
+            group=None,
+            append=False,
+            sudo=False):
         j.sal.fs.createDir(j.sal.fs.getDirName(path))
         j.sal.fs.writeFile(path, content, append=append)
         if owner is not None or group is not None:
             j.sal.fs.chown(path, owner, group)
-        if mode != None:
+        if mode is not None:
             j.sal.fs.chmod(path, mode)
