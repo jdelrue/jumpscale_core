@@ -2,6 +2,7 @@ from jumpscale import j
 import base64
 from .SerializerBase import SerializerBase
 
+
 class SerializerBase64(SerializerBase):
 
     def __init__(self):

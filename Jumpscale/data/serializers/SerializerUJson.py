@@ -32,7 +32,13 @@ class SerializerUJson(SerializerBase):
         SerializerBase.__init__(self)
 
     def dumps(self, obj, sort_keys=False, indent=False, encoding='ascii'):
-        return json.dumps(obj, ensure_ascii=False, sort_keys=sort_keys, indent=indent, cls=Encoder.get(encoding=encoding))
+        return json.dumps(
+            obj,
+            ensure_ascii=False,
+            sort_keys=sort_keys,
+            indent=indent,
+            cls=Encoder.get(
+                encoding=encoding))
 
     def loads(self, s):
         if isinstance(s, bytes):

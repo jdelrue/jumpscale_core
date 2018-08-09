@@ -3,7 +3,7 @@ from collections import OrderedDict
 from jumpscale import j
 from .SerializerBase import SerializerBase
 
-testtoml="""
+testtoml = """
 name = 'something'
 multiline = '''
     these are multiple lines
@@ -20,7 +20,12 @@ class SerializerYAML(SerializerBase):
         SerializerBase.__init__(self)
 
     def dumps(self, obj):
-        return yaml.dump(obj, default_flow_style=False, default_style='',indent=4,line_break="\n")
+        return yaml.dump(
+            obj,
+            default_flow_style=False,
+            default_style='',
+            indent=4,
+            line_break="\n")
 
     def loads(self, s):
         # out=cStringIO.StringIO(s)
@@ -29,7 +34,8 @@ class SerializerYAML(SerializerBase):
         except Exception as e:
             error = "error:%s\n" % e
             error += "\nyaml could not parse:\n%s\n" % s
-            raise j.exceptions.Input(message=error, level=1, source="", tags="", msgpub="")
+            raise j.exceptions.Input(
+                message=error, level=1, source="", tags="", msgpub="")
 
     def load(self, path):
         try:
@@ -37,16 +43,19 @@ class SerializerYAML(SerializerBase):
         except Exception as e:
             error = "error:%s\n" % e
             error += '\npath:%s\n' % path
-            raise j.exceptions.Input(message=error, level=1, source="", tags="", msgpub="")
+            raise j.exceptions.Input(
+                message=error, level=1, source="", tags="", msgpub="")
 
         try:
             return yaml.load(s)
         except Exception as e:
             error = "error:%s\n" % e
             error += "\nyaml could not parse:\n%s\n" % s
-            raise j.exceptions.Input(message=error, level=1, source="", tags="", msgpub="")
+            raise j.exceptions.Input(
+                message=error, level=1, source="", tags="", msgpub="")
 
-    def ordered_load(self, stream, Loader=yaml.Loader, object_pairs_hook=OrderedDict):
+    def ordered_load(self, stream, Loader=yaml.Loader,
+                     object_pairs_hook=OrderedDict):
         """
         load a yaml stream and keep the order
         """
@@ -77,8 +86,8 @@ class SerializerYAML(SerializerBase):
         return yaml.dump(data, stream, OrderedDumper, **kwds)
 
     def test(self):
-        ddict=j.data.serializer.toml.loads(testtoml)
-        #TODO:*3 write some test
+        ddict = j.data.serializer.toml.loads(testtoml)
+        # TODO:*3 write some test
 
 # from jumpscale import j
 
@@ -102,4 +111,3 @@ class SerializerYAML(SerializerBase):
 #         """
 #         return dump(obj, width=width, default_flow_style=False)
 #
-

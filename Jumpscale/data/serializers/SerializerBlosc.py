@@ -2,6 +2,7 @@ import blosc
 from .SerializerBase import *
 from jumpscale import j
 
+
 class SerializerBlosc(SerializerBase):
 
     def __init__(self):

@@ -3,6 +3,7 @@ import pylzma
 from .SerializerBase import SerializerBase
 from jumpscale import j
 
+
 class SerializerLZMA(SerializerBase):
 
     def __init__(self):
