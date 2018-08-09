@@ -41,7 +41,8 @@ class ConfigFactory(JSBASE):
         """
         Reset configurations
 
-        @param force: If no location is given and force is set to true then all locations will be reset
+        @param force: If no location is given and force is set
+                to true then all locations will be reset
         """
         path = self._path
         if location:
@@ -50,7 +51,8 @@ class ConfigFactory(JSBASE):
             path = j.sal.fs.joinPaths(path, '%s.toml' % instance)
         if not location:
             if force or j.tools.console.askYesNo(
-                "No location specified, Are you sure you want to delete all configs?",
+                "No location specified, Are you sure you want to " + \
+                        "delete all configs?",
                     default=True):
                 configs = j.sal.fs.listDirsInDir(path) if path else []
                 for config in configs:
@@ -112,13 +114,15 @@ class ConfigFactory(JSBASE):
             reset=False,
             sshkeyname=""):
         """
-        Will use specified dir as sandbox for config management (will not use system config dir)
+        Will use specified dir as sandbox for config management 
+        (will not use system config dir)
 
         looks for $path/secureconfig & $path/sshkeys (if systemssh == False)
         if not found will create
 
         Keyword Arguments:
-            systemssh {Bool} -- if True will use the configured sshkey on system (default: {False})
+            systemssh {Bool} -- if True will use the configured sshkey 
+                                on system (default: {False})
             reset {Bool} -- will replace current config (default: {False})
             sshkeyname -- if empty will be dirname of current path
 
@@ -161,15 +165,18 @@ class ConfigFactory(JSBASE):
 
         self.sandbox = True
 
-        # WE SHOULD NOT CONFIGURE THE HOST CONFIGMMANAGER ALL SHOULD BE ALREADY DONE
-        #j.tools.configmanager.init(configpath=cpath, keypath=kpath_full, silent=False)
+        # SHOULD NOT CONFIGURE THE HOST CONFIGMMANAGER, SHOULD BE ALREADY DONE
+        #j.tools.configmanager.init(configpath=cpath, keypath=kpath_full,
+        #               silent=False)
 
         return sshkeyobj
 
     def _findConfigRepo(self, die=False):
         """
-        if path is not set, it will look under CODEDIRS for any pre-configured js_config repo
-        if there are more than one, will try to use one in root of cwd. If not in one, will raise a RuntimeError
+        if path is not set, it will look under CODEDIRS for 
+        any pre-configured js_config repo
+        if there are more than one, will try to use one in 
+        root of cwd. If not in one, will raise a RuntimeError
 
         return configpath,remoteGitUrl
         """
@@ -189,7 +196,8 @@ class ConfigFactory(JSBASE):
         if len(paths) > 1:
             if die:
                 raise RuntimeError(
-                    "multipule configuration repos were found in {} but not currently in root of one".format(paths))
+                    "multipule configuration repos were found in {} " + \
+                            "but not currently in root of one".format(paths))
             else:
                 return None, None
         cpath = paths[0]
@@ -215,7 +223,8 @@ class ConfigFactory(JSBASE):
             interactive=True):
         """
         Will display a npyscreen form to edit the configuration
-        @param location: jslocation of module to configure for (eg: j.clients.openvcloud)
+        @param location: jslocation of module to configure for 
+                         (eg: j.clients.openvcloud)
         @param: instance: configuration instance
         """
         self.sandbox_check()
@@ -230,8 +239,8 @@ class ConfigFactory(JSBASE):
 
     def update(self, location, instance="main", updatedict={}):
         """
-        update the configuration by giving a dictionnary. The configuration will
-        be updated with the value of updatedict
+        update the configuration by giving a dictionnary. 
+        The configuration will be updated with the value of updatedict
         """
         self.sandbox_check()
         jumpscaleobj = self.js_obj_get(location=location, instance=instance)
@@ -245,9 +254,8 @@ class ConfigFactory(JSBASE):
         return a secret config
         """
         self.sandbox_check()
-        if not hasattr(
-                jsobj,
-                '__jslocation__') or jsobj.__jslocation__ is None or jsobj.__jslocation__ is "":
+        if not hasattr(jsobj, '__jslocation__') or \
+                jsobj.__jslocation__ is None or jsobj.__jslocation__ is "":
             raise RuntimeError(
                 "__jslocation__ has not been set on class %s" %
                 jsobj.__class__)
@@ -277,11 +285,13 @@ class ConfigFactory(JSBASE):
                 location = j.sal.fs.getBaseName(j.sal.fs.getcwd())
                 if not location.startswith("j."):
                     raise RuntimeError(
-                        "Cannot find location, are you in right directory? now in:%s" %
+                        "Cannot find location, are you in right " + \
+                                "directory? now in:%s" %
                         j.sal.fs.getcwd())
             else:
                 raise RuntimeError(
-                    "location has not been specified, looks like we are not in config directory:'%s'" %
+                    "location has not been specified, looks " + \
+                            "like we are not in config directory:'%s'" %
                     self.path)
 
         obj = eval(location)
@@ -319,7 +329,8 @@ class ConfigFactory(JSBASE):
     #     """
     #     # create the config directory and file, so we don't trigger the form
     #     # when creating a SercretConfig object
-    #     path = j.sal.fs.joinPaths(j.tools.configmanager.path, location, instance + '.toml')
+    #     path = j.sal.fs.joinPaths(j.tools.configmanager.path, 
+    #                               location, instance + '.toml')
     #     j.sal.fs.createDir(j.sal.fs.getParent(path))
     #     j.sal.fs.writeFile(path, "")
 
@@ -385,8 +396,10 @@ class ConfigFactory(JSBASE):
     def init(self, data={}, silent=False, configpath="", keypath=""):
         """
         @param data is data for myconfig
-        @param configpath is the path towards the config directory can be git based or local
-        @param keypath is the path towards the ssh key which will be used to use the config manager
+        @param configpath is the path towards the config directory can be
+                git based or local
+        @param keypath is the path towards the ssh key which will be used 
+                to use the config manager
 
         """
         def msg(msg):
@@ -396,7 +409,9 @@ class ConfigFactory(JSBASE):
             self.logger.error("ERROR: CANNOT INIT jumpscale")
             self.logger.error("ERROR: %s" % msg)
             self.logger.error(
-                "make sure you did the upgrade procedure: 'cd  ~/code/github/threefoldtech/jumpscale_core/;python3 upgrade.py'")
+                "make sure you did the upgrade procedure: " + \
+                "'cd  ~/code/github/threefoldtech/jumpscale_core/;python3 " + \
+                "upgrade.py'")
             sys.exit(1)
 
         def ssh_init(ssh_silent=False):
@@ -418,14 +433,18 @@ class ConfigFactory(JSBASE):
                         "*known_hosts*"])
                 if not keys:
                     raise RuntimeError(
-                        "Cannot find keys, please load right ssh keys in agent, now 0")
+                        "Cannot find keys, please load right ssh " + \
+                                "keys in agent, now 0")
                 elif len(keys) > 1:
                     if silent:
                         raise RuntimeError(
-                            "cannot run silent if more than 1 sshkey exists in your ~/.ssh directory, "
-                            "please either load your key into your ssh-agent or "
+                            "cannot run silent if more than 1 sshkey " + \
+                                    "exists in your ~/.ssh directory, "
+                            "please either load your key into your " + \
+                                    "ssh-agent or "
                             "make sure you have only one key in ~/.ssh")
-                    msg("found ssh keys in your ~/.ssh directory, do you want to load one is ssh-agent?")
+                    msg("found ssh keys in your ~/.ssh directory, " + \
+                            "do you want to load one is ssh-agent?")
                     key_chosen = j.tools.console.askChoice(keys)
                     j.clients.sshkey.key_load(path=key_chosen)
                 else:
@@ -440,7 +459,8 @@ class ConfigFactory(JSBASE):
                         "cannot run silent if more than 1 sshkey loaded")
                 # more than 1 key
                 msg("Found more than 1 ssh key loaded in ssh-agent, "
-                    "please specify which one you want to use to store your secure config.")
+                    "please specify which one you want to use to store " + \
+                            "your secure config.")
                 key_chosen = j.tools.console.askChoice(keys0)
                 j.core.state.configSetInDict(
                     "myconfig", "sshkeyname", key_chosen)
@@ -451,7 +471,8 @@ class ConfigFactory(JSBASE):
                 if not silent:
                     msg("Is it ok to use this one:'%s'?" % keys[0])
                     if not j.tools.console.askYesNo():
-                        die("cannot continue, please load other sshkey in your agent you want to use")
+                        die("cannot continue, please load other sshkey " + \
+                                "in your agent you want to use")
                 j.core.state.configSetInDict(
                     "myconfig", "sshkeyname", keys0[0])
 
@@ -488,7 +509,8 @@ class ConfigFactory(JSBASE):
 
         cfg = j.core.state.config_js
         if "myconfig" not in cfg:
-            die("could not find myconfig in the main configuration file, prob need to upgrade")
+            die("could not find myconfig in the main configuration " + \
+                    "file, prob need to upgrade")
 
         if not cpath and not cfg["myconfig"].get("path", None):
             # means config directory not configured
@@ -496,7 +518,8 @@ class ConfigFactory(JSBASE):
 
             if silent:
                 if not cpath:
-                    msg("did not find config dir in code dirs, will create one in js_shell cfg dir")
+                    msg("did not find config dir in code dirs, " + \
+                            "will create one in js_shell cfg dir")
                     cpath = '%s/myconfig/' % j.dirs.CFGDIR
                     j.sal.fs.createDir(cpath)
                     msg("Config dir in: '%s'" % cpath)
@@ -506,7 +529,8 @@ class ConfigFactory(JSBASE):
             else:
 
                 if cpath:
-                    msg("Found a config repo on: '%s', do you want to use this one?" % cpath)
+                    msg("Found a config repo on: '%s', do you want " + \
+                            "to use this one?" % cpath)
                     if not j.tools.console.askYesNo():
                         giturl = None
                         cpath = ""
@@ -518,14 +542,17 @@ class ConfigFactory(JSBASE):
                 if not cpath:
                     msg("Do you want to use a git based CONFIG dir, y/n?")
                     if j.tools.console.askYesNo():
-                        msg("Specify a url like: 'ssh://git@docs.grid.tf:7022/despiegk/config_despiegk.git'")
+                        msg("Specify a url like: " + \
+                "'ssh://git@docs.grid.tf:7022/despiegk/config_despiegk.git'")
                         giturl = j.tools.console.askString("url")
                         cpath = j.clients.git.pullGitRepo(
                             url=giturl, interactive=True, ssh=True)
 
                 if not cpath:
                     msg(
-                        "will create config dir in '%s/myconfig/', your config will not be centralised! Is this ok?" %
+                        "will create config dir in '%s/myconfig/', " + \
+                                "your config will not be centralised! " + \
+                                "Is this ok?" %
                         j.dirs.CFGDIR)
                     if j.tools.console.askYesNo():
                         cpath = '%s/myconfig/' % j.dirs.CFGDIR
@@ -534,7 +561,8 @@ class ConfigFactory(JSBASE):
                 if cpath:
                     j.core.state.configSetInDict("myconfig", "path", cpath)
                 else:
-                    die("ERROR: please restart config procedure, use git based config or need to store locally.")
+                    die("ERROR: please restart config procedure, " + \
+                            "use git based config or need to store locally.")
                 if giturl:
                     j.core.state.configSetInDict("myconfig", "giturl", giturl)
 
@@ -621,7 +649,8 @@ class ConfigFactory(JSBASE):
 
         # check that the saved data is ok
         assert j.data.serializer.toml.fancydumps(
-            j.tools.myconfig.config.data) == j.data.serializer.toml.fancydumps(data)
+            j.tools.myconfig.config.data) == \
+                    j.data.serializer.toml.fancydumps(data)
 
         self.delete("j.tools.myconfig")  # should remove all
         assert len(j.sal.fs.listFilesInDir(tdir)) == 0
@@ -645,7 +674,8 @@ class ConfigFactory(JSBASE):
         j.tools.myconfig.reset()
         j.tools.myconfig.config._data = {}
         assert j.data.serializer.toml.fancydumps(
-            j.tools.myconfig.config.data) == j.data.serializer.toml.fancydumps(data)
+            j.tools.myconfig.config.data) ==  \
+                    j.data.serializer.toml.fancydumps(data)
 
         # clean the env
         # j.tools.configmanager.reset()
