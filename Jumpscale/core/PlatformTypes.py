@@ -289,7 +289,7 @@ class PlatformType(JSBASE):
     #         try:
     #             virt = wr.OpenKey(
     #                 wr.HKEY_LOCAL_MACHINE,
-    #                 'SOFTWARE\Microsoft\Windows NT\CurrentVersion\Virtualization',
+    #          'SOFTWARE\Microsoft\Windows NT\CurrentVersion\Virtualization',
     #                 0,
     #                 wr.KEY_READ | wr.KEY_WOW64_64KEY)
     #             wr.QueryValueEx(virt, 'Version')
