@@ -21,7 +21,8 @@ class ExecutorFactory(JSBASE):
 
     def local_get(self):
         """
-        @param executor is localhost or $hostname:$port or $ipaddr:$port or $hostname or $ipaddr
+        @param executor is localhost or $hostname:$port or 
+                        $ipaddr:$port or $hostname or $ipaddr
 
         for ssh only root access is allowed !
 
@@ -38,7 +39,8 @@ class ExecutorFactory(JSBASE):
                 sshclient.config.data['addr'],
                 sshclient.config.data['port'],
                 sshclient.config.data['login'])
-            if key not in self._executors or self._executors[key].sshclient is None:
+            if key not in self._executors or \
+                    self._executors[key].sshclient is None:
                 self._executors[key] = ExecutorSSH(sshclient=sshclient)
             return self._executors[key]
 
@@ -64,7 +66,8 @@ class ExecutorFactory(JSBASE):
         """
         returns an asyncssh-based executor where:
         allow_agent: uses the ssh-agent to connect
-        look_for_keys: will iterate over keys loaded on the ssh-agent and try to use them to authenticate
+        look_for_keys: will iterate over keys loaded on the ssh-agent and
+                       try to use them to authenticate
         pushkey: authorizes itself on remote
         pubkey: uses this particular key (path) to connect
         usecache: gets cached executor if available. False to get a new one.
