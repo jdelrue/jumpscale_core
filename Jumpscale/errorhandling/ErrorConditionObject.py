@@ -1,5 +1,6 @@
 try:
     import pygments.lexers
+    import pygments.styles
     from pygments.formatters import get_formatter_by_name
     pygmentsObj = True
 except BaseException:
