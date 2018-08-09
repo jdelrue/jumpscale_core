@@ -1,4 +1,3 @@
-
 try:
     import pygments.lexers
     from pygments.formatters import get_formatter_by_name
@@ -22,7 +21,8 @@ JSBASE = j.application.jsbase_get_class()
 class ErrorConditionObject(BaseException, JSBASE):
     """
     @param type #BUG,INPUT,MONITORING,OPERATIONS,PERFORMANCE,UNKNOWN
-    @param level #1:critical, 2:warning, 3:info see j.enumerators.ErrorConditionLevel
+    @param level #1:critical, 2:warning, 3:info see
+                j.enumerators.ErrorConditionLevel
     """
 
     def __init__(self, ddict={}, msg="", msgpub="", category="", level=1,
@@ -51,7 +51,8 @@ class ErrorConditionObject(BaseException, JSBASE):
                 tb=tb)
 
             # if len(btkis)>1:
-            #     self.backtrace=self.getBacktrace(btkis,filename0,linenr0,func0)
+            #     self.backtrace=self.getBacktrace(btkis,
+            #                   filename0,linenr0,func0)
 
             # is for default case where there is no redis
             self.guid = j.data.idgenerator.generateGUID()
@@ -77,7 +78,8 @@ class ErrorConditionObject(BaseException, JSBASE):
                 self.funclinenr = ""
 
             self.appname = j.application.appname  # name as used by application
-            # if hasattr(j, 'core') and hasattr(j.core, 'grid') and hasattr(j.core.grid, 'aid'):
+            # if hasattr(j, 'core') and hasattr(j.core, 'grid') \
+            #               and hasattr(j.core.grid, 'aid'):
             #     self.aid = j.core.grid.aid
             self.pid = j.application.systempid
             self.jid = 0
@@ -95,7 +97,7 @@ class ErrorConditionObject(BaseException, JSBASE):
             self.tags = ""  # e.g. machine:2323
             self.state = "NEW"  # ["NEW","ALERT","CLOSED"]
 
-            self.lasttime = 0  # last time there was an error condition linked to this alert
+            self.lasttime = 0  # last time an error condition linked to alert
             self.closetime = 0  # alert is closed, no longer active
 
             self.occurrences = 1  # nr of times this error condition happened
@@ -194,7 +196,8 @@ class ErrorConditionObject(BaseException, JSBASE):
             self.backtrace = ""
             self.backtraceDetailed = ""
 
-        # types=["INPUT","MONITORING","OPERATIONS","PERFORMANCE","BUG","UNKNOWN"]
+        # types=["INPUT","MONITORING","OPERATIONS",
+        #                   "PERFORMANCE","BUG","UNKNOWN"]
         # if not self.type in types:
         #     j.events.inputerror_warning("Errorcondition was thrown with wrong type.\n%s"%str(self),"eco.check.type")
 
@@ -206,14 +209,19 @@ class ErrorConditionObject(BaseException, JSBASE):
             if not j.data.types.int.check(param.level):
                 self.level = 1
                 j.events.inputerror_warning(
-                    "Errorcondition was thrown with wrong level, needs to be int.\n%s" % str(
+                    "Errorcondition was thrown with wrong " +
+                    "level, needs to be int.\n%s" % str(
                         self.errormessage),
                     "eco.check.level")
 
         if self.level > 4:
             raise RuntimeError(
-                "Errorcondition was thrown with wrong level, needs to be max 4.")
-            # j.events.inputerror_warning("Errorcondition was thrown with wrong level, needs to be max 4.\n%s"%str(self.errormessage),"eco.check.level")
+                "Errorcondition was thrown with wrong level, " +
+                "needs to be max 4.")
+            # j.events.inputerror_warning("Errorcondition
+            #           was thrown with wrong level, needs
+            #           to be max 4.\n%s"%
+            #           str(self.errormessage),"eco.check.level")
             self.level = 4
 
         res = j.errorhandler._send2Redis(self)
@@ -281,13 +289,14 @@ class ErrorConditionObject(BaseException, JSBASE):
     #         btkis,filename0,linenr0,func0=j.errorhandler.getErrorTraceKIS()
     #     out=""
     #     # out="File:'%s'\nFunction:'%s'\n"%(filename0,func0)
-    #     # out+="Linenr:%s\n*************************************************************\n\n"%linenr0
+    #     # out+="Linenr:%s\n************************************\n\n"%linenr0
     #     # btkis.reverse()
     #     for filename,func,linenr,code,linenrOverall in btkis:
     #         # print "AAAAAA:%s %s"%(func,filename)
     #         # print "BBBBBB:%s"%linenr
     #         # out+="%-15s : %s\n"%(func,filename)
-    #         out+="  File \"%s\" Line %s, in %s\n"%(filename,linenrOverall,func)
+    #         out+="  File \"%s\" Line %s, in %s\n"%
+    #                       (filename,linenrOverall,func)
     #         c=0
     #         code2=""
     #         for line in code.split("\n"):
@@ -314,7 +323,7 @@ class ErrorConditionObject(BaseException, JSBASE):
     #         #     else:
     #         #         out+="%s\n"%line
 
-    #         # out+="-------------------------------------------------------------------\n"
+    #         # out+="------------------------------------------------------\n"
     #     self.backtraceDetailed=out
 
     #     return out
@@ -325,8 +334,10 @@ class ErrorConditionObject(BaseException, JSBASE):
         # for x in traceback.format_stack():
         #     ignore=False
         #     if x.find("IPython") != -1 or x.find("MessageHandler") != -1 \
-        #       or x.find("EventHandler") != -1 or x.find("ErrorconditionObject") != -1 \
-        #       or x.find("traceback.format") != -1 or x.find("ipython console") != -1:
+        #       or x.find("EventHandler") != -1 or
+        #               x.find("ErrorconditionObject") != -1 \
+        #       or x.find("traceback.format") != -1 or
+        #               x.find("ipython console") != -1:
         #        ignore=True
         #     stack = "%s"%(stack+x if not ignore else stack)
         #     if len(stack)>50:
@@ -372,7 +383,8 @@ class ErrorConditionObject(BaseException, JSBASE):
     # def getBacktraceDetailed(self,tracebackObject=""):
     #     """
     #     Get stackframe log
-    #     is a very detailed log with filepaths, code locations & global vars, this output can become quite big
+    #     is a very detailed log with filepaths, code locations &
+    #               global vars, this output can become quite big
     #     """
     #     import inspect
     #     if j.application.skipTraceback:
@@ -417,7 +429,7 @@ class ErrorConditionObject(BaseException, JSBASE):
     #                     if nrlines>100:
     #                         return result
 
-    #                     ##result += "  " + "============ GLOBALS============\n"
+    #                     ##result += "  " + "============ GLOBALS==========\n"
     #             ##for (k,v) in sorted(frame.f_globals.iteritems()):
     #             ##    if self._filterLocals(k,v):
     #             ##        result += "    %s : %s\n" % (str(k), str(v))
