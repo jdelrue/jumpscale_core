@@ -1,7 +1,7 @@
 from jumpscale import j
 
-from .ExecutorSSH import *
-from .ExecutorLocal import *
+from .ExecutorSSH import ExecutorSSH
+from .ExecutorLocal import ExecutorLocal
 from .ExecutorAsyncSSH import ExecutorAsyncSSH
 from .ExecutorSerial import ExecutorSerial
 import threading
