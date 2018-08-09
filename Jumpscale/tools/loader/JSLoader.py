@@ -279,14 +279,8 @@ class JSLoader():
 
         return rc, generationParamsSub
 
-    def _generate(self):
-        """
-        generate's the jumpscale init file: jumpscale
-        as well as the one required for code generation
-
-        to call:
-        ipython -c 'from Jumpscale import j;j.tools.jsloader.generate()'
-
+    def gather_modules(self):
+        """ identifies and gathers information about (only) jumpscale modules
         """
         # outCC = outpath for code completion
         # out = path for core of jumpscale
@@ -294,6 +288,37 @@ class JSLoader():
         # make sure the jumpscale toml file is set / will also link cmd files
         # to system
         j.tools.executorLocal.initEnv()
+
+        moduleList = {}
+
+        for name, path in j.tools.executorLocal.state.configGet(
+                'plugins', {}).items():
+            self.logger.info("find modules in jumpscale for : '%s'" % path)
+            if j.sal.fs.exists(path, followlinks=True):
+                moduleList = self.findModules(path=path, moduleList=moduleList)
+            else:
+                raise RuntimeError("Could not find plugin dir:%s" % path)
+                # try:
+                #     mod_path = importlib.import_module(name).__path__[0]
+                #     moduleList = self.findModules(path=mod_path)
+                # except Exception as e:
+                #     pass
+
+        return moduleList
+
+    def _generate(self):
+        """ generates the jumpscale init file: jumpscale
+            as well as the one required for code generation
+
+            to call:
+            ipython -c 'from Jumpscale import j;j.tools.jsloader.generate()'
+        """
+
+        # gather list of modules (also initialises environment)
+        moduleList = self.gather_modules()
+
+        # outCC = outpath for code completion
+        # out = path for core of jumpscale
 
         outCC = os.path.join(j.dirs.HOSTDIR, "autocomplete", "jumpscale.py")
         outJSON = os.path.join(
@@ -312,21 +337,6 @@ class JSLoader():
 
         jlocations = {}
         jlocations["locations"] = []
-
-        moduleList = {}
-
-        for name, path in j.tools.executorLocal.state.configGet(
-                'plugins', {}).items():
-            self.logger.info("find modules in jumpscale for : '%s'" % path)
-            if j.sal.fs.exists(path, followlinks=True):
-                moduleList = self.findModules(path=path, moduleList=moduleList)
-            else:
-                raise RuntimeError("Could not find plugin dir:%s" % path)
-                # try:
-                #     mod_path = importlib.import_module(name).__path__[0]
-                #     moduleList = self.findModules(path=mod_path)
-                # except Exception as e:
-                #     pass
 
         modlistout_json = json.dumps(moduleList, sort_keys=True, indent=4)
         j.sal.fs.writeFile(outJSON, modlistout_json)
