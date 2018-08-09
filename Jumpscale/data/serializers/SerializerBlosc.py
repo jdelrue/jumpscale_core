@@ -1,5 +1,5 @@
 import blosc
-from .SerializerBase import SerializerBase
+from SerializerBase import SerializerBase
 from jumpscale import j
 
 
