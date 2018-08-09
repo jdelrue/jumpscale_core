@@ -1,7 +1,7 @@
 from Jumpscale import j
 import os
 
-class JSBase:
+class JSBase(object):
 
     def __init__(self):
         self._logger = None
