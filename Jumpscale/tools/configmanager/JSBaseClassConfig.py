@@ -13,7 +13,7 @@ class JSBaseClassConfig(JSBASE):
             parent=None,
             template=None,
             ui=None,
-            interactive=True):
+            interactive=False): # XXX issue #36, set to False (was True)
         if parent is not None:
             self.__jslocation__ = parent.__jslocation__
         JSBASE.__init__(self)
