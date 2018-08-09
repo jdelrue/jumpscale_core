@@ -53,6 +53,8 @@ The stdout and stderr variable contains the full buffer:
 """
 
 JSBASE = j.application.jsbase_get_class()
+
+
 class StdDuplicate(JSBASE):
 
     def __init__(self, original):
@@ -120,7 +122,8 @@ class Process(JSBASE):
 
     def _setException(self, exception):
         self._state = "exception"
-        self._setResult({"status": self._state, "return": -1, "eco": exception})
+        self._setResult(
+            {"status": self._state, "return": -1, "eco": exception})
 
     def startSync(self):
         """
@@ -128,7 +131,8 @@ class Process(JSBASE):
         """
         if self.method is None:
             msg = "Cannot start process, method not set."
-            raise j.exceptions.Input(message=msg, level=1, source="", tags="", msgpub="")
+            raise j.exceptions.Input(
+                message=msg, level=1, source="", tags="", msgpub="")
 
         # saving output
         oldout = sys.stdout
@@ -177,7 +181,8 @@ class Process(JSBASE):
         """
         if self.method is None:
             msg = "Cannot start process, method not set."
-            raise j.exceptions.Input(message=msg, level=1, source="", tags="", msgpub="")
+            raise j.exceptions.Input(
+                message=msg, level=1, source="", tags="", msgpub="")
         self.started_at = datetime.datetime.now()
         rpipe, wpipe = os.pipe()
         self._stdout['read'], self._stdout['write'] = os.pipe()
@@ -301,7 +306,8 @@ class Process(JSBASE):
             pass
 
     def __repr__(self):
-        out = "Process name: %s, status: %s, return: %s" % (self.name, self.state, self.value)
+        out = "Process name: %s, status: %s, return: %s" % (
+            self.name, self.state, self.value)
 
         if self.state != "running":
             out += "\n== Stdout ==\n%s" % self.stdout
@@ -359,7 +365,14 @@ class ProcessManagerFactory(JSBASE):
         """
         return multiprocessing.Queue(size)
 
-    def getProcess(self, method=None, args={}, name="", autoclear=True, autowait=True, timeout=0):
+    def getProcess(
+            self,
+            method=None,
+            args={},
+            name="",
+            autoclear=True,
+            autowait=True,
+            timeout=0):
         if name == "":
             name = "process_%s" % self._lastnr
             self._lastnr += 1
@@ -372,8 +385,9 @@ class ProcessManagerFactory(JSBASE):
 
             if autowait:
                 if not autoclear:
-                    raise j.exceptions.Input(message="cannot wait if autoclear=False",
-                                             level=1, source="", tags="", msgpub="")
+                    raise j.exceptions.Input(
+                        message="cannot wait if autoclear=False", level=1,
+                        source="", tags="", msgpub="")
                 while True:
                     print("too many subprocesses, am waiting")
                     time.sleep(1)
@@ -382,16 +396,30 @@ class ProcessManagerFactory(JSBASE):
                     if len(self.processes) < 100:
                         break
             else:
-                raise j.exceptions.Input(message="cannot launch more than 100 sub processes",
-                                         level=1, source="", tags="", msgpub="")
+                raise j.exceptions.Input(
+                    message="cannot launch more than 100 sub processes",
+                    level=1, source="", tags="", msgpub="")
 
         p = Process(name, method, timeout, args)
         self.processes[p.name] = p
         return p
 
-    def startProcess(self, method, args={}, name="", autoclear=True, autowait=True, sync=False, timeout=0):
-        p = self.getProcess(method=method, args=args, name=name,
-                            autoclear=autoclear, autowait=autowait, timeout=timeout)
+    def startProcess(
+            self,
+            method,
+            args={},
+            name="",
+            autoclear=True,
+            autowait=True,
+            sync=False,
+            timeout=0):
+        p = self.getProcess(
+            method=method,
+            args=args,
+            name=name,
+            autoclear=autoclear,
+            autowait=autowait,
+            timeout=timeout)
 
         if sync:
             p.startSync()
@@ -423,14 +451,16 @@ class ProcessManagerFactory(JSBASE):
                 # check if the process has a specific time out.
                 if p.timeout:
                     if time_diff.total_seconds() > p.timeout:
-                        self.logger.warning("closing process %s, process timeout exceeded")
+                        self.logger.warning(
+                            "closing process %s, process timeout exceeded")
                         p.close()
                         self.processes.pop(p.name)
                         cleared += 1
                 else:
                     # check if the process exceeded the default timeout.
                     if time_diff.total_seconds() > self.timeout:
-                        self.logger.warning("closing process %s, default timeout exceeded")
+                        self.logger.warning(
+                            "closing process %s, default timeout exceeded")
                         p.close()
                         self.processes.pop(p.name)
                         cleared += 1
@@ -652,4 +682,6 @@ class ProcessManagerFactory(JSBASE):
         diff = time.time() - start
         pps = nr / diff
 
-        print("Number of processes per seconds: %s (%d process in %d seconds)" % (pps, nr, diff))
+        print(
+            "Number of processes per seconds: %s (%d process in %d seconds)" %
+            (pps, nr, diff))
