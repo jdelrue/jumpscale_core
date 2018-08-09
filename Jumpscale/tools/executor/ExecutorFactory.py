@@ -21,7 +21,7 @@ class ExecutorFactory(JSBASE):
 
     def local_get(self):
         """
-        @param executor is localhost or $hostname:$port or 
+        @param executor is localhost or $hostname:$port or
                         $ipaddr:$port or $hostname or $ipaddr
 
         for ssh only root access is allowed !
