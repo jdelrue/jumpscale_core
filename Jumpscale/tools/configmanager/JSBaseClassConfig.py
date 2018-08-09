@@ -6,7 +6,14 @@ JSBASE = j.application.jsbase_get_class()
 
 class JSBaseClassConfig(JSBASE):
 
-    def __init__(self, instance="main", data={}, parent=None, template=None, ui=None, interactive=True):
+    def __init__(
+            self,
+            instance="main",
+            data={},
+            parent=None,
+            template=None,
+            ui=None,
+            interactive=True):
         if parent is not None:
             self.__jslocation__ = parent.__jslocation__
         JSBASE.__init__(self)
@@ -38,7 +45,11 @@ class JSBaseClassConfig(JSBASE):
     @property
     def logger(self):
         if self._logger is None:
-            self._logger = j.logger.get("%s.%s" % (self.__jslocation__, self._instance), force=self._logger_force)
+            self._logger = j.logger.get(
+                "%s.%s" %
+                (self.__jslocation__,
+                 self._instance),
+                force=self._logger_force)
         return self._logger
 
     def reset(self):
