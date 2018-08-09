@@ -21,8 +21,9 @@ class Cache(JSBASE):
         @param id is a unique id for the cache
         db = when none then will be in memory
         """
-        if not id in self._cache:
-            self._cache[id] = CacheCategory(id=id, expiration=expiration, reset=reset)
+        if id not in self._cache:
+            self._cache[id] = CacheCategory(
+                id=id, expiration=expiration, reset=reset)
         return self._cache[id]
 
     def resetAll(self):
@@ -30,7 +31,7 @@ class Cache(JSBASE):
             cache.reset()
 
     def reset(self, id=None):
-        if id == None:
+        if id is None:
             self.resetAll()
         else:
             if id in self._cache:
@@ -43,7 +44,7 @@ class Cache(JSBASE):
         def testAll(c):
             c.set("something", "OK")
             assert "something" in c.list()
-            assert c.exists("something") == True
+            assert c.exists("something")
             c.reset()
             assert c.exists("something") == False
             c.set("something", "OK")
@@ -71,7 +72,7 @@ class Cache(JSBASE):
             try:
                 c.get("somethingElse")
             except Exception as e:
-                if not "Cannot get 'somethingElse' from cache" in str(e):
+                if "Cannot get 'somethingElse' from cache" not in str(e):
                     raise RuntimeError("error in test. non expected output")
 
             self.logger.debug("expiration test")
@@ -84,7 +85,11 @@ class Cache(JSBASE):
             assert c.get("somethingElse", return3,
                          expire=1) == 3  # now needs to be 3
 
-            assert c.get("somethingElse", return2, expire=100, refresh=True) == 2
+            assert c.get(
+                "somethingElse",
+                return2,
+                expire=100,
+                refresh=True) == 2
             assert c.exists("somethingElse")
             time.sleep(2)
             assert c.exists("somethingElse")
@@ -127,12 +132,12 @@ class CacheCategory(JSBASE):
         self.db.delete(self._key_get(key))
 
     def set(self, key, value, expire=None):
-        if expire == None:
+        if expire is None:
             expire = self.expiration
         self.db.set(self._key_get(key), pickle.dumps(value), ex=expire)
 
     def exists(self, key):
-        return self.db.get(self._key_get(key)) != None
+        return self.db.get(self._key_get(key)) is not None
 
     def get(self, key, method=None, expire=None, refresh=False, **kwargs):
         """
@@ -140,9 +145,9 @@ class CacheCategory(JSBASE):
         """
         # check if key exists then return (only when no refresh)
         res = self.db.get(self._key_get(key))
-        if res != None:
+        if res is not None:
             res = pickle.loads(res)
-        if expire == None:
+        if expire is None:
             expire = self.expiration
         # print("res:%s"%res)
         if refresh or res is None:
@@ -170,7 +175,8 @@ class CacheCategory(JSBASE):
             self.delete(item)
 
     def list(self):
-        return [item.decode().split(":")[-1] for item in self.db.keys("cache:%s:*" % self.id)]
+        return [item.decode().split(":")[-1]
+                for item in self.db.keys("cache:%s:*" % self.id)]
 
     def __str__(self):
         res = {}
