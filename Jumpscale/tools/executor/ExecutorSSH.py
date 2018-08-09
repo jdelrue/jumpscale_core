@@ -98,7 +98,8 @@ class ExecutorSSH(ExecutorBase):
             checkok=None,
             sudo=False):
         """
-        @param remote can be ip addr or hostname of remote, if given will execute cmds there
+        @param remote can be ip addr or hostname of remote,
+                    if given will execute cmds there
         """
 
         if "sudo -H -SE" in content:
