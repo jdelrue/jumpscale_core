@@ -191,10 +191,10 @@ class PlatformType(JSBASE):
             if rc == 0:
                 import re
                 try:
-                    self._osname = re.findall(
-                        "DISTRIB_ID=(\w+)", lsbcontent)[0].lower()
-                    self._osversion = re.findall(
-                        "DISTRIB_RELEASE=([\w.]+)", lsbcontent)[0].lower()
+                    expr = re.findall("DISTRIB_ID=(\w+)", lsbcontent)
+                    self._osname = expr[0].lower()
+                    expr = re.findall("DISTRIB_RELEASE=([\w.]+)", lsbcontent)
+                    self._osversion = expr[0].lower()
                 except IndexError as e:
                     self._osversion = self.uname
             else:
