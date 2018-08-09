@@ -91,7 +91,8 @@ class PlatformTypes(JSBASE):
 
     def get(self, executor):
         """
-        @param executor is an executor object, None or $hostname:$port or $ipaddr:$port or $hostname or $ipaddr
+        @param executor is an executor object, None or $hostname:$port or 
+                    $ipaddr:$port or $hostname or $ipaddr
         """
         key = executor.id
         if key not in self._cache:
@@ -190,8 +191,8 @@ class PlatformType(JSBASE):
             raise RuntimeError("need to fix, osversion should not be none")
             # print("####OSVERSION")
             # TELL KRISTOF YOU GOT HERE
-            rc, lsbcontent, err = self.executor.execute(
-                "cat /etc/*-release", replaceArgs=False, showout=False, die=False)
+            rc, lsbcontent, err = self.executor.execute("cat /etc/*-release",
+                            replaceArgs=False, showout=False, die=False)
             if rc == 0:
                 import re
                 try:
