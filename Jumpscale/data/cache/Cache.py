@@ -178,13 +178,16 @@ class CacheCategory(JSBASE):
         return [item.decode().split(":")[-1]
                 for item in self.db.keys("cache:%s:*" % self.id)]
 
-    def __str__(self):
+    # XXX issue #35 - commenting these out for now as they can't work.
+    # j.data does not have a serializer instance
+    def __BUG35str__(self):
         res = {}
         for key in self.db.keys():
             val = self.db.get(key)
             res[key] = val
         # out = j.data.serializer.yaml.dumps(res, default_flow_style=False)
+        print (dir(j.data))
         out = j.data.serializer.yaml.dumps(res)
         return out
 
-    __repr__ = __str__
+    __BUG35repr__ = __str__
