@@ -567,8 +567,8 @@ class JSLoader():
                 "__init__.py"),
             contents="")
 
-    def generate(self, autocompletepath=None):
-        """
+    def prepare_config(self, autocompletepath=None):
+        """ prepares the plugin configuration
         """
 
         if j.dirs.HOSTDIR == "":
@@ -600,14 +600,16 @@ class JSLoader():
                                      rsyncdelete=True,
                                      createdir=True)
 
-        j.sal.fs.touch(
-            os.path.join(
-                j.dirs.HOSTDIR,
-                'autocomplete',
+        j.sal.fs.touch(os.path.join(j.dirs.HOSTDIR, 'autocomplete',
                 "__init__.py"))
 
         # DO NOT AUTOPIP the deps are now installed while installing the libs
         j.core.state.configSetInDictBool("system", "autopip", False)
         # j.application.config["system"]["debug"] = True
 
+    def generate(self, autocompletepath=None):
+        """
+        """
+
+        self.prepare_config(autocompletepath)
         self._generate()
