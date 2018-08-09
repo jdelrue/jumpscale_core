@@ -20,7 +20,8 @@ class ExecutorLocal(ExecutorBase):
         self._id = 'localhost'
         self._logger = self.logger
 
-        # self.cache = j.data.cache.get(id="executor:%s" % self.id,expiration=3600)
+        # self.cache = j.data.cache.get(id="executor:%s" % 
+        #               self.id,expiration=3600)
 
     def exists(self, path):
         return j.sal.fs.exists(path)
@@ -62,10 +63,12 @@ class ExecutorLocal(ExecutorBase):
             res["cfg_me"] = load("me")
             res["env"] = getenv()
 
-            # res["uname"] = subprocess.Popen("uname -mnprs", stdout=subprocess.PIPE,
-            #                                 shell=True).stdout.read().decode().strip()
-            # res["hostname"] = subprocess.Popen("hostname", stdout=subprocess.PIPE,
-            #                                    shell=True).stdout.read().decode().strip()
+            # res["uname"] = subprocess.Popen("uname -mnprs", 
+            #               stdout=subprocess.PIPE,
+            #               shell=True).stdout.read().decode().strip()
+            # res["hostname"] = subprocess.Popen("hostname", 
+            #               stdout=subprocess.PIPE,
+            #               shell=True).stdout.read().decode().strip()
             res["uname"] = None
             res["hostname"] = socket.gethostname()
 
