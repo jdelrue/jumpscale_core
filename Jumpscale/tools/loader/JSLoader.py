@@ -43,7 +43,7 @@ GEN = """
 {{classname}}=JSBase
 {{/locationsubserror}}
 
-class {{jname}}:
+class {{jname}}(object):
 
     def __init__(self):
         {{#locationsubs}}
@@ -84,7 +84,7 @@ def {{classname}}():
 
 {{/locationsubs}}
 
-class {{jname}}:
+class {{jname}}(object):
 
     {{#locationsubs}}
     @lazyprop
