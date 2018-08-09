@@ -16,7 +16,7 @@ def unpack_long(value):
     return struct.unpack("<l", value)[0]
 
 
-class Task(object, JSBASE):
+class Task(JSBASE):
     """
     Tarantool queue task wrapper.
 
