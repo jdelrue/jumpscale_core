@@ -1,6 +1,6 @@
 import os, shutil
 from random import randint
-from testcases_base import TestcasesBase
+from .testcases_base import TestcasesBase
 from jumpscale import j
 from parameterized import parameterized
 

@@ -1,4 +1,4 @@
-from testcases_base import TestcasesBase
+from .testcases_base import TestcasesBase
 import os, random, pytoml, unittest, uuid
 from jumpscale import j
 

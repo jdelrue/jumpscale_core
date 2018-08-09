@@ -1,6 +1,6 @@
 from jumpscale import j
 import os, random, unittest
-from testcases_base import TestcasesBase
+from .testcases_base import TestcasesBase
 
 class TestBASH(TestcasesBase):
 

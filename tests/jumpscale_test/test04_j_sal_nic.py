@@ -1,7 +1,7 @@
 import os
 import unittest
 import random
-from testcases_base import TestcasesBase
+from .testcases_base import TestcasesBase
 from jumpscale import j
 from JumpscaleLib.sal.nic.UnixNetworkManager import NetworkingError
 

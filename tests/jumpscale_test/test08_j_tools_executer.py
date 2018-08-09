@@ -1,5 +1,5 @@
 import os, unittest, random, platform, sys
-from testcases_base import TestcasesBase
+from .testcases_base import TestcasesBase
 from jumpscale import j
 from parameterized import parameterized
 
