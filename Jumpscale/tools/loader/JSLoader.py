@@ -306,6 +306,19 @@ class JSLoader():
 
         return moduleList
 
+    def _dynamic_generate(self):
+        """ dynamically generates a jumpscale instance
+        """
+
+        # gather list of modules (also initialises environment)
+        moduleList = self.gather_modules()
+
+        class Jumpscale(object):
+            pass
+        dj = Jumpscale()
+
+        return dj
+
     def _generate(self):
         """ generates the jumpscale init file: jumpscale
             as well as the one required for code generation
@@ -613,3 +626,10 @@ class JSLoader():
 
         self.prepare_config(autocompletepath)
         self._generate()
+
+    def dynamic_generate(self, autocompletepath=None):
+        """
+        """
+
+        self.prepare_config(autocompletepath)
+        return self._dynamic_generate()
