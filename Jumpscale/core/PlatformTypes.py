@@ -94,7 +94,7 @@ class PlatformTypes(JSBASE):
         @param executor is an executor object, None or $hostname:$port or $ipaddr:$port or $hostname or $ipaddr
         """
         key = executor.id
-        if not key in self._cache:
+        if key not in self._cache:
             self._cache[key] = PlatformType(executor=executor)
         return self._cache[key]
 
@@ -131,7 +131,7 @@ class PlatformType(JSBASE):
     @property
     def uname(self):
         if self._uname is None:
-            if  self.executor.type=="local":
+            if self.executor.type == "local":
                 unn = os.uname()
                 self._hostname = unn.nodename
                 distro_info = platform.linux_distribution()
@@ -149,7 +149,8 @@ class PlatformType(JSBASE):
             else:
                 _uname = self.executor.stateOnSystem["uname"]
                 if _uname.find("warning: setlocale") != -1:
-                    raise RuntimeError("run js_shell 'j.tools.bash.local.locale_check()'")
+                    raise RuntimeError(
+                        "run js_shell 'j.tools.bash.local.locale_check()'")
                 _uname = _uname.split("\n")[0]
                 _tmp, self._hostname, _osversion, self._cpu, self._platform = _uname.split(
                     " ")
@@ -191,9 +192,9 @@ class PlatformType(JSBASE):
             if rc == 0:
                 import re
                 try:
-                    expr = re.findall("DISTRIB_ID=(\w+)", lsbcontent)
+                    expr = re.findall(r"DISTRIB_ID=(\w+)", lsbcontent)
                     self._osname = expr[0].lower()
-                    expr = re.findall("DISTRIB_RELEASE=([\w.]+)", lsbcontent)
+                    expr = re.findall(r"DISTRIB_RELEASE=([\w.]+)", lsbcontent)
                     self._osversion = expr[0].lower()
                 except IndexError as e:
                     self._osversion = self.uname

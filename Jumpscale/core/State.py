@@ -57,7 +57,8 @@ class State(JSBASE):
             self.executor.reset()
 
         if self.executor.stateOnSystem is None:
-            raise RuntimeError("cannot load state because state on system in executor == None")
+            raise RuntimeError(
+                "cannot load state because state on system in executor == None")
 
         self.configJSPath = self.executor.stateOnSystem["path_jscfg"] + "/jumpscale.toml"
         self.configStatePath = self.executor.stateOnSystem["path_jscfg"] + "/state.toml"
@@ -89,7 +90,12 @@ class State(JSBASE):
         :rtype: bool
         """
 
-        return self._set(key=key, val=val, save=save, config=self._configState, path=self.configStatePath)
+        return self._set(
+            key=key,
+            val=val,
+            save=save,
+            config=self._configState,
+            path=self.configStatePath)
 
     def stateGet(self, key, defval=None, set=False):
         """gets a section from state.toml
@@ -104,7 +110,12 @@ class State(JSBASE):
         :rtype: dict
         """
 
-        return self._get(key=key, defval=defval, set=set, config=self._configState, path=self.configStatePath)
+        return self._get(
+            key=key,
+            defval=defval,
+            set=set,
+            config=self._configState,
+            path=self.configStatePath)
 
     def configGet(self, key, defval=None, set=False):
         """gets a section from jumpscale.toml
@@ -118,7 +129,12 @@ class State(JSBASE):
         :return: the section data
         :rtype: dict
         """
-        return self._get(key=key, defval=defval, set=set, config=self._configJS, path=self.configJSPath)
+        return self._get(
+            key=key,
+            defval=defval,
+            set=set,
+            config=self._configJS,
+            path=self.configJSPath)
 
     def configSet(self, key, val, save=True):
         """Set a section in Jumpscale's jumpscale.toml
@@ -132,7 +148,12 @@ class State(JSBASE):
         :return: true if new value is set, false if already exists
         :rtype: bool
         """
-        return self._set(key=key, val=val, save=save, config=self._configJS, path=self.configJSPath)
+        return self._set(
+            key=key,
+            val=val,
+            save=save,
+            config=self._configJS,
+            path=self.configJSPath)
 
     @property
     def mascot(self):
@@ -186,7 +207,12 @@ class State(JSBASE):
         :type dval: str
         """
 
-        self._setInDict(key=key, dkey=dkey, dval=dval, config=self._configJS, path=self.configJSPath)
+        self._setInDict(
+            key=key,
+            dkey=dkey,
+            dval=dval,
+            config=self._configJS,
+            path=self.configJSPath)
 
     def stateSetInDict(self, key, dkey, dval):
         """Set a value to a key in a section in the state file
@@ -201,7 +227,12 @@ class State(JSBASE):
         :param dval: value to set
         :type dval: str
         """
-        self._setInDict(key=key, dkey=dkey, dval=dval, config=self._configState, path=self.configStatePath)
+        self._setInDict(
+            key=key,
+            dkey=dkey,
+            dval=dval,
+            config=self._configState,
+            path=self.configStatePath)
 
     def _setInDict(self, key, dkey, dval, config, path=""):
         """
@@ -240,7 +271,12 @@ class State(JSBASE):
         :rtype: str
         """
 
-        return self._getFromDict(key=key, dkey=dkey, default=default, config=self._configJS, path=self.configJSPath)
+        return self._getFromDict(
+            key=key,
+            dkey=dkey,
+            default=default,
+            config=self._configJS,
+            path=self.configJSPath)
 
     def stateGetFromDict(self, key, dkey, default=None):
         """Get value of key in a section in the state file
@@ -257,7 +293,12 @@ class State(JSBASE):
         :return: key value
         :rtype: str
         """
-        return self._getFromDict(key=key, dkey=dkey, default=default, config=self._configState, path=self.configStatePath)
+        return self._getFromDict(
+            key=key,
+            dkey=dkey,
+            default=default,
+            config=self._configState,
+            path=self.configStatePath)
 
     def _getFromDict(self, key, dkey, default=None, config=None, path=""):
         """
@@ -270,7 +311,8 @@ class State(JSBASE):
             if default is not None:
                 return default
             raise RuntimeError(
-                "Cannot find dkey:%s in state config for dict '%s'" % (dkey, key))
+                "Cannot find dkey:%s in state config for dict '%s'" %
+                (dkey, key))
 
         return config[key][dkey]
 
@@ -289,7 +331,11 @@ class State(JSBASE):
         :return: key value
         :rtype: str
         """
-        return self._getFromDictBool(key=key, dkey=dkey, default=default, config=self._configJS)
+        return self._getFromDictBool(
+            key=key,
+            dkey=dkey,
+            default=default,
+            config=self._configJS)
 
     def stateGetFromDictBool(self, key, dkey, default=None):
         """Get boolean value of key if value is in [1, 0, 'yes', 'no', 'y', 'n']
@@ -306,7 +352,11 @@ class State(JSBASE):
         :return: key value
         :rtype: str
         """
-        self._getFromDictBool(key=key, dkey=dkey, default=default, config=self._configState)
+        self._getFromDictBool(
+            key=key,
+            dkey=dkey,
+            default=default,
+            config=self._configState)
 
     def _getFromDictBool(self, key, dkey, default=None, config=None, path=""):
         if key not in config:
@@ -316,10 +366,20 @@ class State(JSBASE):
             if default is not None:
                 return default
             raise RuntimeError(
-                "Cannot find dkey:%s in state config for dict '%s'" % (dkey, key))
+                "Cannot find dkey:%s in state config for dict '%s'" %
+                (dkey, key))
 
         val = config[key][dkey]
-        if val in [1, True] or (isinstance(val, str) and val.strip().lower() in ["true", "1", "yes", "y"]):
+        if val in [
+                1,
+                True] or (
+                isinstance(
+                val,
+                str) and val.strip().lower() in [
+                    "true",
+                    "1",
+                    "yes",
+                "y"]):
             return True
         else:
             return False
@@ -337,7 +397,12 @@ class State(JSBASE):
         :param dval: value to set
         :type dval: str
         """
-        self._setInDictBool(key=key, dkey=dkey, dval=dval, config=self._configJS, path=self.configJSPath)
+        self._setInDictBool(
+            key=key,
+            dkey=dkey,
+            dval=dval,
+            config=self._configJS,
+            path=self.configJSPath)
 
     def stateSetInDictBool(self, key, dkey, dval):
         """Set a value to a key in a section in the state file, value in [1, 0, 'yes', 'no', 'y', 'n']
@@ -352,13 +417,24 @@ class State(JSBASE):
         :param dval: value to set
         :type dval: str
         """
-        self._setInDictBool(key=key, dkey=dkey, dval=dval, config=self._configState, path=self.configStatePath)
+        self._setInDictBool(
+            key=key,
+            dkey=dkey,
+            dval=dval,
+            config=self._configState,
+            path=self.configStatePath)
 
     def _setInDictBool(self, key, dkey, dval, config, path):
         """
         will check that the val is a dict, if not set it and put key & val in
         """
-        if dval in [1, True] or str(dval).strip().lower() in ["true", "1", "yes", "y"]:
+        if dval in [
+                1,
+                True] or str(dval).strip().lower() in [
+                "true",
+                "1",
+                "yes",
+                "y"]:
             dval = "1"
         else:
             dval = "0"

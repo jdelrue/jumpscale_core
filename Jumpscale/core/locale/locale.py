@@ -1,11 +1,13 @@
 import os
 import re
 from jumpscale import j
-KEYP = re.compile("(\w+(\.\w+)*)\s*=\s*(.*)", re.DOTALL)
+KEYP = re.compile(r"(\w+(\.\w+)*)\s*=\s*(.*)", re.DOTALL)
 
 DEFAULTLOCALE = 'en'
 
 JSBASE = j.application.jsbase_get_class()
+
+
 class Domain(JSBASE):
 
     def __init__(self, key):
@@ -94,4 +96,5 @@ class Localizer(JSBASE):
             return self.__domains[DEFAULTLOCALE]
         else:
             raise j.exceptions.RuntimeError(
-                "Can't find locale '%s' or the default '%s' locale" % (locale, DEFAULTLOCALE))
+                "Can't find locale '%s' or the default '%s' locale" %
+                (locale, DEFAULTLOCALE))
