@@ -170,7 +170,7 @@ class Task(JSBASE):
         )
 
 
-class Tube(object, JSBASE):
+class Tube(JSBASE):
     """
     Tarantol queue tube wrapper. Pinned to space and tube, but unlike Queue
     it has predefined delay, ttl, ttr, and pri.
@@ -322,7 +322,7 @@ class Tube(object, JSBASE):
         return self.queue.statistics(tube=self.opt['tube'])
 
 
-class Queue(object, JSBASE):
+class Queue(JSBASE):
     """
     Tarantool queue wrapper. Surely pinned to space. May create tubes.
     By default it uses msgpack for serialization, but you may redefine
