@@ -7,6 +7,7 @@ from collections import namedtuple
 import psutil
 from .JSBase import JSBase
 
+
 class Application:
 
     def __init__(self):
@@ -52,8 +53,9 @@ class Application:
 
     @property
     def debug(self):
-        if self._debug == None:
-            self._debug = j.core.state.configGetFromDictBool("system","debug",False)
+        if self._debug is None:
+            self._debug = j.core.state.configGetFromDictBool(
+                "system", "debug", False)
         return self._debug
 
     @debug.setter
@@ -68,7 +70,6 @@ class Application:
         else:
             raise j.exceptions.RuntimeError(
                 "Can't break into jsshell in production mode.")
-
 
     def init(self):
         pass
@@ -100,7 +101,6 @@ class Application:
         atexit.register(self._exithandler)
         # Set state
         self.state = "RUNNING"
-
 
         self.logger.info("***Application started***: %s" % self.appname)
 
@@ -149,8 +149,6 @@ class Application:
         import sys
         if not self._calledexit:
             self.stop(stop=False)
-
-
 
     # def getCPUUsage(self):
     #     """

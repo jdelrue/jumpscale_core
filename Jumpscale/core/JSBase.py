@@ -1,6 +1,7 @@
 from Jumpscale import j
 import os
 
+
 class JSBase(object):
 
     def __init__(self):
@@ -34,15 +35,20 @@ class JSBase(object):
         self._logger = None
         self.logger.level = 20
 
-
-
     @property
     def cache(self):
         if self._cache is None:
             id = self.__name__
-            for item in ["instance", "_instance", "_id", "id", "name", "_name"]:
+            for item in [
+                "instance",
+                "_instance",
+                "_id",
+                "id",
+                "name",
+                    "_name"]:
                 if item in self.__dict__ and self.__dict__[item]:
                     id += "_" + str(self.__dict__[item])
                     break
-            self._cache = j.data.cache.get(id, expiration=self._cache_expiration)
+            self._cache = j.data.cache.get(
+                id, expiration=self._cache_expiration)
         return self._cache

@@ -18,6 +18,8 @@ from Jumpscale import j
 #     return path.decode(sys.getfilesystemencoding())
 
 JSBASE = j.application.jsbase_get_class()
+
+
 class Dirs(JSBASE):
     """Utility class to configure and store all relevant directory paths"""
 
@@ -32,8 +34,8 @@ class Dirs(JSBASE):
             self.__dict__[key] = val
             os.environ[key] = val
 
-        self.TEMPLATEDIR =self.VARDIR+"/templates/"
-        self.JSAPPSDIR =self.BASEDIRJS+"/apps/"
+        self.TEMPLATEDIR = self.VARDIR + "/templates/"
+        self.JSAPPSDIR = self.BASEDIRJS + "/apps/"
 
     def replace_txt_dir_vars(self, txt, additional_args={}):
         """
