@@ -130,37 +130,40 @@ class PlatformType(JSBASE):
 
     @property
     def uname(self):
-        if self._uname is None:
-            if self.executor.type == "local":
-                unn = os.uname()
-                self._hostname = unn.nodename
-                distro_info = platform.linux_distribution()
-                if 'Ubuntu' in distro_info:
-                    self._osversion = distro_info[1]
-                elif 'ubuntu' in j.tools.executorLocal.stateOnSystem['os_type'].lower():
-                    version = self.executor.execute('lsb_release -r')[1]
-                    # version should be something like: 'Release:\t16.04\n
-                    self._osversion = version.split(':')[-1].strip()
-                else:
-                    self._osversion = unn.release
-                self._cpu = unn.machine
-                self._platform = unn.sysname
-
+        if self._uname is not None:
+            return self._uname
+        if self.executor.type == "local":
+            unn = os.uname()
+            self._hostname = unn.nodename
+            distro_info = platform.linux_distribution()
+            os_type = j.tools.executorLocal.stateOnSystem['os_type'].lower()
+            if 'Ubuntu' in distro_info:
+                self._osversion = distro_info[1]
+            elif 'ubuntu' in os_type:
+                version = self.executor.execute('lsb_release -r')[1]
+                # version should be something like: 'Release:\t16.04\n
+                self._osversion = version.split(':')[-1].strip()
             else:
-                _uname = self.executor.stateOnSystem["uname"]
-                if _uname.find("warning: setlocale") != -1:
-                    raise RuntimeError(
-                        "run js_shell 'j.tools.bash.local.locale_check()'")
-                _uname = _uname.split("\n")[0]
-                _tmp, self._hostname, _osversion, self._cpu, self._platform = _uname.split(
-                    " ")
-                if self.osname == "darwin":
-                    self._osversion = _osversion
-                else:
-                    # is for ubuntu
-                    if "version_id" in self.executor.stateOnSystem:
-                        self._osversion = self.executor.stateOnSystem["version_id"]
-                self._uname = _uname
+                self._osversion = unn.release
+            self._cpu = unn.machine
+            self._platform = unn.sysname
+
+        else:
+            uname = self.executor.stateOnSystem["uname"]
+            if uname.find("warning: setlocale") != -1:
+                raise RuntimeError(
+                    "run js_shell 'j.tools.bash.local.locale_check()'")
+            uname = uname.split("\n")[0]
+            uname = uname.split(" ")
+            _tmp, self._hostname, _osversion, self._cpu, self._platform = uname
+            if self.osname == "darwin":
+                self._osversion = _osversion
+            else:
+                # is for ubuntu
+                if "version_id" in self.executor.stateOnSystem:
+                    expr = self.executor.stateOnSystem["version_id"]
+                    self._osversion = expr
+            self._uname = uname
         return self._uname
 
     @property
@@ -211,7 +214,8 @@ class PlatformType(JSBASE):
     def checkMatch(self, match):
         """
         match is in form of linux64,darwin
-        if any of the items e.g. darwin is in getMyRelevantPlatforms then return True
+        if any of the items e.g. darwin is in getMyRelevantPlatforms
+        then return True
         """
         tocheck = self.platformtypes
         matches = [item.strip().lower()
@@ -236,8 +240,8 @@ class PlatformType(JSBASE):
     def dieIfNotPlatform(self, platform):
         if not self.has_parent(platform):
             raise j.exceptions.RuntimeError(
-                "Can not continue, supported platform is %s, this platform is %s" %
-                (platform, self.myplatform))
+                "Can not continue, supported platform is %s, " + \
+                "this platform is %s" % (platform, self.myplatform))
 
     @property
     def isUbuntu(self):
