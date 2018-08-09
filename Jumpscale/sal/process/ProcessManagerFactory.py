@@ -53,7 +53,7 @@ The stdout and stderr variable contains the full buffer:
 """
 
 JSBASE = j.application.jsbase_get_class()
-class StdDuplicate(object, JSBASE):
+class StdDuplicate(JSBASE):
 
     def __init__(self, original):
         JSBASE.__init__(self)
