@@ -231,3 +231,8 @@ else:
     j.exceptions = JSExceptions
 
     j.logger.init()  # will reconfigure the logging to use the config file
+
+    from .tools.configmanager.ConfigManager import ConfigFactory
+
+    j.tools.configmanager = ConfigFactory()  # needed in platformtypes
+
