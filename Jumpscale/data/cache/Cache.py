@@ -190,4 +190,4 @@ class CacheCategory(JSBASE):
         out = j.data.serializer.yaml.dumps(res)
         return out
 
-    __BUG35repr__ = __str__
+    __BUG35repr__ = __BUG35str__
