@@ -11,6 +11,14 @@ class JSBase(object):
         self._logger_force = False
 
     @property
+    def j(self):
+        return global_j
+
+    @j.setter
+    def j(self, j_global_override):
+        global_j = j_global_override
+
+    @property
     def __name__(self):
         self.___name__ = str(self.__class__).split(".")[-1].split("'")[0]
         return self.___name__
@@ -52,3 +60,7 @@ class JSBase(object):
             self._cache = j.data.cache.get(
                 id, expiration=self._cache_expiration)
         return self._cache
+
+# don't touch this directly - go through any instance of JSBase, assign self.j
+# and it will get globally set.
+global_j = JSBase()
