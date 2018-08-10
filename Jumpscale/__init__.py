@@ -238,9 +238,6 @@ else:
     from .clients.git.GitFactory import GitFactory
     j.clients.git = GitFactory()
 
-    from .clients.sshkey.SSHKeys import SSHKeys
-    j.clients.sshkey = SSHKeys()
-
     from .tools.formbuilder.FormBuilder import FormBuilderFactory
     j.tools.formbuilder = FormBuilderFactory()  # needed in ConfigManager
 
@@ -249,4 +246,7 @@ else:
 
     from .tools.configmanager.ConfigManager import ConfigFactory
     j.tools.configmanager = ConfigFactory()  # needed in platformtypes
+
+    from .clients.sshkey.SSHKeys import SSHKeys
+    j.clients.sshkey = SSHKeys()
 
