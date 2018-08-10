@@ -1,4 +1,4 @@
-from jumpscale import j
+from Jumpscale import j # J due to recursive import issue with ConfigFactory
 from nacl.public import PrivateKey, SealedBox
 import nacl.signing
 import nacl.secret
