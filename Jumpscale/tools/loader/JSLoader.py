@@ -420,6 +420,7 @@ class JSLoader():
                 {'from': 'errorhandler', 'to': 'core.errorhandler'},
                 {'from': 'exceptions', 'to': 'core.errorhandler.exceptions'},
                 {'from': 'events', 'to': 'core.events'},
+                {'from': 'clients.zrobot', 'to': 'sal_zos.zrobot'},
                 {'from': 'logger', 'to': 'core.logger'},
                 {'from': 'core.state', 'to': 'tools.executorLocal.state'},
                 #{'from': 'tools.jsloader', 'to': 'tools.loader.jsloader'}
