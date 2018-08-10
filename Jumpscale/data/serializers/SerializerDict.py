@@ -1,4 +1,4 @@
-from jumpscale import j
+from Jumpscale import j # J due to recursive import issue in ConfigManager
 import copy
 
 JSBASE = j.application.jsbase_get_class()
