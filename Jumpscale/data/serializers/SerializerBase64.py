@@ -1,4 +1,4 @@
-from jumpscale import j
+from Jumpscale import j # J due to recursive import error due to ConfigManager
 import base64
 from .SerializerBase import SerializerBase
 
