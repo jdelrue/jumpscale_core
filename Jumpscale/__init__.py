@@ -250,3 +250,6 @@ else:
     from .clients.sshkey.SSHKeys import SSHKeys
     j.clients.sshkey = SSHKeys()
 
+    from .data.nacl.NACLFactory import NACLFactory
+    j.data.nacl = NACLFactory()
+
