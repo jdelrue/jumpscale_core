@@ -104,7 +104,7 @@ GEN2 = r"""
 {{/locationsubserror}}
 
 {{#locationsubs}}
-def {{classname}}():
+def {{classprefix}}{{classname}}():
     from {{importlocation}} \
                             import {{classname}} \
                             as _{{classname}}
@@ -117,7 +117,7 @@ class {{jname}}(object):
     {{#locationsubs}}
     @lazyprop
     def {{name}}(self):
-        return {{classname}}()
+        return {{classprefix}}{{classname}}()
     {{/locationsubs}}
 
 """
@@ -312,6 +312,10 @@ class JSLoader():
         importlocation = removeDirPart(
             classfile)[:-3].replace("//", "/").replace("/", ".")
         generationParamsSub["importlocation"] = importlocation
+        prefix = importlocation.split('.')[:-1]
+        prefix = map(lambda x: x[0].upper()+x[1:], prefix)
+        prefix = ''.join(prefix)
+        generationParamsSub["classprefix"] = prefix
 
         rc = 0
 
