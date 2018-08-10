@@ -46,6 +46,5 @@ def compare(tree, obj1, obj2, depth):
 
 compare('j', jgen, dj, 2)
 
-jgen.clients.btc_alpha
 print (dir(dj.clients))
 print (dir(jgen.clients))
