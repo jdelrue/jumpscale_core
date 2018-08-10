@@ -11,6 +11,19 @@ import importlib
 import functools
 import types
 
+import importlib.util
+
+# for monkey-patching the j instance to add namespace... "things"
+patchers = [
+    {'from': 'application', 'to': 'core.application'},
+    {'from': 'dirs', 'to': 'core.dirs'},
+    {'from': 'errorhandler', 'to': 'core.errorhandler'},
+    {'from': 'exceptions', 'to': 'core.errorhandler.exceptions'},
+    {'from': 'events', 'to': 'core.events'},
+    {'from': 'logger', 'to': 'core.logger'},
+    {'from': 'core.state', 'to': 'tools.executorLocal.state'},
+]
+
 def lazyprop(fn):
     attr_name = '_lazy_' + fn.__name__
 
@@ -23,16 +36,93 @@ def lazyprop(fn):
 
     return _lazyprop
 
-class CallFn(object):
-    def __init__(self, modulepath, objectname):
+def removeDirPart(path):
+    "only keep part after jumpscale or digitalme"
+    state = 0
+    res = []
+    for item in path.split("/"):
+        if state == 0:
+            if item.find("Jumpscale") != - \
+                    1 or item.find("DigitalMe") != -1:
+                state = 1
+        if state == 1:
+            res.append(item)
+    if len(res) < 2:
+        raise RuntimeError("could not split path in jsloader")
+    if res[0] == res[1]:
+        if res[0].casefold().find("jumpscale") != - \
+                1 or res[0].casefold().find("digitalme") != -1:
+            res.pop(0)
+    return "/".join(res)
+
+class BaseGetter(object):
+    """ this is a rather.. um... ugly class that has a list of module names
+        added to it, where if a property is ever referred to it will either
+        import a class instance in that module on-demand or return a
+        previously-instantiated instance.
+
+        example: /opt/code/github/threefold/jumpscale_core/... RedisFactory.py
+        and a class named RedisFactory, and an instance name "redis",
+        if ever Basegetter.redis is referred to, you get a RedisFactory()
+        instantiated and returned
+
+        at the moment the import is done using importlib.import_module()
+        however see 32.5.7.5 https://docs.python.org/3/library/importlib.html
+        really we should be *explicitly* importing from the exact location
+        required / requested, using a modified variant of the code shown
+        there.
+
+        the problem at the moment is that the code below (found on
+        stackoverflow) doesn't deal with relative imports: parent
+        has to be set (and loaded prior to the child... and all the
+        way down), so it gets... compplicated.
+
+        import_module, although it will go searching in /usr/local/
+        etc. etc. will do the job for now
+        """
+
+    def __init__(self):
+        self.__subgetters__ = {}
+
+    def _add_instance(self, subname, modulepath, objectname):
+        """ adds an instance to the dictionary, for when
+            __getattribute__ is called, the instance will be loaded
+        """
+        #print ("add instance", self, subname, modulepath, objectname)
+        ms = ModuleSetup(subname, modulepath, objectname)
+        #print (dir(self))
+        d = object.__getattribute__(self, '__subgetters__')
+        d[subname] = ms
+
+    def __getattribute__(self, name):
+        if name.startswith('_'):
+            return object.__getattribute__(self, name)
+        d = object.__getattribute__(self, '__subgetters__')
+        if name not in d:
+            raise AttributeError(name)
+        return d[name].getter()
+
+class ModuleSetup(object):
+    def __init__(self, subname, modulepath, objectname):
+        self.subname = subname
         self.modulepath = modulepath
         self.objectname = objectname
         self._obj = None
 
-    def __call__(self, *args, **kwargs):
+    def getter(self):
         if self._obj is None:
+            #print ("about to get modulepath %s object %s" % \
+            #        (self.modulepath, self.objectname))
+
             imp = importlib.import_module(self.modulepath)
-            self._obj = getattr(imp, self.objectname)(*args, **kwargs)
+
+            #spec = importlib.util.spec_from_file_location(self.objectname,
+            #                                        self.modulepath)
+            #imp = importlib.util.module_from_spec(spec)
+            #spec.loader.exec_module(imp)
+            #print ("about to get modulepath %s object %s" % \
+            #        (self.modulepath, self.objectname))
+            self._obj = getattr(imp, self.objectname)()
         return self._obj
 
 GEN_START = """\
@@ -140,7 +230,13 @@ class Jumpscale(object):
         return {{name}}()
     {{/locations}}
 
-j = Jumpscale()
+# test code seeing if dynamic loader works live (which it does!)
+if os.environ.get('JUMPSCALEMODE') == 'DYNAMICTEST':
+    from Jumpscale.tools.loader.JSLoader import JSLoader
+    jl = JSLoader()
+    j = jl.dynamic_generate()
+else:
+    j = Jumpscale()
 
 def attrchecker(j, pth):
     pth = pth.split(".")
@@ -155,6 +251,25 @@ def attrchecker(j, pth):
 if not attrchecker(j, "{{from}}"):
     j.{{from}} = j.{{to}}
 {{/patchers}}
+
+def profileStart():
+    import cProfile
+    pr = cProfile.Profile()
+    pr.enable()
+    return pr
+
+def profileStop(pr):
+    pr.disable()
+    import io
+    import pstats
+    s = io.StringIO()
+    sortby = 'cumulative'
+    ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+    ps.print_stats()
+    print(s.getvalue())
+
+j._profileStart = profileStart
+j._profileStop = profileStop
 
 """
 
@@ -286,25 +401,6 @@ class JSLoader():
     def processLocationSub(self, jlocationSubName, jlocationSubList):
         # import a specific location sub (e.g. j.clients.git)
 
-        def removeDirPart(path):
-            "only keep part after jumpscale or digitalme"
-            state = 0
-            res = []
-            for item in path.split("/"):
-                if state == 0:
-                    if item.find("Jumpscale") != - \
-                            1 or item.find("DigitalMe") != -1:
-                        state = 1
-                if state == 1:
-                    res.append(item)
-            if len(res) < 2:
-                raise RuntimeError("could not split path in jsloader")
-            if res[0] == res[1]:
-                if res[0].casefold().find("jumpscale") != - \
-                        1 or res[0].casefold().find("digitalme") != -1:
-                    res.pop(0)
-            return "/".join(res)
-
         classfile, classname, importItems = jlocationSubList
 
         generationParamsSub = {}
@@ -372,21 +468,28 @@ class JSLoader():
 
         instances = {}
         for jlocationRoot, jlocationRootDict in moduleList.items():
-            print (jlocationRoot)
             jname = jlocationRoot.split(".")[1].strip()
-            member = type(jname, (), {})
-            #instances[jname] = lazyprop(member)
+            memberkls = type(jname, (BaseGetter,), {})
+            member = memberkls()
             instances[jname] = member
             for subname, sublist in jlocationRootDict.items():
                 modulename, classname, imports = sublist
-                print (jlocationRoot, subname, sublist)
-                fn = CallFn(modulename, classname)
-                setattr(fn, "__name__", subname)
-                fn = types.MethodType(fn, member)
-                #fn = lazyprop(fn)
-                setattr(member, subname, fn)
+                #print ("subs", jlocationRoot, subname, sublist)
+                importlocation = removeDirPart(
+                    modulename)[:-3].replace("//", "/").replace("/", ".")
+                #print (importlocation)
+                member._add_instance(subname, importlocation, classname)
 
-        return type("Jumpscale", (), instances)
+        _j = type("Jumpscale", (), instances)
+
+        #print (dir(_j))
+        #print (dir(_j.core))
+        #print (type(_j.core.errorhandler))
+        #print (dir(_j.core.errorhandler))
+        #_j.application = _j.core().application
+        #_j.exceptions = _j.core().errorhandler().exceptions
+
+        return _j()
 
     def _generate(self):
         """ generates the jumpscale init file: jumpscale
@@ -432,16 +535,7 @@ class JSLoader():
                     (jlocationRoot, jlocationRootDict))
 
             jlocations["locations"].append({"name": jlocationRoot[2:]})
-            jlocations["patchers"] = [
-                {'from': 'application', 'to': 'core.application'},
-                {'from': 'dirs', 'to': 'core.dirs'},
-                {'from': 'errorhandler', 'to': 'core.errorhandler'},
-                {'from': 'exceptions', 'to': 'core.errorhandler.exceptions'},
-                {'from': 'events', 'to': 'core.events'},
-                {'from': 'logger', 'to': 'core.logger'},
-                {'from': 'core.state', 'to': 'tools.executorLocal.state'},
-                #{'from': 'tools.jsloader', 'to': 'tools.loader.jsloader'}
-            ]
+            jlocations["patchers"] = patchers
 
             generationParams = {}
             generationParams["locationsubserror"] = []
