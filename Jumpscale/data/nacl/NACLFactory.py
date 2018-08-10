@@ -1,4 +1,4 @@
-from Jumpscale import j # J due to recursive import issue in ConfigManager
+from Jumpscale import j  # J due to recursive import issue in ConfigManager
 
 from .NACL import NACL
 import nacl.secret
@@ -9,10 +9,11 @@ from nacl.public import PrivateKey, SealedBox
 
 JSBASE = j.application.jsbase_get_class()
 
+
 class NACLFactory(JSBASE):
 
     def __init__(self):
-        JSBASE.__init__(self)        
+        JSBASE.__init__(self)
         self.__jslocation__ = "j.data.nacl"
         self._default = None
 
@@ -46,11 +47,11 @@ class NACLFactory(JSBASE):
         """
         j.clients.redis.core_start()
 
-    def _remember_get(self,secret,words):
+    def _remember_get(self, secret, words):
 
-        if not "fake" in str(j.core.db):
+        if "fake" not in str(j.core.db):
             if j.core.db.exists("nacl.meta"):
-                data=j.core.db.get("nacl.meta")
+                data = j.core.db.get("nacl.meta")
                 data2 = self.default.decryptSymmetric(data)
                 data3 = j.data.serializers.json.loads(data2)
 
@@ -60,19 +61,19 @@ class NACLFactory(JSBASE):
                 if "words" in data3 and not words:
                     words = data3["words"]
 
-        return secret,words
+        return secret, words
 
-    def _remember_set(self,secret,words):
-        if not "fake" in str(j.core.db):
-            data={}
+    def _remember_set(self, secret, words):
+        if "fake" not in str(j.core.db):
+            data = {}
             data["secret"] = secret
             data["words"] = words
             data2 = j.data.serializers.json.dumps(data)
             data3 = self.default.encryptSymmetric(data2)
             self.logger.debug("remember secret,words")
-            j.core.db.set("nacl.meta",data3, ex=3600)
+            j.core.db.set("nacl.meta", data3, ex=3600)
 
-    def encrypt(self,secret="",message="",words="",interactive=False):
+    def encrypt(self, secret="", message="", words="", interactive=False):
         """
         secret is any size key
         words are bip39 words e.g. see https://iancoleman.io/bip39/#english
@@ -82,7 +83,7 @@ class NACLFactory(JSBASE):
         result is base64
 
         its a combination of nacl symmetric encryption using secret and asymetric encryption using the words
-        
+
         the result is a super strong encryption
 
         to use
@@ -94,31 +95,33 @@ class NACLFactory(JSBASE):
         message = message.strip()
 
         if interactive:
-            
-            secret,words = self._remember_get(secret,words)
+
+            secret, words = self._remember_get(secret, words)
 
             if not secret:
                 secret = j.tools.console.askPassword("your secret")
             if not message:
-                message = j.tools.console.askMultiline("your message to encrypt")
+                message = j.tools.console.askMultiline(
+                    "your message to encrypt")
                 message = message.strip()
             if not words:
-                yn=j.tools.console.askYesNo("do you wan to specify secret key as bip39 words?")
+                yn = j.tools.console.askYesNo(
+                    "do you wan to specify secret key as bip39 words?")
                 if yn:
-                    words= j.tools.console.askString("your bip39 words")
+                    words = j.tools.console.askString("your bip39 words")
                 else:
                     words = j.data.nacl.default.words
 
-            self._remember_set(secret,words)
+            self._remember_set(secret, words)
 
         else:
             if not secret or not message:
-                raise RuntimeError("secret or message needs to be used")                
+                raise RuntimeError("secret or message needs to be used")
 
         if words == "":
             words = j.data.nacl.default.words
 
-        #first encrypt symmetric
+        # first encrypt symmetric
         secret1 = j.data.hash.md5_string(secret)
         secret1 = bytes(secret1, 'utf-8')
         # print("secret1_jumpscale:%s"%secret1)
@@ -129,7 +132,7 @@ class NACLFactory(JSBASE):
         # print("msg_jumpscale:%s"%message)
         res = box.encrypt(message)
 
-        #now encrypt asymetric using the words
+        # now encrypt asymetric using the words
         privkeybytes = j.data.encryption.mnemonic.to_entropy(words)
         # print("privkey_js:%s"%privkeybytes)
 
@@ -141,25 +144,28 @@ class NACLFactory(JSBASE):
 
         res = base64.encodestring(res)
 
-        print("encr_js:%s"%res)
+        print("encr_js:%s" % res)
 
-        #LETS VERIFY
+        # LETS VERIFY
 
-        msg = self.decrypt(secret=secret,message=res.decode('utf8'),words=words,interactive=interactive)
+        msg = self.decrypt(
+            secret=secret,
+            message=res.decode('utf8'),
+            words=words,
+            interactive=interactive)
 
         if j.data.types.bytes.check(message):
-            message = message.decode('utf8')   
+            message = message.decode('utf8')
 
-        assert msg.strip() == message.strip()         
+        assert msg.strip() == message.strip()
 
         if interactive:
             print("encrypted text:\n*************\n")
             print(res.decode('utf8'))
 
-
         return res
 
-    def decrypt(self,secret="",message="",words="",interactive=False):
+    def decrypt(self, secret="", message="", words="", interactive=False):
         """
         use output from encrypt
 
@@ -168,29 +174,30 @@ class NACLFactory(JSBASE):
         """
 
         if interactive:
-            
-            secret,words = self._remember_get(secret,words)
+
+            secret, words = self._remember_get(secret, words)
 
             if not secret:
                 secret = j.tools.console.askPassword("your secret")
             if not message:
-                message = j.tools.console.askMultiline("your message to decrypt")
+                message = j.tools.console.askMultiline(
+                    "your message to decrypt")
                 message = message.strip()
             if not words:
-                yn=j.tools.console.askYesNo("do you wan to specify secret key as bip39 words?")
+                yn = j.tools.console.askYesNo(
+                    "do you wan to specify secret key as bip39 words?")
                 if yn:
-                    words= j.tools.console.askString("your bip39 words")
+                    words = j.tools.console.askString("your bip39 words")
         else:
             if not secret or not message:
                 raise RuntimeError("secret or message needs to be used")
-
 
         secret = j.data.hash.md5_string(secret)
         secret = bytes(secret, 'utf-8')
 
         if not j.data.types.bytes.check(message):
-            message = bytes(message,'utf8')
-            
+            message = bytes(message, 'utf8')
+
         message = base64.decodestring(message)
 
         if words == "":
@@ -203,51 +210,53 @@ class NACLFactory(JSBASE):
 
         message = sb.decrypt(message)
 
-        #now decrypt symmetric
+        # now decrypt symmetric
         box = nacl.secret.SecretBox(secret)
-        message =  box.decrypt(message)        
+        message = box.decrypt(message)
         message = message.decode(encoding='utf-8', errors='strict')
 
         if interactive:
             print("decrypted text:\n*************\n")
-            print(message.strip()+"\n")
-
+            print(message.strip() + "\n")
 
         return message
-
 
     def test(self):
         """
         js_shell 'j.data.nacl.test()'
         """
 
-        res = self.encrypt("1111","something",interactive=False)
-        res2 = self.decrypt("1111",res,interactive=False)
-        assert "something"==res2
+        res = self.encrypt("1111", "something", interactive=False)
+        res2 = self.decrypt("1111", res, interactive=False)
+        assert "something" == res2
 
         words = 'oxygen fun inner bachelor cherry pistol knife quarter grass act ceiling wrap another input style profit middle cake slight glance silk rookie caught parade'
-        res3 = self.encrypt("1111","something",words=words,interactive=False)
+        res3 = self.encrypt(
+            "1111",
+            "something",
+            words=words,
+            interactive=False)
         assert res != res3
 
         try:
-            res4 = self.decrypt("1111",res3,interactive=False)
+            res4 = self.decrypt("1111", res3, interactive=False)
         except Exception as e:
-            assert str(e).find("error occurred")!=-1
+            assert str(e).find("error occurred") != -1
 
-        res4 = self.decrypt("1111",res3,words=words,interactive=False)
-        assert "something"==res4
+        res4 = self.decrypt("1111", res3, words=words, interactive=False)
+        assert "something" == res4
 
         cl = self.default  # get's the default location & generate's keys
 
         data = b"something"
         r = cl.sign(data)
 
-        assert cl.verify(data,r) == True
-        assert cl.verify(b"a",r) == False
+        assert cl.verify(data, r)
+        assert cl.verify(b"a", r) == False
 
         pubsignkey32 = cl.signingkey_pub.encode()
 
-        assert cl.verify(data,r,pubsignkey32) == True
+        assert cl.verify(data, r, pubsignkey32)
 
         a = cl.encryptSymmetric("something")
         b = cl.decryptSymmetric(a)
@@ -294,38 +303,36 @@ class NACLFactory(JSBASE):
         cl = self.default  # get's the default location & generate's keys
         data = b"something"
 
-        nr=10000
+        nr = 10000
         j.tools.timer.start("signing")
-        for i in range(nr):  
-            p = str(i).encode()      
-            r = cl.sign(data+p)
-        j.tools.timer.stop(i)
-        
-        nr=10000
-        j.tools.timer.start("encode and verify")
-        for i in range(nr):  
+        for i in range(nr):
             p = str(i).encode()
-            r = cl.sign(data+p)      
-            assert cl.verify(data+p,r) == True
-        j.tools.timer.stop(i)        
+            r = cl.sign(data + p)
+        j.tools.timer.stop(i)
 
-        nr=10000
-        data2=data*20
+        nr = 10000
+        j.tools.timer.start("encode and verify")
+        for i in range(nr):
+            p = str(i).encode()
+            r = cl.sign(data + p)
+            assert cl.verify(data + p, r)
+        j.tools.timer.stop(i)
+
+        nr = 10000
+        data2 = data * 20
         j.tools.timer.start("encryption/decryption assymetric")
-        for i in range(nr):  
+        for i in range(nr):
             a = cl.encrypt(data2)
             b = cl.decrypt(a)
-            assert data2==b
-        j.tools.timer.stop(i)  
+            assert data2 == b
+        j.tools.timer.stop(i)
 
-
-        nr=40000
+        nr = 40000
         secret = b"something111"
-        data2=data*20
+        data2 = data * 20
         j.tools.timer.start("encryption/decryption symmetric")
-        for i in range(nr):  
-            a = cl.encryptSymmetric(data2,secret=secret)
-            b = cl.decryptSymmetric(a,secret=secret)
-            assert data2==b
-        j.tools.timer.stop(i)  
-
+        for i in range(nr):
+            a = cl.encryptSymmetric(data2, secret=secret)
+            b = cl.decryptSymmetric(a, secret=secret)
+            assert data2 == b
+        j.tools.timer.stop(i)

@@ -1,4 +1,4 @@
-from Jumpscale import j # J due to recursive import issue with ConfigFactory
+from Jumpscale import j  # J due to recursive import issue with ConfigFactory
 from nacl.public import PrivateKey, SealedBox
 import nacl.signing
 import nacl.secret
@@ -21,15 +21,19 @@ class NACL(JSBASE):
         """
         JSBASE.__init__(self)
         if sshkeyname:
-            self.logger.debug("sshkeyname for nacl:%s"%sshkeyname)
+            self.logger.debug("sshkeyname for nacl:%s" % sshkeyname)
             pass
         elif j.tools.configmanager.keyname:
-            self.logger.debug("get config from git repo, keyname='%s'"% j.tools.configmanager.keyname)
+            self.logger.debug(
+                "get config from git repo, keyname='%s'" %
+                j.tools.configmanager.keyname)
             sshkeyname = j.tools.configmanager.keyname
         else:
-            sshkeyname = j.core.state.configGetFromDict("myconfig", "sshkeyname")
-            self.logger.debug("get config from system, keyname:'%s'"%sshkeyname)
-            
+            sshkeyname = j.core.state.configGetFromDict(
+                "myconfig", "sshkeyname")
+            self.logger.debug(
+                "get config from system, keyname:'%s'" %
+                sshkeyname)
 
         self.sshkeyname = sshkeyname
         self._agent = None
@@ -40,7 +44,7 @@ class NACL(JSBASE):
         self.name = name
 
         self.path = j.tools.configmanager.path
-        self.logger.debug("NACL uses path:'%s'"%self.path)
+        self.logger.debug("NACL uses path:'%s'" % self.path)
 
         # get/create the secret seed
         self.path_secretseed = "%s/%s.seed" % (self.path, self.name)
@@ -82,7 +86,6 @@ class NACL(JSBASE):
         # if not j.sal.fs.exists(self.path_privatekey_sign):
         #     self._keys_generate_sign()
 
-
     @property
     def agent(self):
 
@@ -90,15 +93,20 @@ class NACL(JSBASE):
             for item in j.clients.sshkey.sshagent.get_keys():
                 if j.sal.fs.getBaseName(item.keyname) == name:
                     return item
-            raise RuntimeError("Could not find agent for key with name:%s" % name)
+            raise RuntimeError(
+                "Could not find agent for key with name:%s" %
+                name)
 
         if self._agent is None:
             if not j.clients.sshkey.exists(self.sshkeyname):
                 keypath = "%s/.ssh/%s" % (j.dirs.HOMEDIR, self.sshkeyname)
                 if j.sal.fs.exists(keypath):
-                    j.clients.sshkey.key_load("%s/.ssh/%s" % (j.dirs.HOMEDIR, self.sshkeyname))
+                    j.clients.sshkey.key_load(
+                        "%s/.ssh/%s" %
+                        (j.dirs.HOMEDIR, self.sshkeyname))
                 else:
-                    # if sshkeyname from state is not reachable delete it and re-init config manager
+                    # if sshkeyname from state is not reachable delete it and
+                    # re-init config manager
                     j.core.state.configSetInDict("myconfig", "sshkeyname", "")
                     j.tools.configmanager.init()
             self._agent = getagent(self.sshkeyname)
@@ -117,7 +125,7 @@ class NACL(JSBASE):
     def words(self):
         """
         js_shell 'print(j.data.nacl.default.words)'
-        """        
+        """
         return j.data.encryption.mnemonic.to_mnemonic(self.privkey.encode())
         # if not j.sal.fs.exists(self.path_words):
         #     self.logger.info("GENERATED words")
@@ -127,8 +135,6 @@ class NACL(JSBASE):
         # words = self.file_read_hex(self.path_words)
         # words = self.decryptSymmetric(words)
         # return words.decode()
-
-
 
     @property
     def pubkey(self):
@@ -147,7 +153,6 @@ class NACL(JSBASE):
         if self._signingkey_pub == "":
             self._signingkey_pub = self.signingkey.verify_key
         return self._signingkey_pub
-
 
     def _getSecret(self):
         # this to make sure we don't have our secret key open in memory
@@ -237,7 +242,7 @@ class NACL(JSBASE):
         key4 = self.file_read_hex(path)
         assert key3 == key4
 
-    def sign(self,data):
+    def sign(self, data):
         """
         sign using your private key using Ed25519 algorithm
         the result will be 64 bytes
@@ -245,24 +250,23 @@ class NACL(JSBASE):
         res = self.signingkey.sign(data)
         return res[:-len(data)]
 
-    def verify(self,data, signature, pubkey=""):
+    def verify(self, data, signature, pubkey=""):
         """
         data is the original data we have to verify with signature
         signature is Ed25519 64 bytes signature
         pubkey is the signature public key, is not specified will use your own  (the pubkey is 32 bytes)
-        
+
         """
         if pubkey == "":
             pubkey = self.signingkey_pub
         else:
-            pubkey = nacl.signing.VerifyKey(pubkey)        
+            pubkey = nacl.signing.VerifyKey(pubkey)
         try:
-            pubkey.verify(data,signature)
+            pubkey.verify(data, signature)
         except BadSignatureError:
             return False
 
         return True
-
 
     def sign_with_ssh_key(self, data):
         """
@@ -275,7 +279,6 @@ class NACL(JSBASE):
         hash = hashlib.sha1(data).digest()
         signeddata = self.agent.sign_ssh_data(hash)
         return self.hash32(signeddata)
-
 
     def file_write_hex(self, path, content):
         content = binascii.hexlify(content)
