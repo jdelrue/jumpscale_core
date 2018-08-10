@@ -43,6 +43,14 @@ class BaseGetter(object):
         d[subname] = ms
 
     def __getattribute__(self, name):
+        if name == 'logger': # special-case for logger property
+            #print ("found name logger", type(self))
+            try:
+                jsl = object.__getattribute__(self, '__jslocation__')
+                #print ("found jsl")
+            except AttributeError:
+                not_found_jsl = True
+                #print ("not found jsl")
         if name == 'JSBASE':
             return JSBase
         if name in dir(JSBase):
@@ -53,7 +61,6 @@ class BaseGetter(object):
         if name in d:
             return d[name].getter()
         return object.__getattribute__(self, name)
-        raise AttributeError(name)
 
 
 class ModuleSetup(object):
@@ -110,7 +117,8 @@ class JSBase(BaseGetter):
                 name = self.__jslocation__
             else:
                 name = self.__name__
-            self._logger = j.logger.get(name, force=self._logger_force)
+            #print ("jsbase.logger get", type(self))
+            self._logger = j.logging.get(name, force=self._logger_force)
             self._logger._parent = self
         return self._logger
 

@@ -11,7 +11,7 @@ import sys
 class LoggerFactory():
 
     def __init__(self):
-        self.__jslocation__ = "j.core.logger"
+        self.__jslocation__ = "j.core.logging"
         self.logger_name = 'j'
         self.handlers = Handlers()
         self.loggers = {}

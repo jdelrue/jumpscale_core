@@ -20,7 +20,7 @@ patchers = [
     {'from': 'errorhandler', 'to': 'core.errorhandler'},
     {'from': 'exceptions', 'to': 'core.errorhandler.exceptions'},
     {'from': 'events', 'to': 'core.events'},
-    {'from': 'logger', 'to': 'core.logger'},
+    {'from': 'logging', 'to': 'core.logging'},
     {'from': 'core.state', 'to': 'tools.executorLocal.state'},
 ]
 
@@ -278,7 +278,7 @@ def jumpscale_py_setup(location):
 class JSLoader():
 
     def __init__(self):
-        self.logger = j.logger.get("jsloader")
+        self.logger = j.logging.get("jsloader")
         self.__jslocation__ = "j.tools.jsloader"
         self.tryimport = False
 

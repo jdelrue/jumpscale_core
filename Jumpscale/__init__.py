@@ -124,14 +124,15 @@ else:
 
     from .logging.LoggerFactory import LoggerFactory
 
-    j.logger = LoggerFactory()
+    l = LoggerFactory()
+    j.logging = l
 
     # IF YOU WANT TO DEBUG THE STARTUP, YOU NEED TO CHANGE THIS ONE
-    j.logger.enabled = False
-    j.logger.filter = []  # default filter which captures all is *
+    l.enabled = False
+    l.filter = []  # default filter which captures all is *
 
     from .core.Application import Application
-    j.application = Application()
+    j.application = Application(logging=l)
     j.core.application = j.application
 
     from .data.text.Text import Text
@@ -230,7 +231,7 @@ else:
 
     j.exceptions = JSExceptions
 
-    j.logger.init()  # will reconfigure the logging to use the config file
+    j.logging.init()  # will reconfigure the logging to use the config file
 
     from .data.serializers.SerializersFactory import SerializersFactory
     j.data.serializers = SerializersFactory()

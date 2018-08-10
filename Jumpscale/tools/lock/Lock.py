@@ -5,7 +5,6 @@ import re
 
 from jumpscale import j
 
-logger = j.core.logger.get('Jumpscale.core.logger')
 _LOCKDICTIONARY = dict()
 
 JSBASE = j.application.jsbase_get_class()
@@ -43,6 +42,7 @@ def cleanupString(string, replacewith="_", regex="([^A-Za-z0-9])"):
 
 def lock(lockname, locktimeout=60, reentry=False):
     '''Take a system-wide interprocess exclusive lock. Default timeout is 60 seconds'''
+    logger = j.core.logging.get('Jumpscale.core.logger')
     logger.debug('Lock with name: %s' % lockname)
     try:
         result = lock_(lockname, locktimeout, reentry)
@@ -125,6 +125,7 @@ def islocked(lockname, reentry=False):
 
 def unlock(lockname):
     """Unlock system-wide interprocess lock"""
+    logger = j.core.logging.get('Jumpscale.core.logger')
     logger.debug('Unlock with name: %s' % lockname)
     try:
         unlock_(lockname)

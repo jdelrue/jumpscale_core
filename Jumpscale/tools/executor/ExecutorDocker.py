@@ -31,7 +31,7 @@ class ExecutorDocker(ExecutorBase):
 
         self._id = None
 
-        self._logger = j.logger.get("executordocker%s" % self.container.id)
+        self._logger = j.logging.get("executordocker%s" % self.container.id)
 
     @classmethod
     def from_local_container(cls, id_or_name):

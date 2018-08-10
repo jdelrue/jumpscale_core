@@ -8,11 +8,14 @@ import psutil
 from .JSBase import JSBase
 
 
-class Application:
+class Application(JSBase):
 
-    def __init__(self):
+    def __init__(self, logging=None):
 
-        self.logger = j.logger.get("application")
+        JSBase.__init__(self)
+        if logging is None:
+            logging = j.logging
+        self.logger = logging.get("application")
 
         self._calledexit = False
 
