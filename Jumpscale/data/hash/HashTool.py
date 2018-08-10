@@ -1,5 +1,5 @@
 
-from jumpscale import j
+from Jumpscale import j # required due to recursive import loop
 
 import hashlib
 import binascii
