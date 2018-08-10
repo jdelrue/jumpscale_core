@@ -232,6 +232,10 @@ else:
 
     j.logger.init()  # will reconfigure the logging to use the config file
 
+    from .tools.formbuilder.FormBuilder import FormBuilderFactory
+
+    j.tools.formbuilder = FormBuilderFactory()  # needed in ConfigManager
+
     from .tools.configmanager.ConfigManager import ConfigFactory
 
     j.tools.configmanager = ConfigFactory()  # needed in platformtypes

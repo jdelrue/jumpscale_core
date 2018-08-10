@@ -1,4 +1,4 @@
-from jumpscale import j
+from Jumpscale import j # recursive imports cause this to fail with small-j
 
 import npyscreen
 
