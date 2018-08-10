@@ -4,6 +4,7 @@ import copy
 
 JSBASE = j.application.jsbase_get_class()
 
+
 class GitClient(JSBASE):
     """
     Client of git services, has all git related operations like push, pull, ...
@@ -11,10 +12,10 @@ class GitClient(JSBASE):
 
     def __init__(self, baseDir, check_path=True):  # NOQA
 
-        if baseDir==None or baseDir.strip()=="":
+        if baseDir is None or baseDir.strip() == "":
             raise RuntimeError("basedir cannot be empty")
 
-        baseDir_org=copy.copy(baseDir)
+        baseDir_org = copy.copy(baseDir)
 
         JSBASE.__init__(self)
 
@@ -28,7 +29,8 @@ class GitClient(JSBASE):
         baseDir = baseDir.rstrip("/")
 
         while ".git" not in j.sal.fs.listDirsInDir(
-                baseDir, recursive=False, dirNameOnly=True, findDirectorySymlinks=True):
+                baseDir, recursive=False, dirNameOnly=True,
+                findDirectorySymlinks=True):
             baseDir = j.sal.fs.getParent(baseDir)
 
             if baseDir == "/":
@@ -37,7 +39,9 @@ class GitClient(JSBASE):
         baseDir = baseDir.rstrip("/")
 
         if baseDir.strip() == "":
-            raise j.exceptions.RuntimeError("could not find basepath for .git in %s" % baseDir_org)
+            raise j.exceptions.RuntimeError(
+                "could not find basepath for .git in %s" %
+                baseDir_org)
         if check_path:
             if baseDir.find("/code/") == -1:
                 raise j.exceptions.Input(
@@ -53,13 +57,13 @@ class GitClient(JSBASE):
             else:
                 self.type, self.account, self.name = 'github', 'cockpit', 'cockpit'
         else:
-            self.type, self.account, self.name = '', '', j.sal.fs.getBaseName(baseDir)
+            self.type, self.account, self.name = '', '', j.sal.fs.getBaseName(
+                baseDir)
 
         self.BASEDIR = baseDir
 
         # if len(self.repo.remotes) != 1:
         #     raise j.exceptions.Input("git repo on %s is corrupt could not find remote url" % baseDir)
-
 
     def __repr__(self):
         return str(self.__dict__)
@@ -71,7 +75,9 @@ class GitClient(JSBASE):
         """
         set the remote url of the repo
         """
-        j.sal.process.executeWithoutPipe("cd %s;git remote set-url origin '%s'" % (self.BASEDIR, url))
+        j.sal.process.executeWithoutPipe(
+            "cd %s;git remote set-url origin '%s'" %
+            (self.BASEDIR, url))
 
     @property
     def remoteUrl(self):
@@ -81,7 +87,8 @@ class GitClient(JSBASE):
         :raises Exception when ther eis no remote configuration for the repo, you will have to use setRemoteURL then
         """
         if len(self.repo.remotes) <= 0:
-            raise j.exceptions.Input("There is not remote configured for this repository")
+            raise j.exceptions.Input(
+                "There is not remote configured for this repository")
         return self.repo.remotes[0].url
 
     @property
@@ -96,7 +103,8 @@ class GitClient(JSBASE):
         """
         $gitcategory/$account/$repo/$branch
         """
-        return "%s/%s/%s/%s"%( j.clients.git.rewriteGitRepoUrl(self.remoteUrl)[1],self.account,self.name,self.branchName)
+        return "%s/%s/%s/%s" % (j.clients.git.rewriteGitRepoUrl(self.remoteUrl)
+                                [1], self.account, self.name, self.branchName)
 
     @property
     def repo(self):
@@ -220,7 +228,7 @@ class GitClient(JSBASE):
         # Organize files in lists
         for diff in self.repo.index.diff(None):
             # TODO: does not work, did not show my changes !!! *1
-            if diff.a_blob==None:
+            if diff.a_blob is None:
                 continue
             path = diff.a_blob.path
             if checkignore(ignore, path):
@@ -286,8 +294,9 @@ class GitClient(JSBASE):
         :raises Exception when there are files waiting for commit
         """
         if self.checkFilesWaitingForCommit():
-            raise j.exceptions.Input(message="Cannot pull:%s, files waiting to commit" %
-                                     self, level=1, source="", tags="", msgpub="")
+            raise j.exceptions.Input(
+                message="Cannot pull:%s, files waiting to commit" %
+                self, level=1, source="", tags="", msgpub="")
         self.repo.git.pull()
 
     def fetch(self):
@@ -321,7 +330,14 @@ class GitClient(JSBASE):
         else:
             self.repo.git.push()
 
-    def getChangedFiles(self, fromref='', toref='', fromepoch=None, toepoch=None, author=None, paths=[]):
+    def getChangedFiles(
+            self,
+            fromref='',
+            toref='',
+            fromepoch=None,
+            toepoch=None,
+            author=None,
+            paths=[]):
         """
         list all changed files since ref & epoch (use both)
 
@@ -333,12 +349,26 @@ class GitClient(JSBASE):
         @param toepoch = ending epoch
         @return
         """
-        commits = self.getCommitRefs(fromref=fromref, toref=toref, fromepoch=fromepoch,
-                                     toepoch=toepoch, author=author, paths=paths, files=True)
+        commits = self.getCommitRefs(
+            fromref=fromref,
+            toref=toref,
+            fromepoch=fromepoch,
+            toepoch=toepoch,
+            author=author,
+            paths=paths,
+            files=True)
         files = [f for commit in commits for f in commit[3]]
         return list(set(files))
 
-    def getCommitRefs(self, fromref='', toref='', fromepoch=None, toepoch=None, author=None, paths=None, files=False):
+    def getCommitRefs(
+            self,
+            fromref='',
+            toref='',
+            fromepoch=None,
+            toepoch=None,
+            author=None,
+            paths=None,
+            files=False):
         """
         @return [[$epoch, $ref, $author]] if no files (default)
         @return [[$epoch, $ref, $author, $files]] if files
@@ -359,8 +389,12 @@ class GitClient(JSBASE):
         commits = list()
         for commit in list(self.repo.iter_commits(paths=paths, **kwargs)):
             if files:
-                commits.append((commit.authored_date, commit.hexsha,
-                                commit.author.name, list(commit.stats.files.keys())))
+                commits.append(
+                    (commit.authored_date,
+                     commit.hexsha,
+                     commit.author.name,
+                     list(
+                         commit.stats.files.keys())))
             else:
                 commits.append(
                     (commit.authored_date, commit.hexsha, commit.author.name))
@@ -463,7 +497,7 @@ docs/_build/
         returns value of provided field name
         returns empty string if not found
 
-        :param fields: field name of the config to search for 
+        :param fields: field name of the config to search for
         :return: string value of the field name
         """
         cmd = "cd %s; git config %s" % (self.BASEDIR, field)
@@ -485,11 +519,12 @@ docs/_build/
         flags = ""
         if not local:
             flags += "--global "
-        
-        cmd = "cd %s; git config %s %s %s" % (self.BASEDIR, flags, field, value)
+
+        cmd = "cd %s; git config %s %s %s" % (
+            self.BASEDIR, flags, field, value)
         j.tools.executorLocal.execute(cmd, die=die)
 
-    def unsetConfig(self, field, local=True,  die=True):
+    def unsetConfig(self, field, local=True, die=True):
         """
         Removes/unsets config field
 

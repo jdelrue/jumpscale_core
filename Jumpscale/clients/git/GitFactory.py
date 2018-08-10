@@ -67,7 +67,7 @@ class GitFactory(JSBASE):
             try:
                 port = int(url.split(":")[1].split("/")[0])
                 url = url.replace(":%s/" % (port), ":")
-            except:
+            except BaseException:
                 pass
 
         url_pattern_ssh = re.compile('^(git@)(.*?):(.*?)/(.*?)/?$')
@@ -87,7 +87,8 @@ class GitFactory(JSBASE):
             url_ssh = False
         else:
             raise RuntimeError(
-                "Url is invalid. Must be in the form of 'http(s)://hostname/account/repo' or 'git@hostname:account/repo'\nnow:\n%s" % url)
+                "Url is invalid. Must be in the form of 'http(s)://hostname/account/repo' or 'git@hostname:account/repo'\nnow:\n%s" %
+                url)
 
         protocol, repository_host, repository_account, repository_name = match.groups()
 
@@ -97,7 +98,7 @@ class GitFactory(JSBASE):
         if not repository_name.endswith('.git'):
             repository_name += '.git'
 
-        if (login == 'ssh' or url_ssh) and ssh != False:
+        if (login == 'ssh' or url_ssh) and ssh:
             if port is None:
                 repository_url = 'ssh://git@%(host)s/%(account)s/%(name)s' % {
                     'host': repository_host,
@@ -305,9 +306,17 @@ class GitFactory(JSBASE):
             return
 
         base, provider, account, repo, dest, url, port = self.getGitRepoArgs(
-            url, dest, login, passwd, reset=reset, ssh=ssh, codeDir=codeDir, executor=executor)
+            url,
+            dest,
+            login,
+            passwd,
+            reset=reset,
+            ssh=ssh,
+            codeDir=codeDir,
+            executor=executor)
 
-        # Add ssh host to the known_hosts file if not exists to skip authenticity prompt
+        # Add ssh host to the known_hosts file if not exists to skip
+        # authenticity prompt
         if ssh:
             cmd = "grep -q {host} ~/.ssh/known_hosts || ssh-keyscan  -p {port} {host} >> ~/.ssh/known_hosts"
             cmd = cmd.format(host=base, port=port or 22)
@@ -315,12 +324,16 @@ class GitFactory(JSBASE):
 
         self.logger.info("%s:pull:%s ->%s" % (executor, url, dest))
 
-        existsDir = j.sal.fs.exists(dest) if not executor else executor.exists(dest)
-        existsGit = j.sal.fs.exists(dest) if not executor else executor.exists(dest)
+        existsDir = j.sal.fs.exists(
+            dest) if not executor else executor.exists(dest)
+        existsGit = j.sal.fs.exists(
+            dest) if not executor else executor.exists(dest)
 
         if existsDir:
             if not existsGit:
-                raise RuntimeError("found directory but .git not found in %s" % dest)
+                raise RuntimeError(
+                    "found directory but .git not found in %s" %
+                    dest)
 
             # if we don't specify the branch, try to find the currently
             # checkedout branch
@@ -357,12 +370,14 @@ class GitFactory(JSBASE):
                 while rc > 0 and counter < 4:
                     cmd = "cd %s;git pull origin %s" % (dest, branch)
                     self.logger.debug(cmd)
-                    rc, out, err = self.execute(cmd, timeout=timeout, executor=executor, die=False)
+                    rc, out, err = self.execute(
+                        cmd, timeout=timeout, executor=executor, die=False)
                     if rc > 0:
                         if "Please commit your changes" in err or "would be overwritten" in err:
                             if interactive:
                                 cmsg = j.tools.console.askString(
-                                    "Found changes in: %s, do you want to commit, if yes give message, if you want to discard put '-'." % dest)
+                                    "Found changes in: %s, do you want to commit, if yes give message, if you want to discard put '-'." %
+                                    dest)
                                 if cmsg.lower().strip() == "-":
                                     ignorelocalchanges_do()
                                     # cmd="cd %s; git checkout -- ."%dest
@@ -372,21 +387,28 @@ class GitFactory(JSBASE):
                                     #     print("ERROR: Could not discard changes in :%s, please do manual."%dest)
                                     #     sys.exit(1)
                                 else:
-                                    cmd = "cd %s;git add . -A; git commit -m '%s'" % (dest, cmsg)
+                                    cmd = "cd %s;git add . -A; git commit -m '%s'" % (
+                                        dest, cmsg)
                                     self.logger.debug(cmd)
-                                    rc, out, err = self.execute(cmd, timeout=timeout, executor=executor, die=False)
+                                    rc, out, err = self.execute(
+                                        cmd, timeout=timeout,
+                                        executor=executor, die=False)
                                     if rc > 0:
-                                        print("ERROR: Could not add/commit changes in :%s, please do manual." % dest)
+                                        print(
+                                            "ERROR: Could not add/commit changes in :%s, please do manual." %
+                                            dest)
                                         sys.exit(1)
                             else:
-                                raise RuntimeError("Could not pull git dir because uncommitted changes in:'%s'" % dest)
+                                raise RuntimeError(
+                                    "Could not pull git dir because uncommitted changes in:'%s'" % dest)
                         else:
                             if "permission denied" in err.lower():
                                 raise j.exceptions.OPERATIONS(
                                     "prob SSH-agent not loaded, permission denied on git:%s" % url)
 
                             if "Merge conflict" in out:
-                                raise j.exceptions.OPERATIONS("merge conflict:%s" % out)
+                                raise j.exceptions.OPERATIONS(
+                                    "merge conflict:%s" % out)
 
                             self.logger.debug(
                                 "git pull rc>0, need to implement further, check what usecase is & build interactivity around")
@@ -534,8 +556,9 @@ class GitFactory(JSBASE):
         if not j.sal.fs.exists(rpath, followlinks=True) and pull:
             j.clients.git.pullGitRepo(repository_url, branch=branch)
         if not j.sal.fs.exists(rpath, followlinks=True):
-            raise j.exceptions.Input(message="Did not find path in git:%s" %
-                                     rpath, level=1, source="", tags="", msgpub="")
+            raise j.exceptions.Input(
+                message="Did not find path in git:%s" %
+                rpath, level=1, source="", tags="", msgpub="")
 
         return (repository_url, gitpath, relpath)
 
@@ -608,7 +631,12 @@ class GitFactory(JSBASE):
         if j.data.types.list.check(account):
             res = []
             for item in account:
-                res.extend(self.find(account=item, name=name, interactive=interactive, returnGitClient=returnGitClient))
+                res.extend(
+                    self.find(
+                        account=item,
+                        name=name,
+                        interactive=interactive,
+                        returnGitClient=returnGitClient))
             return res
 
         accounts = []
@@ -619,7 +647,8 @@ class GitFactory(JSBASE):
             # self.logger.info "%s %s"%(account,accounttofind)
             if account not in accounts:
                 if accounttofind.find("*") != -1:
-                    if accounttofind == "*" or account.startswith(accounttofind.replace("*", "")):
+                    if accounttofind == "*" or account.startswith(
+                            accounttofind.replace("*", "")):
                         accounts.append(account)
                 elif accounttofind != "":
                     if account.lower().strip() == accounttofind.lower().strip():
@@ -648,10 +677,13 @@ class GitFactory(JSBASE):
 
             """
             repos = []
-            for top in j.sal.fs.listDirsInDir(codeDir, recursive=False,
-                                              dirNameOnly=True, findDirectorySymlinks=True):
-                for account in j.sal.fs.listDirsInDir("%s/%s" % (j.dirs.CODEDIR, top), recursive=False,
-                                                      dirNameOnly=True, findDirectorySymlinks=True):
+            for top in j.sal.fs.listDirsInDir(
+                    codeDir, recursive=False, dirNameOnly=True,
+                    findDirectorySymlinks=True):
+                for account in j.sal.fs.listDirsInDir(
+                    "%s/%s" % (j.dirs.CODEDIR, top),
+                    recursive=False, dirNameOnly=True,
+                        findDirectorySymlinks=True):
                     if checkaccount(account):
                         accountdir = "%s/%s/%s" % (j.dirs.CODEDIR,
                                                    top, account)
@@ -659,14 +691,16 @@ class GitFactory(JSBASE):
                             raise j.exceptions.RuntimeError(
                                 "there should be no .git at %s level" % accountdir)
                         else:
-                            for reponame in j.sal.fs.listDirsInDir("%s/%s/%s" % (j.dirs.CODEDIR, top, account),
-                                                                   recursive=False, dirNameOnly=True,
-                                                                   findDirectorySymlinks=True):
+                            for reponame in j.sal.fs.listDirsInDir(
+                                "%s/%s/%s" % (j.dirs.CODEDIR, top, account),
+                                recursive=False, dirNameOnly=True,
+                                    findDirectorySymlinks=True):
                                 repodir = "%s/%s/%s/%s" % (
                                     j.dirs.CODEDIR, top, account, reponame)
                                 if j.sal.fs.exists(path="%s/.git" % repodir):
                                     if name.find("*") != -1:
-                                        if name == "*" or reponame.startswith(name.replace("*", "")):
+                                        if name == "*" or reponame.startswith(
+                                                name.replace("*", "")):
                                             repos.append(
                                                 [top, account, reponame, repodir])
                                     elif name != "":
@@ -686,7 +720,8 @@ class GitFactory(JSBASE):
         if interactive:
             result = []
             if len(repos) > 20:
-                self.logger.info("Select account to choose from, too many choices.")
+                self.logger.info(
+                    "Select account to choose from, too many choices.")
                 accounts = j.tools.console.askChoiceMultiple(accounts)
 
             repos = [item for item in repos if item[1] in accounts]
@@ -705,7 +740,7 @@ class GitFactory(JSBASE):
 
         return result
 
-    def findGitPath(self, path,die=True):
+    def findGitPath(self, path, die=True):
         """
         given a path, check if this path or any of its parents is a git repo, return the first git repo
         :param path: (String) path from where to start search
@@ -718,7 +753,6 @@ class GitFactory(JSBASE):
             path = j.sal.fs.getParent(path)
         if die:
             raise j.exceptions.Input("Cannot find git path in:%s" % path)
-        
 
     def parseGitConfig(self, repopath):
         """
@@ -744,7 +778,12 @@ class GitFactory(JSBASE):
                 branch = line.split(" \"")[1].strip(
                     "]\" ").strip("]\" ").strip("]\" ")
 
-    def getGitReposListLocal(self, provider="", account="", name="", errorIfNone=True):
+    def getGitReposListLocal(
+            self,
+            provider="",
+            account="",
+            name="",
+            errorIfNone=True):
         """
         j.clients.git.getGitReposListLocal()
         """
@@ -756,36 +795,49 @@ class GitFactory(JSBASE):
                 findDirectorySymlinks=True):
             if provider != "" and provider != top:
                 continue
-            for accountfound in j.sal.fs.listDirsInDir("%s/%s" % (j.dirs.CODEDIR, top),
-                                                       recursive=False, dirNameOnly=True, findDirectorySymlinks=True):
+            for accountfound in j.sal.fs.listDirsInDir(
+                "%s/%s" %
+                (j.dirs.CODEDIR,
+                 top),
+                recursive=False,
+                dirNameOnly=True,
+                    findDirectorySymlinks=True):
                 if account != "" and account != accountfound:
                     continue
-                if accountfound[0]==".":
+                if accountfound[0] == ".":
                     continue
                 accountfounddir = "/%s/%s/%s" % (j.dirs.CODEDIR,
                                                  top, accountfound)
                 for reponame in j.sal.fs.listDirsInDir(
-                                    "%s/%s/%s" %
-                                    (j.dirs.CODEDIR,
-                                    top,
-                                    accountfound),
-                                    recursive=False,
-                                    dirNameOnly=True,
-                                    findDirectorySymlinks=True):
-                    if reponame[0]==".":
+                    "%s/%s/%s" %
+                    (j.dirs.CODEDIR,
+                     top,
+                     accountfound),
+                    recursive=False,
+                    dirNameOnly=True,
+                        findDirectorySymlinks=True):
+                    if reponame[0] == ".":
                         continue
-                    if  name !="" and name != reponame:
+                    if name != "" and name != reponame:
                         continue
                     repodir = "%s/%s/%s/%s" % (j.dirs.CODEDIR,
                                                top, accountfound, reponame)
-                    # if j.sal.fs.exists(path="%s/.git" % repodir): #to get syncer to work
+                    # if j.sal.fs.exists(path="%s/.git" % repodir): #to get
+                    # syncer to work
                     repos[reponame] = repodir
         if len(list(repos.keys())) == 0 and errorIfNone:
             raise RuntimeError(
-                "Cannot find git repo for search criteria provider:'%s' account:'%s' name:'%s'" % (provider, account, name))
+                "Cannot find git repo for search criteria provider:'%s' account:'%s' name:'%s'" %
+                (provider, account, name))
         return repos
 
-    def pushGitRepos(self, message, name="", update=True, provider="", account=""):
+    def pushGitRepos(
+            self,
+            message,
+            name="",
+            update=True,
+            provider="",
+            account=""):
         """
         if name specified then will look under code dir if repo with path can be found
         if not or more than 1 there will be error
@@ -818,24 +870,39 @@ class GitFactory(JSBASE):
             cmd = "cd %s;git pull origin %s" % (path, branch)
             j.sal.process.executeInteractive(cmd)
 
-    def changeLoginPasswdGitRepos(self, provider="", account="", name="",
-                                  login="", passwd="", ssh=True, pushmessage=""):
+    def changeLoginPasswdGitRepos(
+            self,
+            provider="",
+            account="",
+            name="",
+            login="",
+            passwd="",
+            ssh=True,
+            pushmessage=""):
         """
         walk over all git repo's found in account & change login/passwd
         """
         if ssh is False:
-            for reponame, repopath in list(self.getGitReposListLocal(provider, account, name).items()):
+            for reponame, repopath in list(
+                self.getGitReposListLocal(
+                    provider, account, name).items()):
                 import re
                 configpath = "%s/.git/config" % repopath
                 text = j.sal.fs.readFile(configpath)
                 text2 = text
-                for item in re.findall(re.compile(r'//.*@%s' % provider), text):
+                for item in re.findall(
+                        re.compile(
+                            r'//.*@%s' %
+                            provider),
+                        text):
                     newitem = "//%s:%s@%s" % (login, passwd, provider)
                     text2 = text.replace(item, newitem)
                 if text2.strip() != text:
                     j.sal.fs.writeFile(configpath, text2)
         else:
-            for reponame, repopath in list(self.getGitReposListLocal(provider, account, name).items()):
+            for reponame, repopath in list(
+                self.getGitReposListLocal(
+                    provider, account, name).items()):
                 configpath = "%s/.git/config" % repopath
                 text = j.sal.fs.readFile(configpath)
                 text2 = ""
@@ -849,7 +916,12 @@ class GitFactory(JSBASE):
                                 "//", 1)[1].split("/", 1)[0].strip()
                             account2 = line.split("//", 1)[1].split("/", 2)[1]
                             name2 = line.split(
-                                "//", 1)[1].split("/", 2)[2].replace(".git", "")
+                                "//",
+                                1)[1].split(
+                                "/",
+                                2)[2].replace(
+                                ".git",
+                                "")
                             line = "\turl = git@%s:%s/%s.git" % (
                                 provider2, account2, name2)
                             change = True
@@ -861,7 +933,8 @@ class GitFactory(JSBASE):
                     # self.logger.info "===="
                     # self.logger.info text2
                     # self.logger.info "++++"
-                    self.logger.info(("changed login/passwd/git on %s" % configpath))
+                    self.logger.info(
+                        ("changed login/passwd/git on %s" % configpath))
                     j.sal.fs.writeFile(configpath, text2)
 
         if pushmessage != "":
