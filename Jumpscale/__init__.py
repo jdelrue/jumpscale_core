@@ -232,11 +232,21 @@ else:
 
     j.logger.init()  # will reconfigure the logging to use the config file
 
-    from .tools.formbuilder.FormBuilder import FormBuilderFactory
+    from .data.serializers.SerializersFactory import SerializersFactory
+    j.data.serializers = SerializersFactory()
 
+    from .clients.git.GitFactory import GitFactory
+    j.clients.git = GitFactory()
+
+    from .clients.sshkey.SSHKeys import SSHKeys
+    j.clients.sshkey = SSHKeys()
+
+    from .tools.formbuilder.FormBuilder import FormBuilderFactory
+    j.tools.formbuilder = FormBuilderFactory()  # needed in ConfigManager
+
+    from .tools.formbuilder.FormBuilder import FormBuilderFactory
     j.tools.formbuilder = FormBuilderFactory()  # needed in ConfigManager
 
     from .tools.configmanager.ConfigManager import ConfigFactory
-
     j.tools.configmanager = ConfigFactory()  # needed in platformtypes
 
