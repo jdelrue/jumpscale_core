@@ -1,4 +1,4 @@
-from jumpscale import j
+from Jumpscale import j
 from collections import OrderedDict
 
 JSBASE = j.application.jsbase_get_class()

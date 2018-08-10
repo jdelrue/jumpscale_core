@@ -1,4 +1,4 @@
-from jumpscale import j
+from Jumpscale import j # required because jumpscale.py doesn't exist at setup
 
 JSBASE = j.application.jsbase_get_class()
 
