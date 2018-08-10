@@ -1,6 +1,6 @@
 
 # import struct
-from jumpscale import j
+from Jumpscale import j # J due to recursive import issue
 
 JSBASE = j.application.jsbase_get_class()
 

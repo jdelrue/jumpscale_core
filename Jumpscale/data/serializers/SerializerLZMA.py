@@ -1,7 +1,7 @@
 
 import pylzma
 from .SerializerBase import SerializerBase
-from jumpscale import j
+from Jumpscale import j # J due to recursive import issue
 
 
 class SerializerLZMA(SerializerBase):

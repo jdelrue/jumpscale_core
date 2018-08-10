@@ -1,6 +1,6 @@
 import yaml
 from collections import OrderedDict
-from jumpscale import j
+from Jumpscale import j # J due to recursive import issue with Configmanager
 from .SerializerBase import SerializerBase
 
 testtoml = """
@@ -89,7 +89,7 @@ class SerializerYAML(SerializerBase):
         ddict = j.data.serializer.toml.loads(testtoml)
         # TODO:*3 write some test
 
-# from jumpscale import j
+# from Jumpscale import j # J due to recursive import issue
 
 # from yaml import load, dump
 # try:

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, print_function
-from jumpscale import j
+from Jumpscale import j # J due to recursive import issue
 import itertools as it
 import operator as op
 import functools as ft
