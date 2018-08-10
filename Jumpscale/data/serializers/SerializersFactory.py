@@ -1,4 +1,4 @@
-from jumpscale import j
+from Jumpscale import j # needed because of ConfigManager recursive import
 
 
 from Jumpscale.data.serializers.SerializerBase import SerializerBase
