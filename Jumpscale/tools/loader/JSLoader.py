@@ -143,7 +143,8 @@ class Jumpscale(object):
 j = Jumpscale()
 
 {{#patchers}}
-j.{{from}} = j.{{to}}
+if not getattr(j, "{{from}}", None):
+    j.{{from}} = j.{{to}}
 {{/patchers}}
 
 """
