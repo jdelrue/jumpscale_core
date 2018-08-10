@@ -223,7 +223,8 @@ def jumpscale_py_setup(location):
     with open(setup_script, "w") as f:
         f.write(setup_cmd)
     pipecmd(["/usr/bin/env", "python3", setup_script,
-             "install", "--old-and-unmanageable"], location, "")
+             "install", "--old-and-unmanageable", "--force"],
+             location, "")
     # os.unlink(setup_script)
     os.chdir(cwd)
 
