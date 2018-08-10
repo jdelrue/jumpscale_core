@@ -253,3 +253,6 @@ else:
     from .data.nacl.NACLFactory import NACLFactory
     j.data.nacl = NACLFactory()
 
+    from .data.hash.HashTool import HashTool
+    j.data.hash = HashTool()
+
