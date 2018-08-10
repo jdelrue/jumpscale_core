@@ -234,7 +234,7 @@ class ErrorConditionObject(BaseException, JSBASE):
         self.key  # make sure uniquekey is filled
         data = self.__dict__.copy()
         data.pop('tb', None)
-        return j.data.serializer.json.dumps(data)
+        return j.data.serializers.json.dumps(data)
 
     @property
     def info(self):

@@ -35,8 +35,8 @@ class Nodes(JSConfigBase):
         assert j.data.types.string.check(sshclient)
         assert j.data.types.string.check(zosclient)
 
-        secretconfig = j.data.serializer.json.dumps(secretconfig)
-        pubconfig = j.data.serializer.json.dumps(pubconfig)
+        secretconfig = j.data.serializers.json.dumps(secretconfig)
+        pubconfig = j.data.serializers.json.dumps(pubconfig)
 
         data = {}
         data["name"] = name
@@ -115,8 +115,8 @@ class Nodes(JSConfigBase):
 
         # from IPython import embed;embed(colors='Linux')
         assert n.config.data == d2
-        j.data.serializer.toml.fancydumps(
-            n.config.data) == j.data.serializer.toml.fancydumps(d2)
+        j.data.serializers.toml.fancydumps(
+            n.config.data) == j.data.serializers.toml.fancydumps(d2)
 
         self.logger.debug(self)
 

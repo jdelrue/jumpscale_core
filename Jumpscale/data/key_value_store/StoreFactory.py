@@ -318,7 +318,7 @@ class StoreFactory(JSBASE):
         # cache = j.data.kvs.getRedisCacheLocal()
         cache = None  # NOT IMPLEMENTED YET
 
-        serializer = j.data.serializer.json
+        serializer = j.data.serializers.json
         db = j.data.kvs.getRedisStore(name="kvs", namespace="testdb", serializers=[serializer], cache=cache)
         db.destroy()
         obj = [1, 2, 3, 4]
@@ -427,7 +427,7 @@ class StoreFactory(JSBASE):
     #     """
     #     example:
     #     cache=j.data.kvs.getRedisCacheLocal()
-    #     serializer=j.data.serializer.json
+    #     serializer=j.data.serializers.json
     #     db=j.data.kvs.getRedisStore(namespace="cache",serializers=[serializer],cache=cache)
 
     #     """

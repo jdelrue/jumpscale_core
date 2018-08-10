@@ -165,14 +165,14 @@ class SerializerTOML(SerializerBase):
         else:
             dictupdate = tomlupdate
 
-        return j.data.serializer.dict.merge(
+        return j.data.serializers.dict.merge(
             dictsource, dictupdate, keys_replace=keys_replace,
             add_non_exist=add_non_exist, die=die, errors=errors,
             listunique=listunique, listsort=listsort, liststrip=liststrip)
 
     def test(self):
         """
-        js_shell 'j.data.serializer.toml.test()'
+        js_shell 'j.data.serializers.toml.test()'
         """
 
         ddict = self.loads(testtoml)

@@ -109,7 +109,7 @@ class Process(JSBASE):
         self._close()
 
     def _setResult(self, value):
-        self.outpipe.write(j.data.serializer.json.dumps(value) + "\n")
+        self.outpipe.write(j.data.serializers.json.dumps(value) + "\n")
         self.outpipe.flush()
 
     def _setSuccess(self, retval):
@@ -162,7 +162,7 @@ class Process(JSBASE):
             os.close(wpipe)
 
             temp = self.inpipe.read()
-            data = j.data.serializer.json.loads(temp)
+            data = j.data.serializers.json.loads(temp)
 
             self._update(data)
             self.stdout = sys.stdout.getBuffer()
@@ -266,7 +266,7 @@ class Process(JSBASE):
 
         # otherwise, process is ended and we know the result
         else:
-            data = j.data.serializer.json.loads(temp)
+            data = j.data.serializers.json.loads(temp)
 
         # update local class with data
         self._update(data)

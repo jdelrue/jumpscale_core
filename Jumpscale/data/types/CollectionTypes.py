@@ -23,11 +23,11 @@ class YAML(String):
             return s
         else:
             # s = s.replace("''", '"')
-            j.data.serializer.yaml.loads(s)
+            j.data.serializers.yaml.loads(s)
             return s
 
     def toString(self, v):
-        return j.data.serializer.yaml.dumps(v)
+        return j.data.serializers.yaml.dumps(v)
 
 class JSON(String):
     
@@ -59,11 +59,11 @@ class Dictionary():
             return s
         else:
             s = s.replace("''", '"')
-            j.data.serializer.json.loads(s)
+            j.data.serializers.json.loads(s)
             return s
 
     def toString(self, v):
-        return j.data.serializer.json.dumps(v, True, True)
+        return j.data.serializers.json.dumps(v, True, True)
 
     def capnp_schema_get(self,name,nr):
         raise RuntimeError("not implemented")
@@ -193,7 +193,7 @@ class List():
         if key == "":
             raise NotImplemented()
         else:
-            return j.data.serializer.toml.loads(val)
+            return j.data.serializers.toml.loads(val)
 
     def capnp_schema_get(self,name,nr):
         s=self.SUBTYPE.capnp_schema_get("name",0)

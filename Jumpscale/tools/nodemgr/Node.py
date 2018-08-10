@@ -121,23 +121,23 @@ class Node(JSConfigBase):
     @property
     def secretconfig(self):
         data = self.config.data["secretconfig_"]
-        data = j.data.serializer.json.loads(data)
+        data = j.data.serializers.json.loads(data)
         return data
 
     @secretconfig.setter
     def secretconfig(self, data):
-        data = j.data.serializer.json.dumps(data)
+        data = j.data.serializers.json.dumps(data)
         self.config.data = {"secretconfig_": data}
 
     @property
     def pubconfig(self):
         data = self.config.data["pubconfig"]
-        data = j.data.serializer.json.loads(data)
+        data = j.data.serializers.json.loads(data)
         return data
 
     @pubconfig.setter
     def pubconfig(self, data):
-        data = j.data.serializer.json.dumps(data)
+        data = j.data.serializers.json.dumps(data)
         self.config.data = {"pubconfig": data}
 
     @property

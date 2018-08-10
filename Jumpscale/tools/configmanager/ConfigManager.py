@@ -625,7 +625,7 @@ class ConfigFactory(JSBASE):
             email = "kkk@kk.com"
             login_name = "dddd"
             """
-            data = j.data.serializer.toml.loads(MYCONFIG)
+            data = j.data.serializers.toml.loads(MYCONFIG)
 
             self.init(path=tdir, data=data, silent=True)
 
@@ -647,9 +647,9 @@ class ConfigFactory(JSBASE):
         assert len(j.sal.fs.listFilesInDir(tdir)) == 1
 
         # check that the saved data is ok
-        assert j.data.serializer.toml.fancydumps(
+        assert j.data.serializers.toml.fancydumps(
             j.tools.myconfig.config.data) == \
-                    j.data.serializer.toml.fancydumps(data)
+                    j.data.serializers.toml.fancydumps(data)
 
         self.delete("j.tools.myconfig")  # should remove all
         assert len(j.sal.fs.listFilesInDir(tdir)) == 0
@@ -672,9 +672,9 @@ class ConfigFactory(JSBASE):
         # j.tools.configmanager.reset()
         j.tools.myconfig.reset()
         j.tools.myconfig.config._data = {}
-        assert j.data.serializer.toml.fancydumps(
+        assert j.data.serializers.toml.fancydumps(
             j.tools.myconfig.config.data) ==  \
-                    j.data.serializer.toml.fancydumps(data)
+                    j.data.serializers.toml.fancydumps(data)
 
         # clean the env
         # j.tools.configmanager.reset()
@@ -702,7 +702,7 @@ class ConfigFactory(JSBASE):
         description = "some descr"
         secretconfig_ = "my secret config"
         """
-        data = j.data.serializer.toml.loads(MYCONFIG)
+        data = j.data.serializers.toml.loads(MYCONFIG)
 
         for i in range(10):
             data["addr"] = "192.168.1.%s" % i

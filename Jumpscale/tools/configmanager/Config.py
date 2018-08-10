@@ -36,12 +36,12 @@ class Config(JSBASE):
             dataOnFS = self.data  # now decrypt
 
         # make sure template has been applied !
-        data2, error = j.data.serializer.toml.merge(
+        data2, error = j.data.serializers.toml.merge(
             tomlsource=self.template, tomlupdate=dataOnFS, listunique=True)
 
         if data != {}:
             # update with data given
-            data, error = j.data.serializer.toml.merge(
+            data, error = j.data.serializers.toml.merge(
                 tomlsource=data2, tomlupdate=data, listunique=True)
             self.data = data
         else:
@@ -49,8 +49,8 @@ class Config(JSBASE):
             self.data = data2
 
         # do the fancydump to make sure we really look at differences
-        if j.data.serializer.toml.fancydumps(
-                self.data) != j.data.serializer.toml.fancydumps(dataOnFS):
+        if j.data.serializers.toml.fancydumps(
+                self.data) != j.data.serializers.toml.fancydumps(dataOnFS):
             self.logger.debug("change of data in config, need to save")
             self.save()
 
@@ -98,7 +98,7 @@ class Config(JSBASE):
             else:
                 content = j.sal.fs.fileGetContents(self.path)
                 try:
-                    self._data = j.data.serializer.toml.loads(content)
+                    self._data = j.data.serializers.toml.loads(content)
                 except Exception as e:
                     if "deserialization failed" in str(e):
                         raise RuntimeError(
@@ -115,7 +115,7 @@ class Config(JSBASE):
         # at this point we have the config & can write (self._data has the
         # encrypted pieces)
         j.sal.fs.writeFile(
-            self.path, j.data.serializer.toml.fancydumps(self._data))
+            self.path, j.data.serializers.toml.fancydumps(self._data))
 
     def delete(self):
         j.sal.fs.remove(self.path)
@@ -152,7 +152,7 @@ class Config(JSBASE):
             self._template = myvars["template"]
         if j.data.types.string.check(self._template):
             try:
-                self._template = j.data.serializer.toml.loads(self._template)
+                self._template = j.data.serializers.toml.loads(self._template)
             except Exception as e:
                 if "deserialization failed" in str(e):
                     raise RuntimeError(
@@ -227,7 +227,7 @@ class Config(JSBASE):
 
     @property
     def yaml(self):
-        return j.data.serializer.toml.fancydumps(self._data)
+        return j.data.serializers.toml.fancydumps(self._data)
 
     def __str__(self):
         out = "config:%s:%s\n\n" % (self.location, self.instance)

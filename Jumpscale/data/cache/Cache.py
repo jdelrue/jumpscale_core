@@ -185,9 +185,9 @@ class CacheCategory(JSBASE):
         for key in self.db.keys():
             val = self.db.get(key)
             res[key] = val
-        # out = j.data.serializer.yaml.dumps(res, default_flow_style=False)
+        # out = j.data.serializers.yaml.dumps(res, default_flow_style=False)
         print (dir(j.data))
-        out = j.data.serializer.yaml.dumps(res)
+        out = j.data.serializers.yaml.dumps(res)
         return out
 
     __BUG35repr__ = __BUG35str__

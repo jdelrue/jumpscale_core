@@ -202,7 +202,7 @@ class Application:
         if not j.core.db.hexists("application", appname):
             return list()
         else:
-            pids = j.data.serializer.json.loads(
+            pids = j.data.serializers.json.loads(
                 j.core.db.hget("application", appname))
             return pids
 
@@ -241,7 +241,7 @@ class Application:
         j.core.db.hset(
             "application",
             appname,
-            j.data.serializer.json.dumps(pids))
+            j.data.serializers.json.dumps(pids))
 
         return pids
 

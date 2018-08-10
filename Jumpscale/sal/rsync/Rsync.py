@@ -34,12 +34,12 @@ class RsyncServer(JSBASE):
         j.tools.path.get("/etc/rsync").mkdir_p()
 
         if self.pathsecrets.exists():
-            self.secrets = j.data.serializer.toml.loads(self.pathsecrets.text())
+            self.secrets = j.data.serializers.toml.loads(self.pathsecrets.text())
         else:
             self.secrets = {}
 
         if self.pathusers.exists():
-            self.users = j.data.serializer.toml.loads(self.pathusers.text())
+            self.users = j.data.serializers.toml.loads(self.pathusers.text())
         else:
             self.users = {}
 
@@ -54,11 +54,11 @@ class RsyncServer(JSBASE):
             secret = j.data.idgenerator.generateGUID().replace("-", "")
 
         self.secrets[name.strip()] = secret.strip()
-        self.pathsecrets.write_text(j.data.serializer.toml.dumps(self.secrets))
+        self.pathsecrets.write_text(j.data.serializers.toml.dumps(self.secrets))
 
     def addUser(self, name, passwd):
         self.users[name.strip()] = passwd.strip()
-        self.pathusers.write_text(j.data.serializer.toml.dumps(self.users))
+        self.pathusers.write_text(j.data.serializers.toml.dumps(self.users))
 
     def saveConfig(self):
 

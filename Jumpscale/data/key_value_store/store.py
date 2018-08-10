@@ -130,7 +130,7 @@ class KeyValueStoreBase(JSBASE):  # , metaclass=ABCMeta):
             val = val.encode()
             ttype += 0b0000100
         elif j.data.types.bytes.check(val) == False:
-            val = j.data.serializer.msgpack.dumps(val)
+            val = j.data.serializers.msgpack.dumps(val)
             ttype += 0b0010000
 
         typeb = ttype.to_bytes(1, byteorder='big', signed=False)
@@ -203,7 +203,7 @@ class KeyValueStoreBase(JSBASE):  # , metaclass=ABCMeta):
             # is string
             val = val.decode()
         elif header & 0b0010000:
-            val = j.data.serializer.msgpack.loads(val)
+            val = j.data.serializers.msgpack.loads(val)
 
         return (val, owner, schema, expire, acl)
 
@@ -500,7 +500,7 @@ class KeyValueStoreBase(JSBASE):  # , metaclass=ABCMeta):
     #         if force == False:
     #             raise j.exceptions.RuntimeError("Cannot lock %s %s" % (locktype, info))
     #     value = [self.id, j.data.time.getTimeEpoch() + timeout, info]
-    #     encodedValue = j.data.serializer.json.dumps(value)
+    #     encodedValue = j.data.serializers.json.dumps(value)
     #     self.settest(category, locktype, encodedValue)
     #
     # def lockCheck(self, locktype):
@@ -512,7 +512,7 @@ class KeyValueStoreBase(JSBASE):  # , metaclass=ABCMeta):
     #     if self.exists("lock", locktype):
     #         encodedValue = self.get("lock", locktype)
     #         try:
-    #             id, lockEnd, info = j.data.serializer.json.loads(encodedValue)
+    #             id, lockEnd, info = j.data.serializers.json.loads(encodedValue)
     #         except ValueError:
     #             self.logger.error("Failed to decode lock value")
     #             raise ValueError("Invalid lock type %s" % locktype)

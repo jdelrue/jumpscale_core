@@ -107,7 +107,7 @@ class ZeroTemplates(JSBASE):
         
         if config.strip()!="":
             try:
-                config2= j.data.serializer.yaml.loads(config)
+                config2= j.data.serializers.yaml.loads(config)
             except Exception as e:
                 raise j.exceptions.Input("Cannot parse config out of method:%s\n%s"%(code,e))
             try:

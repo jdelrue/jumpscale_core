@@ -11,7 +11,7 @@ class FormBuilderBaseClass(npyscreen.NPSAppManaged, JSBASE):
         JSBASE.__init__(self)
         self.name = name
         if j.data.types.string.check(template):
-            self.template = j.data.serializer.toml.loads(template)
+            self.template = j.data.serializers.toml.loads(template)
         elif j.data.types.dict.check(template):
             self.template = template
         else:
@@ -32,7 +32,7 @@ class FormBuilderBaseClass(npyscreen.NPSAppManaged, JSBASE):
         self.form.DEFAULT_LINES = 100
         # from IPython import embed;embed(colors='Linux')
 
-        self.config, errors = j.data.serializer.toml.merge(
+        self.config, errors = j.data.serializers.toml.merge(
             self.template, self.config, listunique=True)
 
         self.form_add_items_pre()
@@ -97,7 +97,7 @@ class FormBuilderBaseClass(npyscreen.NPSAppManaged, JSBASE):
             elif ttype.NAME == "list":
                 w = self.widgets[key]
                 result[key] = ttype.fromString(w.value)
-        self.config, errors = j.data.serializer.toml.merge(self.config, result, listunique=True)
+        self.config, errors = j.data.serializers.toml.merge(self.config, result, listunique=True)
 
     def widget_add(self, name, widget):
         if name not in self.widgets:
@@ -165,7 +165,7 @@ class FormBuilderBaseClass(npyscreen.NPSAppManaged, JSBASE):
 
     @property
     def yaml(self):
-        return j.data.serializer.toml.fancydumps(self.config)
+        return j.data.serializers.toml.fancydumps(self.config)
 
     def __str__(self):
         return self.yaml
@@ -232,7 +232,7 @@ class FormBuilderFactory(JSBASE):
 
         # will create empty config file properly constructed starting from the
         # template
-        config, errors = j.data.serializer.toml.merge(TEMPLATE, {})
+        config, errors = j.data.serializers.toml.merge(TEMPLATE, {})
 
         # don't start from an empty config
         config["email"] = "someemail@rrr.com"

@@ -52,7 +52,7 @@ class NACLFactory(JSBASE):
             if j.core.db.exists("nacl.meta"):
                 data=j.core.db.get("nacl.meta")
                 data2 = self.default.decryptSymmetric(data)
-                data3 = j.data.serializer.json.loads(data2)
+                data3 = j.data.serializers.json.loads(data2)
 
                 if "secret" in data3 and not secret:
                     secret = data3["secret"]
@@ -67,7 +67,7 @@ class NACLFactory(JSBASE):
             data={}
             data["secret"] = secret
             data["words"] = words
-            data2 = j.data.serializer.json.dumps(data)
+            data2 = j.data.serializers.json.dumps(data)
             data3 = self.default.encryptSymmetric(data2)
             self.logger.debug("remember secret,words")
             j.core.db.set("nacl.meta",data3, ex=3600)
