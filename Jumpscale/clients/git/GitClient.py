@@ -87,8 +87,10 @@ class GitClient(JSBASE):
         :raises Exception when ther eis no remote configuration for the repo, you will have to use setRemoteURL then
         """
         if len(self.repo.remotes) <= 0:
-            raise j.exceptions.Input(
-                "There is not remote configured for this repository")
+            #raise j.exceptions.Input(
+            #    "There is not remote configured for this repository")
+            self.logger.warning("no remote repo configured (local repo?)")
+            return "" # XXX issue #60?
         return self.repo.remotes[0].url
 
     @property
