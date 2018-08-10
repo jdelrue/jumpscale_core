@@ -142,8 +142,17 @@ class Jumpscale(object):
 
 j = Jumpscale()
 
+def attrchecker(j, pth):
+    pth = pth.split(".")
+    for p in pth:
+        nj = getattr(j, p, None)
+        if nj is None:
+            return False
+        j = nj
+    return True
+
 {{#patchers}}
-if not getattr(j, "{{from}}", None):
+if not attrchecker(j, "{{from}}"):
     j.{{from}} = j.{{to}}
 {{/patchers}}
 
