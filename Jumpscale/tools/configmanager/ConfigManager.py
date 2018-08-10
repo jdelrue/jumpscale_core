@@ -529,7 +529,7 @@ class ConfigFactory(JSBASE):
             else:
 
                 if cpath:
-                    msg("Found a config repo on: '%s', do you want " + \
+                    msg("Found a config repo on: '%s', do you want "
                             "to use this one?" % cpath)
                     if not j.tools.console.askYesNo():
                         giturl = None
@@ -550,10 +550,9 @@ class ConfigFactory(JSBASE):
 
                 if not cpath:
                     msg(
-                        "will create config dir in '%s/myconfig/', " + \
-                                "your config will not be centralised! " + \
-                                "Is this ok?" %
-                        j.dirs.CFGDIR)
+                        "will create config dir in '%s/myconfig/', "
+                                "your config will not be centralised! "
+                                "Is this ok?" % j.dirs.CFGDIR)
                     if j.tools.console.askYesNo():
                         cpath = '%s/myconfig/' % j.dirs.CFGDIR
                         j.sal.fs.createDir(cpath)
