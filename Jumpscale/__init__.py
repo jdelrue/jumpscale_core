@@ -256,3 +256,6 @@ else:
     from .data.hash.HashTool import HashTool
     j.data.hash = HashTool()
 
+    from .tools.myconfig.MyConfig import MyConfig
+    j.tools.myconfig = MyConfig()
+

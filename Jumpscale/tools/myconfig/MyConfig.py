@@ -1,4 +1,4 @@
-from jumpscale import j
+from Jumpscale import j # J due to recursive import in ConfigManager
 import os
 
 TEMPLATE = """
