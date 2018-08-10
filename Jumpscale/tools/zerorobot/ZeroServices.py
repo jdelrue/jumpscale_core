@@ -8,7 +8,7 @@ class ZeroService(JSBASE):
 
     def __init__(self,zrepo,template):
         JSBASE.__init__(self)
-        def.guid=""
+        self.guid=""
 
 
 
