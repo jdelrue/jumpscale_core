@@ -153,7 +153,7 @@ GEN_END = """
 # CODE GENERATION ONLY
 GEN_END2 = r"""
 
-class Jumpscale(object):
+class Jumpscale(JSBase):
 
     {{#locations}}
     @lazyprop
