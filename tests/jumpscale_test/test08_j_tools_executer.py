@@ -107,4 +107,4 @@ class EXECUTER(TestcasesBase):
         **Test Scenario:**
         #. Compare executer.env with os environment variables, should be the same.
         """
-        self.assertDictEqual(os.environ.__dict__, self.executer.env.__dict__)
+        self.assertDictEqual(os.environ.__dict__, self.executer.env)
