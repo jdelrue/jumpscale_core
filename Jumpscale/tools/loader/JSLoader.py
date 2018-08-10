@@ -115,7 +115,7 @@ def {{classname}}():
 class {{jname}}(object):
 
     {{#locationsubs}}
-    #@lazyprop
+    @lazyprop
     def {{name}}(self):
         return {{classname}}()
     {{/locationsubs}}
@@ -135,7 +135,7 @@ GEN_END2 = r"""
 class Jumpscale(object):
 
     {{#locations}}
-    #@lazyprop
+    @lazyprop
     def {{name}}(self):
         return {{name}}()
     {{/locations}}
