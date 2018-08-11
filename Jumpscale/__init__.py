@@ -112,48 +112,29 @@ else:
     j.application = Application(logging=l)
     j.core.application = j.application
 
-    j.data._add_instance('text', 'Jumpscale.data.text.Text', 'Text')
-    j.data._add_instance('types', 'Jumpscale.data.types.Types', 'Types')
-
-    from .data.regex.RegexTools import RegexTools
-
-    j.data.regex = RegexTools()
-
-    from .fs.SystemFS import SystemFS
-
-    j.sal.fs = SystemFS()
-
-    from .sal.process.SystemProcess import SystemProcess
-
-    j.sal.process = SystemProcess()
-
-    from .data.key_value_store.StoreFactory import StoreFactory
-
-    j.data.kvs = StoreFactory()
-
-    from .data.time.Time import Time_
-
-    j.data.time = Time_()
-
+    # hmmm property cache in JSBase interfering *sigh*...
     from .data.cache.Cache import Cache
-
     j.data.cache = Cache()
 
-    from .data.queue.MemQueue import MemQueueFactory
-
-    j.data.memqueue = MemQueueFactory()
-
-    from .clients.redis.RedisFactory import RedisFactory
-
-    j.clients.redis = RedisFactory()
-
-    from .tools.executor.ExecutorLocal import ExecutorLocal
-
-    j.tools.executorLocal = ExecutorLocal()  # needed in platformtypes
-
-    from .core.PlatformTypes import PlatformTypes
-
-    j.core.platformtype = PlatformTypes()
+    for (parent, child, module, kls) in [
+        ('data', 'text', 'data.text.Text', 'Text'),
+        ('data', 'types', 'data.types.Types', 'Types'),
+        ('data', 'regex', 'data.regex.RegexTools', 'RegexTools'),
+        ('sal', 'fs', 'fs.SystemFS', 'SystemFS'),
+        ('sal', 'process', 'sal.process.SystemProcess', 'SystemProcess'),
+        ('data', 'kvs', 'data.key_value_store.StoreFactory', 'StoreFactory'),
+        ('data', 'time', 'data.time.Time', 'Time_'),
+        ('data', 'memqueue', 'data.queue.MemQueue', 'MemQueueFactory'),
+        ('clients', 'redis', 'clients.redis.RedisFactory', 'RedisFactory'),
+        ('tools', 'executorLocal', 'tools.executor.ExecutorLocal',
+                                    'ExecutorLocal'),
+        ('core', 'platformtype', 'core.PlatformTypes', 'PlatformTypes'),
+        ]:
+        print ("adding", parent, child, module, kls)
+        parent = getattr(j, parent)
+        parent._add_instance(child, "Jumpscale." + module, kls)
+        child = getattr(parent, child)
+        print ("added", parent, child)
 
     j.core.state = j.tools.executorLocal.state
 
