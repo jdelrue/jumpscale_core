@@ -12,10 +12,9 @@ import base64
 JSBASE = j.application.jsbase_get_class()
 
 
-class ExecutorBase(JSBASE):
+class ExecutorBase(object):
 
     def __init__(self, debug=False, checkok=True):
-        JSBASE.__init__(self)
         self.debug = debug
         self.checkok = checkok
         self.type = None

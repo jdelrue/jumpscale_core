@@ -6,9 +6,6 @@ import pytoml
 import socket
 import sys
 
-JSBASE = j.application.jsbase_get_class()
-
-
 class ExecutorLocal(ExecutorBase):
 
     def __init__(self, debug=False, checkok=False):
@@ -18,7 +15,6 @@ class ExecutorLocal(ExecutorBase):
         ExecutorBase.__init__(self, debug=debug, checkok=debug)
         self.type = "local"
         self._id = 'localhost'
-        self._logger = self.logger
 
         # self.cache = j.data.cache.get(id="executor:%s" %
         #               self.id,expiration=3600)

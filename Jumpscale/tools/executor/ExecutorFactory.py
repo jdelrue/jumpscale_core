@@ -28,7 +28,8 @@ class ExecutorFactory(JSBASE):
 
         """
         if 'localhost' not in self._executors:
-            self._executors['localhost'] = ExecutorLocal()
+            DL = self._jsbase(self.j, "ExecutorLocal", [ExecutorLocal])
+            self._executors['localhost'] = DL()
         return self._executors['localhost']
 
     def ssh_get(self, sshclient):
