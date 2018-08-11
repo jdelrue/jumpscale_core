@@ -1,4 +1,5 @@
 from setuptools import setup, find_packages
+#from distutils.core import setup <- needed for dynamic bootstrap (TODO)
 from distutils.sysconfig import get_python_lib
 from setuptools.command.install import install as _install
 from setuptools.command.develop import develop as _develop
@@ -49,6 +50,24 @@ try:
 except ImportError:
     long_description = ""
 
+# minimum list of packages needed to get Jumpscale.__init__.py
+# operational for dynamic bootstrap, which isn't working yet...
+packages = ['Jumpscale',
+            'Jumpscale.core',
+            'Jumpscale.data',
+            'Jumpscale.data.types',
+            'Jumpscale.data.text',
+            'Jumpscale.tools',
+            'Jumpscale.tools.loader',
+            'Jumpscale.tools.configmanager',
+            'Jumpscale.fs',
+            'Jumpscale.sal',
+            'Jumpscale.sal.process',
+            'Jumpscale.errorhandling',
+            'Jumpscale.tools.executor',
+            'Jumpscale.data.cache',
+            'Jumpscale.logging']
+packages = find_packages() # .... so just install everything for now
 
 setup(
     name='Jumpscale',
@@ -59,7 +78,7 @@ setup(
     author='ThreeFoldTech',
     author_email='info@threefold.tech',
     license='Apache',
-    packages=find_packages(),
+    packages=packages,
 
     # IF YOU CHANGE ANYTHING HERE, LET DESPIEGK NOW (DO NOT INSTALL ANYTHING
     # WHICH NEEDS TO COMPILE)

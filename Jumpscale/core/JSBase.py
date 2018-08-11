@@ -1,6 +1,7 @@
 from copy import copy
 import os
-import importlib
+import sys
+import importlib.util
 
 
 class BaseGetter(object):
@@ -32,12 +33,12 @@ class BaseGetter(object):
     def __init__(self):
         self.__subgetters__ = {}
 
-    def _add_instance(self, subname, modulepath, objectname):
+    def _add_instance(self, subname, modulepath, objectname, fullpath=None):
         """ adds an instance to the dictionary, for when
             __getattribute__ is called, the instance will be loaded
         """
         #print ("add instance", self, subname, modulepath, objectname)
-        ms = ModuleSetup(subname, modulepath, objectname)
+        ms = ModuleSetup(subname, modulepath, objectname, fullpath)
         #print (dir(self))
         d = object.__getattribute__(self, '__subgetters__')
         d[subname] = ms
@@ -66,26 +67,65 @@ class BaseGetter(object):
 
 
 class ModuleSetup(object):
-    def __init__(self, subname, modulepath, objectname):
+    def __init__(self, subname, modulepath, objectname, fullpath):
         self.subname = subname
         self.modulepath = modulepath
         self.objectname = objectname
+        self.fullpath = fullpath
         self._obj = None
+
+    def _import_parent_recurse(self, mpathname, parent_name):
+        ppath = os.path.join(parent_name, "__init__.py")
+        print ("import recurse", mpathname, ppath, parent_name)
+        spec = importlib.util._find_spec_from_path(ppath, None)
+        print ("spec", spec)
+        if spec:
+            module = importlib.util.module_from_spec(spec)
+            print ("adding module", mpathname, module, mpathname not in sys.modules)
+            if mpathname not in sys.modules:
+                sys.modules[mpathname] = module
+        mpathname = mpathname.rpartition('.')[0]
+        parent_name = os.path.split(parent_name)[0]
+        if mpathname:
+            self._import_parent_recurse(mpathname, parent_name)
 
     def getter(self):
         if self._obj is None:
-            #print ("about to get modulepath %s object %s" % \
-            #        (self.modulepath, self.objectname))
+            #print ("about to get modulepath %s object %s path %s" % \
+            #        (self.modulepath, self.objectname, self.fullpath))
 
-            imp = importlib.import_module(self.modulepath)
+            module = importlib.import_module(self.modulepath)
 
-            #spec = importlib.util.spec_from_file_location(self.objectname,
-            #                                        self.modulepath)
-            #imp = importlib.util.module_from_spec(spec)
-            #spec.loader.exec_module(imp)
-            #print ("about to get modulepath %s object %s" % \
-            #        (self.modulepath, self.objectname))
-            self._obj = getattr(imp, self.objectname)()
+            if False: # hmmm..... still doesn't want to play ball....
+                parent_name = self.modulepath.rpartition('.')[0]
+                print ("parentname", self.modulepath, parent_name)
+                if parent_name:
+                    parentpath = os.path.split(self.fullpath)[0]
+                    mpathname = self.modulepath.rpartition('.')[0]
+                    self._import_parent_recurse(mpathname, parentpath)
+                    parent = __import__(parent_name, fromlist=['__path__'])
+                    print ("parent", parent_name, parent)
+                    spec = importlib.util._find_spec(self.modulepath,
+                                                     parent.__path__)
+                    if spec is None:
+                        spec = importlib.util.spec_from_file_location(
+                                                            self.modulepath,
+                                                            self.fullpath)
+                else:
+                    print ("no parent")
+                    #spec = importlib.util._find_spec_from_path(self.modulepath,
+                    #                                        self.fullpath)
+                    spec = importlib.util.spec_from_file_location(
+                                                        self.modulepath,
+                                                            self.fullpath)
+                print ("spec", spec, dir(spec))
+                module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module)
+            #print ("about to set fullpath %s modulepath %s object %s" % \
+            #        (self.fullpath, self.modulepath, self.objectname))
+            if module not in sys.modules:
+                sys.modules[self.modulepath] = module
+            self._obj = getattr(module, self.objectname)()
         return self._obj
 
 

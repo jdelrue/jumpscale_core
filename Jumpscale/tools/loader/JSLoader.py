@@ -372,6 +372,12 @@ class JSLoader():
                 'plugins', {}).items():
             self.logger.info("find modules in jumpscale for : '%s'" % path)
             if j.sal.fs.exists(path, followlinks=True):
+                if False: # XXX hmmm.... nasty hack... disable....
+                    pth = path
+                    if pth[-1] == '/':
+                        pth = pth[:-1]
+                    pth = os.path.split(pth)[0]
+                    sys.path = [pth] + sys.path
                 moduleList = self.findModules(path=path, moduleList=moduleList)
             else:
                 raise RuntimeError("Could not find plugin dir:%s" % path)
@@ -421,7 +427,8 @@ class JSLoader():
                 importlocation = removeDirPart(
                     modulename)[:-3].replace("//", "/").replace("/", ".")
                 #print (importlocation)
-                member._add_instance(subname, importlocation, classname)
+                member._add_instance(subname, importlocation, classname,
+                                     fullpath=modulename)
 
         _j = type("Jumpscale", (JSBASE, ), instances)
 
