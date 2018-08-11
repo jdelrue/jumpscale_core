@@ -50,13 +50,13 @@ class ErrorHandler(JSBASE):
         self._escalateToRedisFunction = None
         self._scriptsInRedis = False
         self.exceptions = JSExceptions
-        j.exceptions = JSExceptions
+        self.j.exceptions = JSExceptions
 
     def _registerScrips(self):
         if self._scriptsInRedis is False:
             luapath = "%s/errorhandling/eco.lua" % j.dirs.JSLIBDIR
-            lua = j.sal.fs.fileGetContents(luapath)
-            self._escalateToRedisFunction = j.core.db.register_script(lua)
+            lua = self.j.sal.fs.fileGetContents(luapath)
+            self._escalateToRedisFunction = self.j.core.db.register_script(lua)
             self._scriptsInRedis = True
 
     def _send2Redis(self, eco):
@@ -74,8 +74,8 @@ class ErrorHandler(JSBASE):
     def blacklist(self):
         if self._blacklist is None:
             key = 'eco.blacklist'
-            if j.application.config.jumpscale.get('application').get(key):
-                self._blacklist = j.application.config.jumpscale.get('application').getList(key)
+            if self.j.application.config.jumpscale.get('application').get(key):
+                self._blacklist = self.j.application.config.jumpscale.get('application').getList(key)
             else:
                 self._blacklist = list()
         return self._blacklist
@@ -109,7 +109,7 @@ class ErrorHandler(JSBASE):
         try:
             ##do something
         except Exception,e:
-            j.errorhandler.processPythonExceptionObject(e)
+            self.j.errorhandler.processPythonExceptionObject(e)
 
         @param exceptionObject is errorobject thrown by python when there is an exception
         @param ttype : is the description of the error, can be None
@@ -207,7 +207,7 @@ class ErrorHandler(JSBASE):
                 msg=message, msgpub=msgpub, level=level, tb=tb, tags=tags, type=type)
 
         if codetrace:
-            # so for unknown exceptions not done through raise j.exceptions we
+            # so for unknown exceptions not done through raise self.j.exceptions we
             # will do stacktrace
             eco.tracebackSet(tb, exceptionObject)
 
@@ -258,14 +258,14 @@ class ErrorHandler(JSBASE):
         sys.exit(1)
 
     def checkErrorIgnore(self, eco):
-        if j.application.debug:
+        if self.j.application.debug:
             ignorelist = []
         else:
             ignorelist = ["KeyboardInterrupt"]
         for item in ignorelist:
             if eco.errormessage.find(item) != -1:
                 return True
-        if j.application.appname in self.blacklist:
+        if self.j.application.appname in self.blacklist:
             return True
         return False
 
@@ -341,7 +341,7 @@ class ErrorHandler(JSBASE):
 
     def escalateBugToDeveloper(self, errorConditionObject, tb=None):
 
-        j.logger.enabled = False  # no need to further log, there is error
+        self.j.logger.enabled = False  # no need to further log, there is error
 
         tracefile = ""
 
@@ -356,16 +356,16 @@ class ErrorHandler(JSBASE):
                     pass
             return "less"
 
-        if False and j.application.interactive:
+        if False and self.j.application.interactive:
 
             editor = None
-            if j.core.platformtype.myplatform.isLinux:
+            if self.j.core.platformtype.myplatform.isLinux:
                 #j.tools.console.echo("THIS ONLY WORKS WHEN GEDIT IS INSTALLED")
                 editor = findEditorLinux()
-            elif j.core.platformtype.myplatform.isWindows:
-                editorPath = j.sal.fs.joinPaths(
+            elif self.j.core.platformtype.myplatform.isWindows:
+                editorPath = self.j.sal.fs.joinPaths(
                     j.dirs.JSBASEDIR, "apps", "wscite", "scite.exe")
-                if j.sal.fs.exists(editorPath):
+                if self.j.sal.fs.exists(editorPath):
                     editor = editorPath
             tracefile = errorConditionObject.log2filesystem()
             # print "EDITOR FOUND:%s" % editor
@@ -373,14 +373,14 @@ class ErrorHandler(JSBASE):
                 # print errorConditionObject.errormessagepublic
                 if tb is None:
                     try:
-                        res = j.tools.console.askString(
+                        res = self.j.tools.console.askString(
                             "\nAn error has occurred. Do you want do you want to do? (s=stop, c=continue, t=getTrace)")
                     except BaseException:                        # print "ERROR IN ASKSTRING TO SEE IF WE HAVE TO USE
                         # EDITOR"
                         res = "s"
                 else:
                     try:
-                        res = j.tools.console.askString(
+                        res = self.j.tools.console.askString(
                             "\nAn error has occurred. Do you want do you want to do? (s=stop, c=continue, t=getTrace, d=debug)")
                     except BaseException:                        # print "ERROR IN ASKSTRING TO SEE IF WE HAVE TO USE
                         # EDITOR"
@@ -389,44 +389,44 @@ class ErrorHandler(JSBASE):
                     cmd = "%s '%s'" % (editor, tracefile)
                     # print "EDITORCMD: %s" %cmd
                     if editor == "less":
-                        j.sal.process.executeWithoutPipe(cmd, die=False)
+                        self.j.sal.process.executeWithoutPipe(cmd, die=False)
                     else:
-                        result, out, err = j.sal.process.execute(
+                        result, out, err = self.j.sal.process.execute(
                             cmd, die=False, showout=False)
 
-                j.logger.clear()
+                self.j.logger.clear()
                 if res == "c":
                     return
                 elif res == "d":
-                    j.tools.console.echo(
+                    self.j.tools.console.echo(
                         "Starting pdb, exit by entering the command 'q'")
                     import pdb
                     pdb.post_mortem(tb)
                 elif res == "s":
                     # print errorConditionObject
-                    j.application.stop(1)
+                    self.j.application.stop(1)
             else:
                 # print errorConditionObject
-                res = j.tools.console.askString(
+                res = self.j.tools.console.askString(
                     "\nAn error has occurred. Do you want do you want to do? (s=stop, c=continue, d=debug)")
-                j.logger.clear()
+                self.j.logger.clear()
                 if res == "c":
                     return
                 elif res == "d":
-                    j.tools.console.echo(
+                    self.j.tools.console.echo(
                         "Starting pdb, exit by entering the command 'q'")
                     import pdb
                     pdb.post_mortem()
                 elif res == "s":
                     # print eobject
-                    j.application.stop(1)
+                    self.j.application.stop(1)
 
         else:
             # print "ERROR"
             # tracefile=eobject.log2filesystem()
             # print errorConditionObject
             #j.tools.console.echo( "Tracefile in %s" % tracefile)
-            j.application.stop(1)
+            self.j.application.stop(1)
 
     def halt(self, msg, eco):
         if eco is not None:
@@ -438,7 +438,7 @@ class ErrorHandler(JSBASE):
         @param message is the error message which describes the state
         @param msgpub is message we want to show to endcustomers (can include a solution)
         """
-        eco = j.errorhandler.getErrorConditionObject(
+        eco = self.j.errorhandler.getErrorConditionObject(
             ddict={}, msg=message, msgpub=msgpub, category='', level=level, type='WARNING')
 
         eco.process()

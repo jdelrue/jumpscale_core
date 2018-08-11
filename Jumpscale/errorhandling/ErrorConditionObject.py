@@ -48,7 +48,7 @@ class ErrorConditionObject(BaseException, JSBASE):
                 self.__dict__.setdefault(k, v)
             self.__dict__.update(ddict)
         else:
-            btkis, filename0, linenr0, func0 = j.errorhandler.getErrorTraceKIS(
+            btkis, filename0, linenr0, func0 = self.j.errorhandler.getErrorTraceKIS(
                 tb=tb)
 
             # if len(btkis)>1:
@@ -78,11 +78,11 @@ class ErrorConditionObject(BaseException, JSBASE):
                 self.funcfilename = ""
                 self.funclinenr = ""
 
-            self.appname = j.application.appname  # name as used by application
+            self.appname = self.j.application.appname  # name as used by application
             # if hasattr(j, 'core') and hasattr(j.core, 'grid') \
             #               and hasattr(j.core.grid, 'aid'):
-            #     self.aid = j.core.grid.aid
-            self.pid = j.application.systempid
+            #     self.aid = self.j.core.grid.aid
+            self.pid = self.j.application.systempid
             self.jid = 0
             self.masterjid = 0
 
@@ -191,7 +191,7 @@ class ErrorConditionObject(BaseException, JSBASE):
         self._toAscii()
 
         if self.type in ["INPUT", "MONITORING", "OPERATIONS",
-                         "PERFORMANCE"] and j.application.debug is False:
+                         "PERFORMANCE"] and self.j.application.debug is False:
             self.tb = ""
             self.code = ""
             self.backtrace = ""
@@ -225,7 +225,7 @@ class ErrorConditionObject(BaseException, JSBASE):
             #           str(self.errormessage),"eco.check.level")
             self.level = 4
 
-        res = j.errorhandler._send2Redis(self)
+        res = self.j.errorhandler._send2Redis(self)
         if res is not None:
             self.__dict__ = res
 
@@ -260,12 +260,12 @@ class ErrorConditionObject(BaseException, JSBASE):
         """
         write errorcondition to filesystem
         """
-        j.sal.fs.createDir(j.sal.fs.joinPaths(
-            j.dirs.LOGDIR, "errors", j.application.appname))
-        path = j.sal.fs.joinPaths(
+        self.j.sal.fs.createDir(j.sal.fs.joinPaths(
+            j.dirs.LOGDIR, "errors", self.j.application.appname))
+        path = self.j.sal.fs.joinPaths(
             j.dirs.LOGDIR,
             "errors",
-            j.application.appname,
+            self.j.application.appname,
             "backtrace_%s.log" %
             (self.j.data.time.getLocalTimeHRForFilesystem()))
 
@@ -277,12 +277,12 @@ class ErrorConditionObject(BaseException, JSBASE):
             msg += "%s\n" % self.errormessagePub
         if len(j.logger.logs) > 0:
             msg += "\n***LOG MESSAGES***\n"
-            for log in j.logger.logs:
+            for log in self.j.logger.logs:
                 msg += "%s\n" % log
 
         msg += "***END***\n"
 
-        j.sal.fs.writeFile(path, msg)
+        self.j.sal.fs.writeFile(path, msg)
         return path
 
     # def getBacktrace(self,btkis=None,filename0=None,linenr0=None,func0=None):
@@ -330,7 +330,7 @@ class ErrorConditionObject(BaseException, JSBASE):
     #     return out
 
         # stack=""
-        # if j.application.skipTraceback:
+        # if self.j.application.skipTraceback:
         #     return stack
         # for x in traceback.format_stack():
         #     ignore=False
@@ -388,7 +388,7 @@ class ErrorConditionObject(BaseException, JSBASE):
     #               global vars, this output can become quite big
     #     """
     #     import inspect
-    #     if j.application.skipTraceback:
+    #     if self.j.application.skipTraceback:
     #         return ""
     #     sep="\n"+"-"*90+"\n"
     #     result = ''
