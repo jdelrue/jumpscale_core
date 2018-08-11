@@ -1,3 +1,4 @@
+from copy import copy
 import os
 import importlib
 
@@ -155,12 +156,23 @@ class JSBase(BaseGetter):
     @staticmethod
     def _create_jsbase_instance(jname, derived_classes=None):
         """ dynamically creates a class which is derived from JSBase,
-            that has the name "jname"
+            that has the name "jname".  sets up a "super" caller 
+            (a dynamic __init__) that calls __init__ on the derived classes
         """
         if derived_classes is None:
             derived_classes = []
-        derived_classes.append(JSBase)
-        memberkls = type(jname, tuple(derived_classes), {})
+        classes = copy(derived_classes)
+        classes.append(JSBase)
+
+        def initfn(self):
+            sup = super(JSBase, self)
+            print ("dynamic init fn", self.__name__, self,
+                            type(sup))
+            sup.__init__()
+            JSBase.__init__(self)
+        inits = {'__init__': initfn}
+
+        memberkls = type(jname, tuple(classes), inits)
         return memberkls()
 
 # don't touch this directly - go through any instance of JSBase, assign self.j
