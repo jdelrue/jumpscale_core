@@ -153,11 +153,14 @@ class JSBase(BaseGetter):
         self._cache = cache
 
     @staticmethod
-    def _create_jsbase_instance(jname):
+    def _create_jsbase_instance(jname, derived_classes=None):
         """ dynamically creates a class which is derived from JSBase,
             that has the name "jname"
         """
-        memberkls = type(jname, (JSBase, ), {})
+        if derived_classes is None:
+            derived_classes = []
+        derived_classes.append(JSBase)
+        memberkls = type(jname, tuple(derived_classes), {})
         return memberkls()
 
 # don't touch this directly - go through any instance of JSBase, assign self.j
