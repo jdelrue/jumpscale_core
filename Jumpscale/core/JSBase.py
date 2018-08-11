@@ -147,7 +147,7 @@ class JSBase(BaseGetter):
                 if item in self.__dict__ and self.__dict__[item]:
                     id += "_" + str(self.__dict__[item])
                     break
-            self._cache = self.j.data.cache.get(
+            self._cache = self.j.data.datacache.get(
                 id, expiration=self._cache_expiration)
         return self._cache
 

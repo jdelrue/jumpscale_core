@@ -45,7 +45,7 @@ else:
             return self._db
 
         def db_reset(self):
-            j.data.cache._cache = {}
+            j.data.datacache._cache = {}
             self._db = None
 
     class DataUnits(JSBase):
@@ -113,10 +113,6 @@ else:
     j.application = Application(logging=l)
     j.core.application = j.application
 
-    # hmmm property cache in JSBase interfering *sigh*...
-    from .data.cache.Cache import Cache
-    j.data.cache = Cache()
-
     def add_dynamic_instance(parent, child, module, kls):
         #print ("adding", parent, child, module, kls)
         if not parent:
@@ -133,6 +129,8 @@ else:
             setattr(parent, child, walkfrom)
 
     for (parent, child, module, kls) in [
+        ('data', 'datacache', 'data.cache.Cache', 'Cache'),
+        ('', 'cache', 'data.cache', None),
         ('data', 'text', 'data.text.Text', 'Text'),
         ('data', 'types', 'data.types.Types', 'Types'),
         ('data', 'regex', 'data.regex.RegexTools', 'RegexTools'),

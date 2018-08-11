@@ -20,6 +20,7 @@ patchers = [
     {'from': 'errorhandler', 'to': 'core.errorhandler'},
     {'from': 'exceptions', 'to': 'core.errorhandler.exceptions'},
     {'from': 'events', 'to': 'core.events'},
+    {'from': 'data.datacache', 'to': 'data.cache'},
     {'from': 'logging', 'to': 'core.logging'},
     {'from': 'core.state', 'to': 'tools.executorLocal.state'},
 ]
@@ -92,7 +93,7 @@ GEN = """
 {{classname}}=JSBase
 {{/locationsubserror}}
 
-class {{jname}}(object):
+class {{jname}}(JSBase):
 
     def __init__(self):
         {{#locationsubs}}
@@ -133,7 +134,7 @@ def {{classprefix}}{{classname}}():
 
 {{/locationsubs}}
 
-class {{jname}}(object):
+class {{jname}}(JSBase):
 
     {{#locationsubs}}
     @lazyprop
@@ -187,6 +188,7 @@ if not attrchecker(j, "{{from}}"):
 # sigh need to do this as LoggerFactory is not yet inherited from JSBase
 # (neither are JSLogger instances, but they all look at their parent_
 j.logging.j = j
+j.cache = j.data.cache
 
 def profileStart():
     import cProfile
