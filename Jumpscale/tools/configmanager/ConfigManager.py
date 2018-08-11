@@ -1,4 +1,3 @@
-from Jumpscale import j # required because jumpscale.py doesn't exist at setup
 import os
 import copy
 from .JSBaseClassConfig import JSBaseClassConfig
@@ -23,14 +22,11 @@ js_config init
 
 """
 
-JSBASE = j.application.jsbase_get_class()
 
-
-class ConfigFactory(JSBASE):
+class ConfigFactory(object):
 
     def __init__(self):
         self.__jslocation__ = "j.tools.configmanager"
-        JSBASE.__init__(self)
         self._path = ""
         self.interactive = True  # std needs to be on True
         self.sandbox = False
