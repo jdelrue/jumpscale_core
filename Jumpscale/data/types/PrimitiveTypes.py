@@ -16,13 +16,13 @@ class String():
     def fromString(self, s):
         """
         return string from a string (is basically no more than a check)
-        """        
+        """
         return self.clean(s)
 
     def toString(self, v):
         return self.clean(v)
 
-    def toHR(self,v):
+    def toHR(self, v):
         return self.clean(v)
 
     def check(self, value):
@@ -39,7 +39,7 @@ class String():
         if value is None:
             value = ""
         value = str(value)
-        return value.strip()#.strip("'").strip("\"").strip()
+        return value.strip()  # .strip("'").strip("\"").strip()
 
     def python_code_get(self, value):
         """
@@ -47,7 +47,6 @@ class String():
         """
         value = self.clean(value)
         return "'%s'" % value
-
 
     def toml_string_get(self, value, key=""):
         """
@@ -58,8 +57,8 @@ class String():
         else:
             return "%s = '%s'" % (key, self.clean(value))
 
-    def capnp_schema_get(self,name,nr):
-        return "%s @%s :Text;"%(name,nr)
+    def capnp_schema_get(self, name, nr):
+        return "%s @%s :Text;" % (name, nr)
 
 
 class StringMultiLine(String):
@@ -93,9 +92,8 @@ class StringMultiLine(String):
         for item in val.split("\n"):
             out0 += "%s\n" % item
         out0 = out0.rstrip()
-        out += "%s\n'''\n\n" % out0        
+        out += "%s\n'''\n\n" % out0
         return out
-
 
     def toml_string_get(self, value, key=""):
         """
@@ -128,7 +126,7 @@ class Bytes():
         """
         """
         if not isinstance(s, str):
-            raise ValueError("Should be string:%s"%s)
+            raise ValueError("Should be string:%s" % s)
         return s.encode()
 
     def toString(self, v):
@@ -137,9 +135,8 @@ class Bytes():
         else:
             raise ValueError("Could not convert to bytes:%s" % v)
 
-    def toHR(self,v):
+    def toHR(self, v):
         return "...BYTES..."
-            
 
     def check(self, value):
         '''Check whether provided value is a array of bytes'''
@@ -162,9 +159,9 @@ class Bytes():
         value = self.clean(value)
         value = value.replace("\n", "\\n")
         return "'%s'" % value
-        
-    def capnp_schema_get(self,name,nr):
-        return "%s @%s :Data;"%(name,nr)
+
+    def capnp_schema_get(self, name, nr):
+        return "%s @%s :Data;" % (name, nr)
 
     def toml_string_get(self, value, key):
         raise NotImplemented()
@@ -192,9 +189,8 @@ class Boolean():
         else:
             raise ValueError("Invalid value for boolean: '%s'" % boolean)
 
-    def toHR(self,v):
+    def toHR(self, v):
         return self.clean(v)
-
 
     def check(self, value):
         '''Check whether provided value is a boolean'''
@@ -220,17 +216,16 @@ class Boolean():
         produce the python code which represents this value
         """
         value = self.clean(value)
-        if value == True:
+        if value:
             value = "True"
         else:
             value = "False"
         return value
-  
 
     def toml_string_get(self, value, key=""):
         value = self.clean(value)
         if key == "":
-            if value == True:
+            if value:
                 value = "true"
             else:
                 value = "false"
@@ -244,8 +239,9 @@ class Boolean():
 
             return out
 
-    def capnp_schema_get(self,name,nr):
-        return "%s @%s :Bool;"%(name,nr)
+    def capnp_schema_get(self, name, nr):
+        return "%s @%s :Bool;" % (name, nr)
+
 
 class Integer():
 
@@ -267,7 +263,7 @@ class Integer():
         else:
             raise ValueError("Invalid value for integer: '%s'" % value)
 
-    def toHR(self,v):
+    def toHR(self, v):
         return self.clean(v)
 
     def fromString(self, s):
@@ -287,7 +283,6 @@ class Integer():
         produce the python code which represents this value
         """
         return self.toml_string_get(value)
-        
 
     def toml_string_get(self, value, key=""):
         """
@@ -298,8 +293,9 @@ class Integer():
         else:
             return "%s = %s" % (key, self.clean(value))
 
-    def capnp_schema_get(self,name,nr):
-        return "%s @%s :UInt32;"%(name,nr)
+    def capnp_schema_get(self, name, nr):
+        return "%s @%s :UInt32;" % (name, nr)
+
 
 class Float():
 
@@ -325,7 +321,7 @@ class Float():
         else:
             raise ValueError("Invalid value for float: '%s'" % value)
 
-    def toHR(self,v):
+    def toHR(self, v):
         return self.clean(v)
 
     def fromString(self, s):
@@ -344,7 +340,7 @@ class Float():
         """
         produce the python code which represents this value
         """
-        return self.toml_string_get(value)        
+        return self.toml_string_get(value)
 
     def toml_string_get(self, value, key=""):
         """
@@ -355,8 +351,9 @@ class Float():
         else:
             return "%s = %s" % (key, self.clean(value))
 
-    def capnp_schema_get(self,name,nr):
-        return "%s @%s :Float64;"%(name,nr)
+    def capnp_schema_get(self, name, nr):
+        return "%s @%s :Float64;" % (name, nr)
+
 
 class Percent(Integer):
 
@@ -382,29 +379,32 @@ class Percent(Integer):
         """
         if self.string.check(value):
             if "%" in value:
-                return int(value.replace("%",""))*100
+                return int(value.replace("%", "")) * 100
             else:
-                return int(value)*100
+                return int(value) * 100
         elif self.integer.check(value):
             return value
         elif self.float.check(value):
-            return value*10000
+            return value * 10000
         else:
-            raise RuntimeError("could not convert input to percent, input was:%s"%value)
+            raise RuntimeError(
+                "could not convert input to percent, input was:%s" %
+                value)
 
     def fromString(self, s):
         s = self.clean(s)
         return s
 
-    def toHR(self,v):
-        return self.toString(v)        
+    def toHR(self, v):
+        return self.toString(v)
 
     def toString(self, v):
         v = self.clean(v)
-        v = round(value/100,2)
+        v = round(value / 100, 2)
         if int(v) == v:
-            v=int(v)
-        return "%s/%"%v
+            v = int(v)
+        return "%s/%" % v
+
 
 class Object(Bytes):
     '''
@@ -430,22 +430,22 @@ class Object(Bytes):
 
     def clean(self, value):
         """
-        
+
         """
         return value
 
-    def toHR(self,v):
-        return self.clean(v)        
+    def toHR(self, v):
+        return self.clean(v)
 
     def python_code_get(self, value):
         raise NotImplemented()
 
-        
-    def capnp_schema_get(self,name,nr):
-        return "%s @%s :Data;"%(name,nr)
+    def capnp_schema_get(self, name, nr):
+        return "%s @%s :Data;" % (name, nr)
 
     def toml_string_get(self, value, key):
         raise NotImplemented()
+
 
 class JSObject(Bytes):
     '''
@@ -456,7 +456,7 @@ class JSObject(Bytes):
     BASETYPE = ''
 
     def __init__(self):
-        self.SUBTYPE = None    
+        self.SUBTYPE = None
 
     def fromString(self, s):
         """
@@ -473,18 +473,18 @@ class JSObject(Bytes):
         return self.SUBTYPE()
 
     def clean(self, value):
-        """        
+        """
         """
         return value
 
-    def toHR(self,v):
+    def toHR(self, v):
         return str(v)
 
     def python_code_get(self, value):
         return ""
-        
-    def capnp_schema_get(self,name,nr):
-        return "%s @%s :Data;"%(name,nr)
+
+    def capnp_schema_get(self, name, nr):
+        return "%s @%s :Data;" % (name, nr)
 
     def toml_string_get(self, value, key):
         raise NotImplemented()

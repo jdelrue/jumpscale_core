@@ -6,6 +6,7 @@ from .CustomTypes import *
 from .CollectionTypes import *
 from .PrimitiveTypes import *
 
+
 class Types(object):
 
     def __init__(self):
@@ -66,10 +67,23 @@ class Types(object):
         self._jsobject = JSObject
         self._url = Url
 
-        self.types_list = [self.bool, self.dict, self.list, self.bytes,
-                           self.guid, self.float, self.int, self.multiline, 
-                           self.string, self.date, self.numeric, self.percent, self.hash, self.object, self.jsobject,
-                           self.url]
+        self.types_list = [
+            self.bool,
+            self.dict,
+            self.list,
+            self.bytes,
+            self.guid,
+            self.float,
+            self.int,
+            self.multiline,
+            self.string,
+            self.date,
+            self.numeric,
+            self.percent,
+            self.hash,
+            self.object,
+            self.jsobject,
+            self.url]
 
     def type_detect(self, val):
         """
@@ -108,13 +122,13 @@ class Types(object):
         ttype = ttype.lower().strip()
         if ttype in ["s", "str", "string"]:
             res = self._string
-        elif ttype in ["i","int", "integer"]:
+        elif ttype in ["i", "int", "integer"]:
             res = self._int
-        elif ttype in ["f","float"]:
+        elif ttype in ["f", "float"]:
             res = self._float
-        elif ttype in ["o","obj","object"]:
+        elif ttype in ["o", "obj", "object"]:
             res = self._object
-        elif ttype in ["b","bool", "boolean"]:
+        elif ttype in ["b", "bool", "boolean"]:
             res = self._bool
         elif ttype in ["tel", "mobile"]:
             res = self._tel
@@ -134,22 +148,22 @@ class Types(object):
             res = self._date
         elif ttype in ["h", "hash"]:
             res = self._hash
-        elif ttype in ["p", "perc","percent"]:
+        elif ttype in ["p", "perc", "percent"]:
             res = self._percent
-        elif ttype in ["n", "num","numeric"]:
+        elif ttype in ["n", "num", "numeric"]:
             res = self._numeric
         elif ttype.startswith("l"):
-            tt = self._list() #need to create new instance
+            tt = self._list()  # need to create new instance
             if return_class:
                 raise RuntimeError("cannot return class if subtype specified")
-            if len(ttype)==2:
-                tt.SUBTYPE  = self.get(ttype[1],return_class=True)()
+            if len(ttype) == 2:
+                tt.SUBTYPE = self.get(ttype[1], return_class=True)()
                 return tt
-            elif len(ttype)==1:
-                assert tt.SUBTYPE == None
+            elif len(ttype) == 1:
+                assert tt.SUBTYPE is None
                 return tt
             else:
-                raise RuntimeError("list type len needs to be 1 or 2")                
+                raise RuntimeError("list type len needs to be 1 or 2")
         elif ttype == "dict":
             res = self._dict
         elif ttype == "yaml":
@@ -160,15 +174,13 @@ class Types(object):
             res = self._set
         elif ttype == "guid":
             res = self._guid
-        elif ttype == "url" or ttype=="u":
+        elif ttype == "url" or ttype == "u":
             res = self._url
         else:
-            raise self.j.exceptions.RuntimeError("did not find type:'%s'" % ttype)
+            raise self.j.exceptions.RuntimeError(
+                "did not find type:'%s'" % ttype)
 
         if return_class:
             return res
         else:
             return res()
-
-
-

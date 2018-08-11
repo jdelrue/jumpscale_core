@@ -2,6 +2,8 @@
 
 from .PrimitiveTypes import *
 import struct
+
+
 class YAML(String):
     '''Generic dictionary type'''
 
@@ -29,17 +31,18 @@ class YAML(String):
     def toString(self, v):
         return j.data.serializers.yaml.dumps(v)
 
+
 class JSON(String):
-    
+
     NAME = 'json'
     BASETYPE = 'dictionary'
+
 
 class Dictionary():
     '''Generic dictionary type'''
 
     NAME = 'dictionary'
     BASETYPE = 'dictionary'
-
 
     def check(self, value):
         '''Check whether provided value is a dict'''
@@ -65,8 +68,9 @@ class Dictionary():
     def toString(self, v):
         return j.data.serializers.json.dumps(v, True, True)
 
-    def capnp_schema_get(self,name,nr):
+    def capnp_schema_get(self, name, nr):
         raise RuntimeError("not implemented")
+
 
 class List():
     '''Generic list type'''
@@ -90,7 +94,7 @@ class List():
         ttype = j.data.types.type_detect(llist[0])
         for item in llist:
             res = ttype.check(item)
-            if res == False:
+            if not res:
                 if die:
                     raise RuntimeError("List is not of 1 type.")
                 else:
@@ -100,7 +104,7 @@ class List():
     def fromString(self, v, ttype=None):
         if ttype is None:
             ttype = self.SUBTYPE
-        if v == None:
+        if v is None:
             v = ""
         if ttype is not None:
             ttype = ttype.NAME
@@ -116,7 +120,7 @@ class List():
             ttype = self.SUBTYPE
         if len(val) == 0:
             return val
-        if ttype == None:
+        if ttype is None:
             self.SUBTYPE = j.data.types.type_detect(val[0])
             ttype = self.SUBTYPE
         res = []
@@ -156,11 +160,10 @@ class List():
         value = self.clean(value, toml=False, sort=sort)
         out = "[ "
         for item in value:
-            out += "%s, "%self.SUBTYPE.python_code_get(item)
+            out += "%s, " % self.SUBTYPE.python_code_get(item)
         out = out.strip(",")
-        out += " ]"            
+        out += " ]"
         return out
-        
 
     def toml_string_get(self, val, key="", clean=True, sort=True):
         """
@@ -195,14 +198,18 @@ class List():
         else:
             return j.data.serializers.toml.loads(val)
 
-    def capnp_schema_get(self,name,nr):
-        s=self.SUBTYPE.capnp_schema_get("name",0)
-        if self.SUBTYPE.BASETYPE in ["string","integer","float","bool"]:
-            capnptype = self.SUBTYPE.capnp_schema_get("",0).split(":",1)[1].rstrip(";").strip()
-        else:                
-            #the sub type is now bytes because that is how the subobjects will be stored
-            capnptype = j.data.types.bytes.capnp_schema_get("",nr=0).split(":",1)[1].rstrip(";").strip()
-        return "%s @%s :List(%s);"%(name,nr,capnptype)
+    def capnp_schema_get(self, name, nr):
+        s = self.SUBTYPE.capnp_schema_get("name", 0)
+        if self.SUBTYPE.BASETYPE in ["string", "integer", "float", "bool"]:
+            capnptype = self.SUBTYPE.capnp_schema_get("", 0).split(":", 1)[
+                1].rstrip(";").strip()
+        else:
+            # the sub type is now bytes because that is how the subobjects will
+            # be stored
+            capnptype = j.data.types.bytes.capnp_schema_get(
+                "", nr=0).split(":", 1)[1].rstrip(";").strip()
+        return "%s @%s :List(%s);" % (name, nr, capnptype)
+
 
 class Hash(List):
 
@@ -216,19 +223,19 @@ class Hash(List):
         return string from a string (is basically no more than a check)
         """
         if not isinstance(s, str):
-            raise ValueError("Should be string:%s"%s)        
+            raise ValueError("Should be string:%s" % s)
         s = self.clean(s)
         return s
 
     def toString(self, value):
-        v0,v1 = self.clean(value)
-        return "%s:%s" % (v0,v1)
+        v0, v1 = self.clean(value)
+        return "%s:%s" % (v0, v1)
 
     def check(self, value):
-        return isinstance(value, (list, tuple)) and len(value)==2
+        return isinstance(value, (list, tuple)) and len(value) == 2
 
     def get_default(self):
-        return (0,0)
+        return (0, 0)
 
     def clean(self, value):
         """
@@ -238,43 +245,44 @@ class Hash(List):
         def bytesToInt(val):
             if j.data.types.bytes.check(val):
                 if len(val) is not 4:
-                    raise RuntimeError("byte for first part of hash can only be 4 bytes")
+                    raise RuntimeError(
+                        "byte for first part of hash can only be 4 bytes")
                 return struct.unpack("I", val)
             else:
                 return int(val)
 
         if j.data.types.list.check(value) or j.data.types.set.check(value):
-            #prob given as list or set of 2 which is the base representation
-            if len(value)!=2:
+            # prob given as list or set of 2 which is the base representation
+            if len(value) != 2:
                 raise RuntimeError("hash can only be list/set of 2")
             v0 = bytesToInt(value[0])
             v1 = bytesToInt(value[1])
-            return (v0,v1)
-            
+            return (v0, v1)
+
         elif j.data.types.bytes.check(value):
-            if len(value) is not 8:        
+            if len(value) is not 8:
                 raise RuntimeError("bytes should be len 8")
             #means is byte
             return struct.unpack("II", b"aaaadddd")
-        
+
         elif j.data.types.string.check(value):
             if ":" not in value:
-                raise RuntimeError("when string, needs to have : inside %s"%value)
-            v0,v1=value.split(":")
-            v0=int(v0)
-            v1=int(v1)
-            return (v0,v1)
+                raise RuntimeError(
+                    "when string, needs to have : inside %s" %
+                    value)
+            v0, v1 = value.split(":")
+            v0 = int(v0)
+            v1 = int(v1)
+            return (v0, v1)
 
         else:
-            raise RuntimeError("unrecognized format for hash:%s"%value)
-
+            raise RuntimeError("unrecognized format for hash:%s" % value)
 
     def python_code_get(self, value):
         """
         produce the python code which represents this value
         """
         return "'%s'" % self.toString(value)
-
 
     def toml_string_get(self, value, key=""):
         """
@@ -284,6 +292,7 @@ class Hash(List):
             return self.python_code_get(value)
         else:
             return "%s = %s" % (key, self.python_code_get(value))
+
 
 class Set(List):
     '''Generic set type'''
