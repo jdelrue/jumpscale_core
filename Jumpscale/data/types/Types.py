@@ -6,14 +6,10 @@ from .CustomTypes import *
 from .CollectionTypes import *
 from .PrimitiveTypes import *
 
-JSBASE = j.application.jsbase_get_class()
-
-
-class Types(JSBASE):
+class Types(object):
 
     def __init__(self):
         self.__jslocation__ = "j.data.types"
-        JSBASE.__init__(self)
         self.dict = Dictionary()
         self.list = List()
         self.guid = Guid()
@@ -167,7 +163,7 @@ class Types(JSBASE):
         elif ttype == "url" or ttype=="u":
             res = self._url
         else:
-            raise j.exceptions.RuntimeError("did not find type:'%s'" % ttype)
+            raise self.j.exceptions.RuntimeError("did not find type:'%s'" % ttype)
 
         if return_class:
             return res
