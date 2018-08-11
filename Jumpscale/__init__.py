@@ -185,5 +185,3 @@ else:
         ]:
         add_dynamic_instance(parent, child, module, kls)
 
-    print (j.__subgetters__)
-    print (j.data.__subgetters__)
