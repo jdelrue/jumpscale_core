@@ -36,8 +36,9 @@ class ExecutorBase(JSBASE):
     @property
     def state(self):
         if self._state is None:
-            from Jumpscale.core.State import State
-            self._state = State(self)
+            from ...core.State import State
+            DState = self._jsbase(self.j, "State", [State])
+            self._state = DState(self)
         return self._state
 
     @property

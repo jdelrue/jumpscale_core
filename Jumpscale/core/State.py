@@ -1,5 +1,4 @@
 import pytoml
-from Jumpscale import j
 
 mascot = '''
                                                         .,,'
@@ -38,16 +37,13 @@ mascot = '''
                                                     .':ldddoooddl
 '''
 
-JSBASE = j.application.jsbase_get_class()
 
-
-class State(JSBASE):
+class State(object):
     """
 
     """
 
     def __init__(self, executor):
-        JSBASE.__init__(self)
         self.readonly = False
         self.executor = executor
         self.load()
@@ -73,7 +69,7 @@ class State(JSBASE):
     def versions(self):
         versions = {}
         for name, path in self.configGet('plugins', {}).items():
-            repo = j.clients.git.get(path)
+            repo = self.j.clients.git.get(path)
             _, versions[name] = repo.getBranchOrTag()
         return versions
 
@@ -170,7 +166,7 @@ class State(JSBASE):
                     self._set(key, defval, config=config, path=path)
                 return defval
             else:
-                raise j.exceptions.Input(
+                raise self.j.exceptions.Input(
                     message="could not find config key:%s in executor:%s" %
                     (key, self), level=1, source="", tags="", msgpub="")
 
@@ -450,7 +446,7 @@ class State(JSBASE):
         overwrite -- set to true if you want to overwrite values of old keys
         """
         for key0, val0 in ddict.items():
-            if not j.data.types.dict.check(val0):
+            if not self.j.data.types.dict.check(val0):
                 raise RuntimeError(
                     "Value of first level key has to be another dict.")
 
@@ -474,7 +470,7 @@ class State(JSBASE):
         if self.executor.state_disabled:
             return
         if self.readonly:
-            raise j.exceptions.Input(
+            raise self.j.exceptions.Input(
                 message="cannot write config to '%s', because is readonly" %
                 self, level=1, source="", tags="", msgpub="")
         if config and path:
