@@ -24,6 +24,7 @@ class Time_(JSBASE):
 
     def __init__(self):
         self.timeinterval = TimeInterval
+        self.__jslocation__ = "j.data.time"
         JSBASE.__init__(self)
 
     @property
