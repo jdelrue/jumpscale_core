@@ -175,7 +175,9 @@ class Time_(object):
         unit = txt[-1]
         if txt[-1] not in list(TIMES.keys()):
             raise self.j.exceptions.RuntimeError(
-                "Cannot find time, needs to be in format have time indicator %s " % list(TIMES.keys()))
+                "Cannot find time, needs to be in format have time indicator %s " %
+                list(
+                    TIMES.keys()))
         value = float(txt[:-1])
         return int(value * TIMES[unit])
 
@@ -190,7 +192,6 @@ class Time_(object):
             return self.getTimeEpoch()
         return self.getTimeEpoch() + self.getDeltaTime(txt)
 
-
     def HRDateToEpoch(self, datestr, local=True):
         """
         convert string date to epoch
@@ -203,7 +204,8 @@ class Time_(object):
             return time.mktime(time.strptime(datestr, "%Y/%m/%d"))
         except BaseException:
             raise ValueError(
-                "Date needs to be formatted as \" 1988/06/16\", also check if date is valid, now format = %s" % datestr)
+                "Date needs to be formatted as \" 1988/06/16\", also check if date is valid, now format = %s" %
+                datestr)
 
     def HRDateTime2epoch(self, hrdatetime):
         """
@@ -214,7 +216,11 @@ class Time_(object):
             return 0
         try:
             hrdatetime = hrdatetime.strip()
-            return int(time.mktime(time.strptime(hrdatetime, "%Y/%m/%d %H:%M:%S")))
+            return int(
+                time.mktime(
+                    time.strptime(
+                        hrdatetime,
+                        "%Y/%m/%d %H:%M:%S")))
         except BaseException:
             raise ValueError(
                 "Date needs to be formatted as Needs to be formatted as 16/06/1988 %H:%M:%S, also check if date is valid, now format = %s" %
