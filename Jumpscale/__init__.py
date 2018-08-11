@@ -116,6 +116,22 @@ else:
     from .data.cache.Cache import Cache
     j.data.cache = Cache()
 
+    def add_dynamic_instance(parent, child, module, kls):
+        print ("adding", parent, child, module, kls)
+        if not parent:
+            parent = j
+        else:
+            parent = getattr(j, parent)
+        if kls:
+            parent._add_instance(child, "Jumpscale." + module, kls)
+            child = getattr(parent, child)
+            print ("added", parent, child)
+        else:
+            walkfrom = j
+            for subname in module.split('.'):
+                walkfrom = getattr(walkfrom, subname)
+            setattr(parent, child, walkfrom)
+
     for (parent, child, module, kls) in [
         ('data', 'text', 'data.text.Text', 'Text'),
         ('data', 'types', 'data.types.Types', 'Types'),
@@ -129,32 +145,24 @@ else:
         ('tools', 'executorLocal', 'tools.executor.ExecutorLocal',
                                     'ExecutorLocal'),
         ('core', 'platformtype', 'core.PlatformTypes', 'PlatformTypes'),
+        ('core', 'state', 'tools.executorLocal.state', None),
+        ('', 'dirs', 'core.Dirs', 'Dirs'),
+        ('core', 'dirs', 'dirs', None)
         ]:
-        print ("adding", parent, child, module, kls)
-        parent = getattr(j, parent)
-        parent._add_instance(child, "Jumpscale." + module, kls)
-        child = getattr(parent, child)
-        print ("added", parent, child)
+        add_dynamic_instance(parent, child, module, kls)
 
-    j.core.state = j.tools.executorLocal.state
+    print ("state", j.core.state)
+    print ("state", j.tools.executorLocal.state)
 
     # check that locally init has been done
     j.tools.executorLocal.env_check_init()
 
-    from .core.Dirs import Dirs
-
-    j.dirs = Dirs()
-    j.core.dirs = j.dirs
-
-    from .data.idgenerator.IDGenerator import IDGenerator
-
-    j.data.idgenerator = IDGenerator()
-
-    from .errorhandling.ErrorHandler import ErrorHandler
-
-    j.errorhandler = ErrorHandler()
-
-    j.core.errorhandler = j.errorhandler
+    for (parent, child, module, kls) in [
+        ('data', 'idgenerator', 'data.idgenerator.IDGenerator', 'IDGenerator'),
+        ('', 'errorhandler', 'errorhandling.ErrorHandler', 'ErrorHandler'),
+        ('core', 'errorhandler', 'errorhandler', None),
+        ]:
+        add_dynamic_instance(parent, child, module, kls)
 
     from .fs.SystemFSWalker import SystemFSWalker
 
