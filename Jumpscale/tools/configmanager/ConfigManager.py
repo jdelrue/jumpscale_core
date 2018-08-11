@@ -207,6 +207,7 @@ class ConfigFactory(JSBASE):
 
         return cpath, g.remoteUrl
 
+
     @property
     def base_class_config(self):
         return JSBaseClassConfig
