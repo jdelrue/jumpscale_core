@@ -163,12 +163,12 @@ class Jumpscale(JSBase):
     {{/locations}}
 
 # test code seeing if dynamic loader works live (which it does!)
-if os.environ.get('JUMPSCALEMODE') == 'DYNAMICTEST':
+if os.environ.get('JUMPSCALEMODE') == 'STATICLOADER':
+    j = Jumpscale()
+else:
     from Jumpscale.tools.loader.JSLoader import JSLoader
     jl = JSLoader()
     j = jl.dynamic_generate()
-else:
-    j = Jumpscale()
 j.j = j # patch the (new) global j instance to know itself (zennnn.....)
 
 def attrchecker(j, pth):
