@@ -24,19 +24,7 @@ if os.environ.get('JUMPSCALEMODE') == 'TESTING':
     j = MagicMock()
 
 else:
-    class Sal(JSBase):
-        pass
-
     class SALZos(JSBase):
-        pass
-
-    class Tools(JSBase):
-        pass
-
-    class Data(JSBase):
-        pass
-
-    class Clients(JSBase):
         pass
 
     class Core(JSBase):
@@ -60,32 +48,21 @@ else:
             j.data.cache._cache = {}
             self._db = None
 
-    class Servers(JSBase):
-        pass
-
     class DataUnits(JSBase):
-        pass
-
-    class Portal(JSBase):
-        pass
-
-    class AtYourService(JSBase):
         pass
 
     class Jumpscale(JSBase):
 
         def __init__(self):
             JSBase.__init__(self)
-            self.tools = Tools()
-            self.sal = Sal()
-            self.sal_zos = SALZos()
-            self.data = Data()
-            self.clients = Clients()
+            for name in ['Tools', 'Sal', 'Data', 'Clients', 'Servers',
+                         'Portal', 'AtYourService']:
+                instancename = name.lower()
+                instance = self._create_jsbase_instance(name)
+                setattr(self, instancename, instance)
             self.core = Core()
-            self.servers = Servers()
+            self.sal_zos = SALZos()
             self.data_units = DataUnits()
-            self.portal = Portal()
-            self.atyourservice = AtYourService()
             self.exceptions = None
 
     from .logging.LoggerFactory import LoggerFactory
@@ -135,13 +112,8 @@ else:
     j.application = Application(logging=l)
     j.core.application = j.application
 
-    from .data.text.Text import Text
-
-    j.data.text = Text()
-
-    from .data.types.Types import Types
-
-    j.data.types = Types()
+    j.data._add_instance('text', 'Jumpscale.data.text.Text', 'Text')
+    j.data._add_instance('types', 'Jumpscale.data.types.Types', 'Types')
 
     from .data.regex.RegexTools import RegexTools
 
