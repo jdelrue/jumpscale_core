@@ -1,4 +1,3 @@
-from Jumpscale import j
 import os
 import importlib
 
@@ -89,9 +88,9 @@ class ModuleSetup(object):
 
 class JSBase(BaseGetter):
 
-    def __init__(self):
+    def __init__(self, _logger=None):
         BaseGetter.__init__(self)
-        self._logger = None
+        self._logger = _logger
         self._cache = None
         self._cache_expiration = 3600
         self._logger_force = False
@@ -118,7 +117,7 @@ class JSBase(BaseGetter):
             else:
                 name = self.__name__
             #print ("jsbase.logger get", type(self))
-            self._logger = j.logging.get(name, force=self._logger_force)
+            self._logger = self.j.logging.get(name, force=self._logger_force)
             self._logger._parent = self
         return self._logger
 
@@ -145,9 +144,13 @@ class JSBase(BaseGetter):
                 if item in self.__dict__ and self.__dict__[item]:
                     id += "_" + str(self.__dict__[item])
                     break
-            self._cache = j.data.cache.get(
+            self._cache = self.j.data.cache.get(
                 id, expiration=self._cache_expiration)
         return self._cache
+
+    @cache.setter
+    def cache(self, cache):
+        self._cache = cache
 
     @staticmethod
     def _create_jsbase_instance(jname):

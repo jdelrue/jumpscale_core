@@ -168,6 +168,7 @@ if os.environ.get('JUMPSCALEMODE') == 'DYNAMICTEST':
     j = jl.dynamic_generate()
 else:
     j = Jumpscale()
+j.j = j # patch the (new) global j instance to know itself (zennnn.....)
 
 def attrchecker(j, pth):
     pth = pth.split(".")
@@ -182,6 +183,10 @@ def attrchecker(j, pth):
 if not attrchecker(j, "{{from}}"):
     j.{{from}} = j.{{to}}
 {{/patchers}}
+
+# sigh need to do this as LoggerFactory is not yet inherited from JSBase
+# (neither are JSLogger instances, but they all look at their parent_
+j.logging.j = j
 
 def profileStart():
     import cProfile
@@ -390,7 +395,7 @@ class JSLoader():
 
         return moduleList
 
-    def _dynamic_generate(self):
+    def _dynamic_generate(self, basej=None):
         """ dynamically generates a jumpscale instance
         """
 
@@ -425,7 +430,12 @@ class JSLoader():
         #_j.application = _j.core().application
         #_j.exceptions = _j.core().errorhandler().exceptions
 
-        return _j()
+        newj = _j()
+        if basej is None:
+            basej = newj
+        _j.j = basej
+
+        return newj
 
     def _generate(self):
         """ generates the jumpscale init file: jumpscale
@@ -721,9 +731,9 @@ class JSLoader():
         self.prepare_config(autocompletepath)
         self._generate()
 
-    def dynamic_generate(self, autocompletepath=None):
+    def dynamic_generate(self, autocompletepath=None, basej=None):
         """
         """
 
         self.prepare_config(autocompletepath)
-        return self._dynamic_generate()
+        return self._dynamic_generate(basej)

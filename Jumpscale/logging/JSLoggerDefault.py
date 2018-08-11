@@ -1,15 +1,15 @@
-from Jumpscale import j
 import logging
 
 # from pprint import pprint as print
 
 class JSLoggerDefault(logging.Logger):
 
-    def __init__(self, name):
+    def __init__(self, name, factory):
         super(JSLoggerDefault, self).__init__(name)
         self.level=20
         self.DEFAULT = True
         # print("DEFAULT:%s"%name)
+        self.factory = factory
 
     def error(self, msg, *args, **kwargs):
         """
@@ -21,6 +21,7 @@ class JSLoggerDefault(logging.Logger):
         logger.error("Houston, we have a %s", "major problem", exc_info=1)
 
         """
+        j = self.factory.j
         if self.isEnabledFor(logging.ERROR):
             eco = j.errorhandler.getErrorConditionObject(
                 ddict={}, msg=msg, msgpub=msg, category=self.name,
@@ -39,6 +40,7 @@ class JSLoggerDefault(logging.Logger):
 
         logger.critical("Houston, we have a %s", "major disaster", exc_info=1)
         """
+        j = self.factory.j
         if self.isEnabledFor(logging.CRITICAL):
             eco = j.errorhandler.getErrorConditionObject(
                 ddict={}, msg=msg, msgpub=msg, category=self.name,
@@ -53,12 +55,12 @@ class JSLoggerDefault(logging.Logger):
     # def error(self, msg, *args, **kwargs):
     #     """
     #     """
-    #     j.logger.logger.error(msg)
+    #     self.factory.j.logger.logger.error(msg)
 
     # def critical(self, msg, *args, **kwargs):
     #     """
     #     """
-    #     j.logger.logger.critical(msg)
+    #     self.factory.j.logger.logger.critical(msg)
 
     def info(self, msg, *args, **kwargs):
         print ("* %s"%msg)

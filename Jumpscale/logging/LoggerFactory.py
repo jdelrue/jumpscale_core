@@ -1,6 +1,5 @@
-from Jumpscale import j
-
 import logging
+import os
 from .Handlers import *
 
 from .JSLogger import JSLogger
@@ -10,16 +9,26 @@ import sys
 
 class LoggerFactory():
 
-    def __init__(self):
+    def __init__(self, j=None):
+        """ WARNING: JSBase now contains a singleton (global) j and
+            LoggerFactory can't get at it.
+        
+            WARNING: self.j must be patched afterwards to point to
+            an updated j. JSLogger instances will happily refer back
+            to the LoggerFactory that contains them, however for now,
+            because LoggerFactory is not derived from JSBase, it can't
+            get the global j singleton.
+        """
+        self.j = j # must patch this after instantiation to break loop
         self.__jslocation__ = "j.core.logging"
         self.logger_name = 'j'
         self.handlers = Handlers()
         self.loggers = {}
         self.exclude = []
 
-        self._default = JSLoggerDefault("default")
+        self._default = JSLoggerDefault("default", self)
 
-        self.logger = JSLogger("logger")
+        self.logger = JSLogger("logger", self)
         self.logger.addHandler(self.handlers.consoleHandler)
 
         self.enabled = True
@@ -33,8 +42,8 @@ class LoggerFactory():
 
         if name == "":
             path, ln, name, info = logging.root.findCaller()
-            if path.startswith(j.dirs.LIBDIR):
-                path = path.lstrip(j.dirs.LIBDIR)
+            if path.startswith(self.j.dirs.LIBDIR):
+                path = path.lstrip(self.j.dirs.LIBDIR)
                 name = path.replace(os.sep, '.')
 
         if not name.startswith(self.logger_name):
@@ -80,8 +89,8 @@ class LoggerFactory():
             if force or check_(name):
                 # print("JSLOGGER:%s" % name)
                 # logger = logging.getLogger(name)
-                logger = JSLogger(name)
-                logger.level = j.core.state.configGetFromDict("logging", "level", 'DEBUG')
+                logger = JSLogger(name, self)
+                logger.level = self.j.core.state.configGetFromDict("logging", "level", 'DEBUG')
 
                 for handler in self.handlers._all:
                     logger.handlers = []
@@ -105,7 +114,7 @@ class LoggerFactory():
             # for key, logger in self.loggers.items():
             #     # print("disable logger: %s"%key)
             #     logger.setLevel(20)
-            j.application.debug = False
+            self.j.application.debug = False
 
             self.logger_filters_add()
 
@@ -199,7 +208,7 @@ class LoggerFactory():
         self.logger.handlers = []
 
     def logger_filters_get(self):
-        return j.core.state.config_js["logging"]["filter"]
+        return self.j.core.state.config_js["logging"]["filter"]
 
     def logger_filters_add(self, items=[], exclude=[], level=10, save=False):
         """
@@ -207,20 +216,20 @@ class LoggerFactory():
         will add the filters to the logger and save it in the config file
 
         """
-        items = j.data.types.list.fromString(items)
-        exclude = j.data.types.list.fromString(exclude)
+        items = self.j.data.types.list.fromString(items)
+        exclude = self.j.data.types.list.fromString(exclude)
         if save:
             new = False
             for item in items:
-                if item not in j.core.state.config_js["logging"]["filter"]:
-                    j.core.state.config_js["logging"]["filter"].append(item)
+                if item not in self.j.core.state.config_js["logging"]["filter"]:
+                    self.j.core.state.config_js["logging"]["filter"].append(item)
                     new = True
             for item in exclude:
-                if item not in j.core.state.config_js["logging"]["exclude"]:
-                    j.core.state.config_js["logging"]["exclude"].append(item)
+                if item not in self.j.core.state.config_js["logging"]["exclude"]:
+                    self.j.core.state.config_js["logging"]["exclude"].append(item)
                     new = True
             if new:
-                j.core.state.configSave()
+                self.j.core.state.configSave()
                 self.init()
 
         for item in items:
@@ -238,36 +247,38 @@ class LoggerFactory():
         self.handlers_level_set(level)
 
         # make sure all loggers are empty again
-        j.dirs._logger = None
-        j.core.platformtype._logger = None
-        j.core.state._logger = None
-        j.core.dirs._logger = None
-        j.core.application._logger = None
-        for cat in [j.data, j.clients, j.tools, j.sal]:
+        self.j.dirs._logger = None
+        self.j.core.platformtype._logger = None
+        self.j.core.state._logger = None
+        self.j.core.dirs._logger = None
+        self.j.core.application._logger = None
+        for cat in [self.j.data, self.j.clients, self.j.tools, self.j.sal]:
             for key, item in cat.__dict__.items():
                 if item is not None:
                     # if hasattr(item, '__jslocation__'):
                     #     print (item.__jslocation__)
+                    if not hasattr(item, '__dict__'):
+                        continue
                     if 'logger' in item.__dict__:
                         item.__dict__["logger"] = self.get(item.__jslocation__)
                     item._logger = None
         self.loggers = {}
 
-        # print(j.tools.jsloader._logger)
-        # print(j.tools.jsloader.logger)
+        # print(self.j.tools.jsloader._logger)
+        # print(self.j.tools.jsloader.logger)
 
     def init(self):
         """
         get info from config file & make sure all logging is done properly
         """
-        self.enabled = j.core.state.configGetFromDict("logging", "enabled", True)
-        level = j.core.state.configGetFromDict("logging", "level", 'DEBUG')
+        self.enabled = self.j.core.state.configGetFromDict("logging", "enabled", True)
+        level = self.j.core.state.configGetFromDict("logging", "level", 'DEBUG')
         self.loggers_level_set(level)
         self.handlers_level_set(level)
         self.filter = []
         self.loggers = {}
-        items = j.core.state.configGetFromDict("logging", "filter", [])
-        exclude = j.core.state.configGetFromDict("logging", "exclude", [])
+        items = self.j.core.state.configGetFromDict("logging", "filter", [])
+        exclude = self.j.core.state.configGetFromDict("logging", "exclude", [])
         self.logger_filters_add(items=items, exclude=exclude, save=False)
 
     # def enableConsoleMemHandler(self):
@@ -312,4 +323,4 @@ class LoggerFactory():
         perftest(logger)
 
         # FOLLOWING PROVES THAT THE LOOKING FOR FILE & PATH INFO IS THE SLOWING DOWN FACTOR
-        # j.tools.performancetrace.profile("perftest(logger)", globals=locals())  # {"perftest": perftest}
+        # self.j.tools.performancetrace.profile("perftest(logger)", globals=locals())  # {"perftest": perftest}

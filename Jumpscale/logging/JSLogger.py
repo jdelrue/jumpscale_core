@@ -1,15 +1,15 @@
-from Jumpscale import j
 import logging
 
 
 class JSLogger(logging.Logger):
 
-    def __init__(self, name):
+    def __init__(self, name, factory):
         super(JSLogger, self).__init__(name)
         self.level=10
         self.DEFAULT = False
         # self.custom_filters = {}
         # self.__only_me = False
+        self.factory = factory
 
     def error(self, msg, *args, **kwargs):
         """
@@ -21,14 +21,16 @@ class JSLogger(logging.Logger):
         logger.error("Houston, we have a %s", "major problem", exc_info=1)
 
         """
-        if self.isEnabledFor(logging.ERROR):
-            eco = j.errorhandler.getErrorConditionObject(
-                ddict={}, msg=msg, msgpub=msg, category=self.name,
-                level=logging.ERROR, type=logging.getLevelName(logging.ERROR),
-                tb=None, tags='')
-            j.errorhandler._send2Redis(eco)
+        j = self.factory.j
+        if not self.isEnabledFor(logging.ERROR):
+            return
+        eco = j.errorhandler.getErrorConditionObject(
+            ddict={}, msg=msg, msgpub=msg, category=self.name,
+            level=logging.ERROR, type=logging.getLevelName(logging.ERROR),
+            tb=None, tags='')
+        j.errorhandler._send2Redis(eco)
 
-            self._log(logging.ERROR, msg, args, **kwargs)
+        self._log(logging.ERROR, msg, args, **kwargs)
 
     def critical(self, msg, *args, **kwargs):
         """
@@ -39,15 +41,17 @@ class JSLogger(logging.Logger):
 
         logger.critical("Houston, we have a %s", "major disaster", exc_info=1)
         """
-        if self.isEnabledFor(logging.CRITICAL):
-            eco = j.errorhandler.getErrorConditionObject(
-                ddict={}, msg=msg, msgpub=msg, category=self.name,
-                level=logging.CRITICAL, type=logging.getLevelName(
-                    logging.CRITICAL),
-                tb=None, tags='')
-            j.errorhandler._send2Redis(eco)
+        j = self.factory.j
+        if not self.isEnabledFor(logging.CRITICAL):
+            return
+        eco = j.errorhandler.getErrorConditionObject(
+            ddict={}, msg=msg, msgpub=msg, category=self.name,
+            level=logging.CRITICAL, type=logging.getLevelName(
+                logging.CRITICAL),
+            tb=None, tags='')
+        j.errorhandler._send2Redis(eco)
 
-            self._log(logging.CRITICAL, msg, args, **kwargs)
+        self._log(logging.CRITICAL, msg, args, **kwargs)
 
     # def enable_only_me(self):
     #     """

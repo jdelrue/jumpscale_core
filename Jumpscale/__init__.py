@@ -1,6 +1,6 @@
 import os
 import socket
-
+from .core.JSBase import JSBase
 
 def tcpPortConnectionTest(ipaddr, port, timeout=None):
     conn = None
@@ -24,28 +24,24 @@ if os.environ.get('JUMPSCALEMODE') == 'TESTING':
     j = MagicMock()
 
 else:
-    class Sal():
-        def __init__(self):
-            pass
+    class Sal(JSBase):
+        pass
 
-    class SALZos():
-        def __init__(self):
-            pass
+    class SALZos(JSBase):
+        pass
 
-    class Tools():
-        def __init__(self):
-            pass
+    class Tools(JSBase):
+        pass
 
-    class Data():
-        def __init__(self):
-            pass
+    class Data(JSBase):
+        pass
 
-    class Clients():
-        def __init__(self):
-            pass
+    class Clients(JSBase):
+        pass
 
-    class Core():
+    class Core(JSBase):
         def __init__(self):
+            JSBase.__init__(self)
             self._db = None
 
         @property
@@ -64,25 +60,22 @@ else:
             j.data.cache._cache = {}
             self._db = None
 
-    class Servers():
-        def __init__(self):
-            pass
+    class Servers(JSBase):
+        pass
 
-    class DataUnits():
-        def __init__(self):
-            pass
+    class DataUnits(JSBase):
+        pass
 
-    class Portal():
-        def __init__(self):
-            pass
+    class Portal(JSBase):
+        pass
 
-    class AtYourService():
-        def __init__(self):
-            pass
+    class AtYourService(JSBase):
+        pass
 
-    class Jumpscale():
+    class Jumpscale(JSBase):
 
         def __init__(self):
+            JSBase.__init__(self)
             self.tools = Tools()
             self.sal = Sal()
             self.sal_zos = SALZos()
@@ -95,7 +88,19 @@ else:
             self.atyourservice = AtYourService()
             self.exceptions = None
 
+    from .logging.LoggerFactory import LoggerFactory
+
+    # LoggerFactory isn't instantiated from JSBase so there has to
+    # be a little bit of a dance to get it established and pointing
+    # to the right global j.  JSBase now contains a property "j"
+    # which is actually a singleton (global), and LoggerFactory is
+    # the ONLY class that's not fully aware of it... for now.
+    l = LoggerFactory()
+
     j = Jumpscale()
+    j.j = j # sets up the global singleton
+    j.logging = l # and the logging instance...
+    l.j = j # ... which isn't aware of the JSBase j singleton sigh...
 
     def profileStart():
         import cProfile
@@ -121,11 +126,6 @@ else:
 
     j.dirs = Empty()
     j.dirs.TMPDIR = "/tmp"
-
-    from .logging.LoggerFactory import LoggerFactory
-
-    l = LoggerFactory()
-    j.logging = l
 
     # IF YOU WANT TO DEBUG THE STARTUP, YOU NEED TO CHANGE THIS ONE
     l.enabled = False
