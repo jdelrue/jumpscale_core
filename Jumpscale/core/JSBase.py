@@ -132,6 +132,7 @@ class ModuleSetup(object):
 class JSBase(BaseGetter):
 
     def __init__(self, _logger=None):
+        #print ("JSBase init", self.__class__)
         BaseGetter.__init__(self)
         self._logger = _logger
         self._cache = None
@@ -196,27 +197,47 @@ class JSBase(BaseGetter):
         self._cache = cache
 
     @staticmethod
-    def _create_jsbase_instance(jname, basej=None, derived_classes=None):
+    def _jsbase(basej, jname, derived_classes=None):
         """ dynamically creates a class which is derived from JSBase,
             that has the name "jname".  sets up a "super" caller 
             (a dynamic __init__) that calls __init__ on the derived classes
         """
         if derived_classes is None:
             derived_classes = []
-        classes = copy(derived_classes)
-        classes.append(JSBase)
+        classes = [JSBase] + copy(derived_classes)
 
-        def initfn(self):
-            sup = super(JSBase, self)
-            #print ("dynamic init fn", self.__name__, self, type(sup))
-            sup.__init__()
-            JSBase.__init__(self)
+        import inspect
+        def initfn(self, *args, **kwargs):
+            JSBase.__init__(self, _logger=basej and basej.logger or None)
+            mro = type(self).mro()
+            #print ("baseinit", basej, args, kwargs)
+            #print ("mro", type(self), inspect.getmro(self.__class__))
+            #print ("mrolist", mro, mro.index(self.__class__))
+            for next_class in mro[1:]: # slice to end
+                if hasattr(next_class, '__init__'):
+                    #print ("calling", next_class.__name__)
+                    if next_class.__name__ == 'BaseGetter':
+                        continue
+                    if next_class.__name__ == 'JSBase':
+                        continue
+                    else:
+                        next_class.__init__(self, *args, **kwargs)
+                    break
+            #print ("dynamic init fn", self.__name__, self.__class__)
         inits = {'__init__': initfn}
 
         memberkls = type(jname, tuple(classes), inits)
+        return memberkls
+
+    @staticmethod
+    def _create_jsbase_instance(jname, basej=None, derived_classes=None):
+        """ dynamically creates a class instance derived from JSBase,
+        """
+        memberkls = JSBase._jsbase(basej, jname, derived_classes)
+        instance = memberkls()
         if basej:
-            memberkls.j = basej
-        return memberkls()
+            instance.j = basej
+        return instance
 
 # don't touch this directly - go through any instance of JSBase, assign self.j
 # and it will get globally set.
