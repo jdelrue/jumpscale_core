@@ -1,5 +1,4 @@
 import time
-from Jumpscale import j
 import re
 import socket
 # import os
@@ -22,14 +21,11 @@ try:
 except BaseException:
     pygmentsObj = False
 
-JSBASE = j.application.jsbase_get_class()
 
-
-class Text(JSBASE):
+class Text(object):
 
     def __init__(self):
         self.__jslocation__ = "j.data.text"
-        JSBASE.__init__(self)
 
     def unicodedata(self, text):
         return unicodedata.normalize('NFKD', text.decode("utf-8")).encode('ascii', 'ignore')
@@ -367,7 +363,7 @@ class Text(JSBASE):
             result = "ERROR:UNKNOWN VAL FROM ASK"
 
             prefix, end = line.split("@ASK", 1)
-            tags = j.data.tags.getObject(end.strip())
+            tags = self.j.data.tags.getObject(end.strip())
 
             if tags.tagExists("name"):
                 name = tags.tagGet("name")
@@ -437,20 +433,20 @@ class Text(JSBASE):
                     question=descr, confirm=False)
 
             elif ttype == "list":
-                result = j.tools.console.askString(
+                result = self.j.tools.console.askString(
                     question=descr, defaultparam=default, regex=regex, retry=retry)
 
             elif ttype == "multiline":
-                result = j.tools.console.askMultiline(question=descr)
+                result = self.j.tools.console.askMultiline(question=descr)
 
             elif ttype == "float":
-                result = j.tools.console.askString(
+                result = self.j.tools.console.askString(
                     question=descr, defaultparam=default, regex=None)
                 # check getFloat
                 try:
                     result = float(result)
                 except BaseException:
-                    raise j.exceptions.Input(
+                    raise self.j.exceptions.Input(
                         "Please provide float.", "system.self.ask.neededfloat")
                 result = str(result)
 
@@ -467,13 +463,13 @@ class Text(JSBASE):
 
                 if not default:
                     default = None
-                result = j.tools.console.askInteger(
+                result = self.j.tools.console.askInteger(
                     question=descr, defaultValue=default, minValue=minValue, maxValue=maxValue, retry=retry)
 
             elif ttype == "bool":
                 if descr != "":
                     self.logger.info(descr)
-                result = j.tools.console.askYesNo()
+                result = self.j.tools.console.askYesNo()
                 if result:
                     result = True
                 else:
@@ -483,20 +479,20 @@ class Text(JSBASE):
                 if tags.tagExists("dropdownvals"):
                     dropdownvals = tags.tagGet("dropdownvals")
                 else:
-                    raise j.exceptions.Input(
+                    raise self.j.exceptions.Input(
                         "When type is dropdown in ask, then dropdownvals needs to be specified as well.")
                 choicearray = [item.strip()
                                for item in dropdownvals.split(",")]
-                result = j.tools.console.askChoice(
+                result = self.j.tools.console.askChoice(
                     choicearray, descr=descr, sort=True)
             elif ttype == 'dict':
-                rawresult = j.tools.console.askMultiline(question=descr)
+                rawresult = self.j.tools.console.askMultiline(question=descr)
                 result = "\n"
                 for line in rawresult.splitlines():
                     result += "    %s,\n" % line.strip().strip(',')
 
             else:
-                raise j.exceptions.Input(
+                raise self.j.exceptions.Input(
                     "Input type:%s is invalid (only: bool,int,str,string,dropdown,list,dict,float)" % ttype)
 
             out += "%s%s\n" % (prefix, result)
@@ -610,7 +606,7 @@ class Text(JSBASE):
         or convert 1 string to python objects
         """
 
-        if j.data.types.list.check(string):
+        if self.j.data.types.list.check(string):
             ttypes = []
             for item in string:
                 ttype, val = self._str2var(item)
@@ -626,7 +622,7 @@ class Text(JSBASE):
                 result = [self.getBool(item) for item in string]
             else:
                 result = [str(self.machinetext2val(item)) for item in string]
-        elif j.data.types.dict.check(string):
+        elif self.j.data.types.dict.check(string):
             ttypes = []
             result = {}
             for key, item in list(string.items()):
@@ -649,15 +645,15 @@ class Text(JSBASE):
                 for key, item in list(string.items()):
                     result[key] = str(self.machinetext2val(item))
         elif isinstance(string, str) or isinstance(string, float) or isinstance(string, int):
-            ttype, result = self._str2var(j.data.text.toStr(string))
+            ttype, result = self._str2var(self.j.data.text.toStr(string))
         else:
-            raise j.exceptions.Input(
+            raise self.j.exceptions.Input(
                 "Could not convert '%s' to basetype, input was %s. Expected string, dict or list." %
                 (string, type(string)), "self.str2var")
         return result
 
         try:
-            if j.data.types.list.check(string):
+            if self.j.data.types.list.check(string):
                 ttypes = []
                 for item in string:
                     ttype, val = self._str2var(item)
@@ -675,7 +671,7 @@ class Text(JSBASE):
                 else:
                     result = [str(self.machinetext2val(item))
                               for item in string]
-            elif j.data.types.dict.check(string):
+            elif self.j.data.types.dict.check(string):
                 ttypes = []
                 result = {}
                 for key, item in list(string.items()):
@@ -698,14 +694,14 @@ class Text(JSBASE):
                     for key, item in list(string.items()):
                         result[key] = str(self.machinetext2val(item))
             elif isinstance(string, str) or isinstance(string, float) or isinstance(string, int):
-                ttype, result = self._str2var(j.data.text.toStr(string))
+                ttype, result = self._str2var(self.j.data.text.toStr(string))
             else:
-                raise j.exceptions.Input(
+                raise self.j.exceptions.Input(
                     "Could not convert '%s' to basetype, input was %s. Expected string, dict or list." %
                     (string, type(string)), "self.str2var")
             return result
         except Exception as e:
-            raise j.exceptions.Input(
+            raise self.j.exceptions.Input(
                 "Could not convert '%s' to basetype, error was %s" % (string, e), "self.str2var")
 
     def eval(self, code):
@@ -719,8 +715,8 @@ class Text(JSBASE):
             try:
                 result = eval(item)
             except Exception as e:
-                raise j.exceptions.RuntimeError(
-                    "Could not execute code in j.data.text,%s\n%s. Error was:%s" % (item, code, e))
+                raise self.j.exceptions.RuntimeError(
+                    "Could not execute code in self.j.data.text,%s\n%s. Error was:%s" % (item, code, e))
             result = self.pythonObjToStr(result, multiline=False).strip()
             code = code.replace(item, result)
         return code
@@ -737,13 +733,13 @@ class Text(JSBASE):
         elif isinstance(obj, bytes):
             obj = obj.decode("utf8")
             return obj
-        elif j.data.types.bool.check(obj):
+        elif self.j.data.types.bool.check(obj):
             if obj:
                 obj = "True"
             else:
                 obj = "False"
             return obj
-        elif j.data.types.string.check(obj):
+        elif self.j.data.types.string.check(obj):
             isdict = canBeDict and obj.find(":") != -1
             if obj.strip() == "":
                 return ""
@@ -755,9 +751,9 @@ class Text(JSBASE):
                 else:
                     obj = "%s" % obj.strip("'")
             return obj
-        elif j.data.types.int.check(obj) or j.data.types.float.check(obj):
+        elif self.j.data.types.int.check(obj) or self.j.data.types.float.check(obj):
             return str(obj)
-        elif j.data.types.list.check(obj):
+        elif self.j.data.types.list.check(obj):
             obj.sort()
             tmp = []
             for item in obj:
@@ -769,7 +765,7 @@ class Text(JSBASE):
                 tmp.append(item)
             obj = tmp
             # if not canBeDict:
-            #     raise j.exceptions.RuntimeError("subitem cannot be list or dict for:%s"%obj)
+            #     raise self.j.exceptions.RuntimeError("subitem cannot be list or dict for:%s"%obj)
             if multiline:
                 resout = "\n"
                 for item in obj:
@@ -783,9 +779,9 @@ class Text(JSBASE):
 
             return resout
 
-        elif j.data.types.dict.check(obj):
+        elif self.j.data.types.dict.check(obj):
             if not canBeDict:
-                raise j.exceptions.RuntimeError(
+                raise self.j.exceptions.RuntimeError(
                     "subitem cannot be list or dict for:%s" % obj)
             if multiline:
                 resout = "\n"
@@ -808,7 +804,7 @@ class Text(JSBASE):
             return resout
 
         else:
-            raise j.exceptions.RuntimeError(
+            raise self.j.exceptions.RuntimeError(
                 "Could not convert %s to string" % obj)
 
     def hrd2machinetext(self, value, onlyone=False):
@@ -903,7 +899,7 @@ class Text(JSBASE):
         return value
 
     def getInt(self, text):
-        if j.data.types.string.check(text):
+        if self.j.data.types.string.check(text):
             text = self.strip(text)
             if text.lower() == "none":
                 return 0
@@ -918,7 +914,7 @@ class Text(JSBASE):
         return text
 
     def getFloat(self, text):
-        if j.data.types.string.check(text):
+        if self.j.data.types.string.check(text):
             text = text.strip()
             if text.lower() == "none":
                 return 0.0
@@ -947,14 +943,14 @@ class Text(JSBASE):
         return text.isdigit()
 
     def getBool(self, text):
-        if j.data.types.bool.check(text):
+        if self.j.data.types.bool.check(text):
             return text
-        elif j.data.types.int.check(text):
+        elif self.j.data.types.int.check(text):
             if text == 1:
                 return True
             else:
                 return False
-        elif j.data.types.string.check(text):
+        elif self.j.data.types.string.check(text):
             text = text.strip()
             if text.lower() == "none":
                 return False
@@ -969,7 +965,7 @@ class Text(JSBASE):
             else:
                 return False
         else:
-            raise j.exceptions.RuntimeError(
+            raise self.j.exceptions.RuntimeError(
                 "input needs to be None, string, bool or int")
 
     def _dealWithQuote(self, text):
@@ -996,10 +992,10 @@ class Text(JSBASE):
         """
 
         # if already list just return
-        if j.data.types.list.check(text):
+        if self.j.data.types.list.check(text):
             return text
 
-        if not j.data.types.string.check(text):
+        if not self.j.data.types.string.check(text):
             raise RuntimeError("need to be string:%s" % text)
 
         text = text.strip(" [")
@@ -1021,9 +1017,9 @@ class Text(JSBASE):
             text = [text]
 
         if ttype is not None:
-            ttype = j.data.types.get(ttype)
+            ttype = self.j.data.types.get(ttype)
         else:
-            ttype = j.data.types.string
+            ttype = self.j.data.types.string
 
         res = []
         for item in text:
@@ -1046,7 +1042,7 @@ class Text(JSBASE):
         for item in self.split(","):
             if item.strip() != "":
                 if item.find(":") == -1:
-                    raise j.exceptions.RuntimeError(
+                    raise self.j.exceptions.RuntimeError(
                         "Could not find : in %s, cannot get dict out of it." % text)
 
                 key, val = item.split(":", 1)
