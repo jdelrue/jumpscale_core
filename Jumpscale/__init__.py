@@ -120,7 +120,7 @@ else:
         else:
             parent = getattr(j, parent)
         if kls:
-            parent._add_instance(child, "Jumpscale." + module, kls)
+            parent._add_instance(child, "Jumpscale." + module, kls, basej=j)
             #print ("added", parent, child)
         else:
             walkfrom = j
@@ -148,6 +148,8 @@ else:
         ('core', 'dirs', 'dirs', None)
         ]:
         add_dynamic_instance(parent, child, module, kls)
+
+    j.cache = j.data.cache
 
     # check that locally init has been done
     j.tools.executorLocal.env_check_init()
