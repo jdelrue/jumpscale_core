@@ -33,12 +33,13 @@ class BaseGetter(object):
     def __init__(self):
         self.__subgetters__ = {}
 
-    def _add_instance(self, subname, modulepath, objectname, fullpath=None):
+    def _add_instance(self, subname, modulepath, objectname,
+                            fullpath=None, basej=None):
         """ adds an instance to the dictionary, for when
             __getattribute__ is called, the instance will be loaded
         """
         #print ("add instance", self, subname, modulepath, objectname)
-        ms = ModuleSetup(subname, modulepath, objectname, fullpath)
+        ms = ModuleSetup(subname, modulepath, objectname, fullpath, basej)
         #print (dir(self))
         d = object.__getattribute__(self, '__subgetters__')
         d[subname] = ms
@@ -67,11 +68,12 @@ class BaseGetter(object):
 
 
 class ModuleSetup(object):
-    def __init__(self, subname, modulepath, objectname, fullpath):
+    def __init__(self, subname, modulepath, objectname, fullpath, basej):
         self.subname = subname
         self.modulepath = modulepath
         self.objectname = objectname
         self.fullpath = fullpath
+        self.basej = basej
         self._obj = None
 
     def _import_parent_recurse(self, mpathname, parent_name):
@@ -125,7 +127,23 @@ class ModuleSetup(object):
             #        (self.fullpath, self.modulepath, self.objectname))
             if module not in sys.modules:
                 sys.modules[self.modulepath] = module
-            self._obj = getattr(module, self.objectname)()
+            kls = getattr(module, self.objectname)
+            # check if kls has JSBase in it: if not, patch it in
+            if hasattr(kls, 'mro'):
+                mro = kls.mro()
+            else:
+                mro = []
+            jsbased = False
+            for m in mro:
+                if m.__name__ != 'JSBase':
+                    continue
+                jsbased = True
+                break
+            if not jsbased:
+                #klsname = "%s.%s" % (self.modulepath, self.objectname)
+                kls = JSBase._jsbase(self.basej, self.objectname,
+                        [kls])
+            self._obj = kls()
         return self._obj
 
 
@@ -202,6 +220,7 @@ class JSBase(BaseGetter):
             that has the name "jname".  sets up a "super" caller 
             (a dynamic __init__) that calls __init__ on the derived classes
         """
+        #print ("_jsbase", basej, jname, derived_classes)
         if derived_classes is None:
             derived_classes = []
         classes = [JSBase] + copy(derived_classes)
@@ -226,7 +245,7 @@ class JSBase(BaseGetter):
             #print ("dynamic init fn", self.__name__, self.__class__)
         inits = {'__init__': initfn}
 
-        memberkls = type(jname, tuple(classes), inits)
+        memberkls = type("JSBased"+jname, tuple(classes), inits)
         return memberkls
 
     @staticmethod
