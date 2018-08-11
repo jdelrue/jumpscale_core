@@ -65,7 +65,7 @@ class ErrorHandler(JSBASE):
             data = eco.json
             res = self._escalateToRedisFunction(
                 keys=["queues:eco", "eco:incr", "eco:occurrences", "eco:objects", "eco:last"], args=[eco.key, data])
-            res = j.data.serializers.json.loads(res)
+            res = self.j.data.serializers.json.loads(res)
             return res
         else:
             return None
@@ -188,13 +188,13 @@ class ErrorHandler(JSBASE):
         if message is None:
             if hasattr(exceptionObject, "message"):
                 message = exceptionObject.message
-                if j.data.types.list.check(message):
+                if self.j.data.types.list.check(message):
                     message = message[0]  # @hack to let all work again
             else:
                 message = str(exceptionObject)
 
         if message.find("((") != -1:
-            tags = j.data.regex.findOne("\(\(.*\)\)", message)
+            tags = self.j.data.regex.findOne("\(\(.*\)\)", message)
             message.replace(tags, "")
         else:
             tags = ""
@@ -223,7 +223,7 @@ class ErrorHandler(JSBASE):
             import builtins as mod
         Klass = getattr(mod, eco.exceptionclassname, RuntimeError)
         exc = Klass(eco.errormessage)
-        for key, value in list(j.data.serializers.json.loads(eco.exceptioninfo).items()):
+        for key, value in list(self.j.data.serializers.json.loads(eco.exceptioninfo).items()):
             setattr(exc, key, value)
         raise exc
 

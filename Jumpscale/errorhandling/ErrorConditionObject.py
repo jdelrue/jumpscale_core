@@ -31,7 +31,7 @@ class ErrorConditionObject(BaseException, JSBASE):
         JSBASE.__init__(self)
         if ddict != {}:
             defaults = {
-                "guid": j.data.idgenerator.generateGUID(),
+                "guid": self.j.data.idgenerator.generateGUID(),
                 "category": category,
                 "errormessage": msg,
                 "errormessagePub": msgpub,
@@ -56,7 +56,7 @@ class ErrorConditionObject(BaseException, JSBASE):
             #                   filename0,linenr0,func0)
 
             # is for default case where there is no redis
-            self.guid = j.data.idgenerator.generateGUID()
+            self.guid = self.j.data.idgenerator.generateGUID()
             self.category = category  # is category in dot notation
             self.errormessage = msg
             self.errormessagePub = msgpub
@@ -86,7 +86,7 @@ class ErrorConditionObject(BaseException, JSBASE):
             self.jid = 0
             self.masterjid = 0
 
-            self.epoch = j.data.time.getTimeEpoch()
+            self.epoch = self.j.data.time.getTimeEpoch()
             # BUG,INPUT,MONITORING,OPERATIONS,PERFORMANCE,UNKNOWN
             self.type = str(type)
 
@@ -156,7 +156,7 @@ class ErrorConditionObject(BaseException, JSBASE):
                                        self.funcfilename,
                                        self.appname,
                                        self.type)
-        self.uniquekey = j.data.hash.md5_string(C)
+        self.uniquekey = self.j.data.hash.md5_string(C)
         return self.uniquekey
 
     def _toAscii(self):
@@ -202,12 +202,12 @@ class ErrorConditionObject(BaseException, JSBASE):
         # if not self.type in types:
         #     j.events.inputerror_warning("Errorcondition was thrown with wrong type.\n%s"%str(self),"eco.check.type")
 
-        if not j.data.types.int.check(self.level):
+        if not self.j.data.types.int.check(self.level):
             try:
                 self.level = int(self.level)
             except BaseException:
                 pass
-            if not j.data.types.int.check(param.level):
+            if not self.j.data.types.int.check(param.level):
                 self.level = 1
                 j.events.inputerror_warning(
                     "Errorcondition was thrown with wrong " +
@@ -234,7 +234,7 @@ class ErrorConditionObject(BaseException, JSBASE):
         self.key  # make sure uniquekey is filled
         data = self.__dict__.copy()
         data.pop('tb', None)
-        return j.data.serializers.json.dumps(data)
+        return self.j.data.serializers.json.dumps(data)
 
     @property
     def info(self):
@@ -267,7 +267,7 @@ class ErrorConditionObject(BaseException, JSBASE):
             "errors",
             j.application.appname,
             "backtrace_%s.log" %
-            (j.data.time.getLocalTimeHRForFilesystem()))
+            (self.j.data.time.getLocalTimeHRForFilesystem()))
 
         msg = "***ERROR BACKTRACE***\n"
         msg += "%s\n" % self.backtrace
@@ -463,4 +463,4 @@ class ErrorConditionObject(BaseException, JSBASE):
             dd.pop("guid")
         if "sguid" in dd:
             dd.pop("sguid")
-        return j.data.hash.md5_string(str(dd))
+        return self.j.data.hash.md5_string(str(dd))

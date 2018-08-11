@@ -8,7 +8,7 @@ class BaseJSException(Exception, JSBASE):
 
     def __init__(self, message="", level=1, source="", actionkey="", eco=None, tags="", msgpub=""):
         JSBASE.__init__(self)
-        if j.data.types.string.check(level):
+        if self.j.data.types.string.check(level):
             level = 1
             tags = "cat:%s" % level
         super().__init__(message)
