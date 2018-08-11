@@ -117,15 +117,14 @@ else:
     j.data.cache = Cache()
 
     def add_dynamic_instance(parent, child, module, kls):
-        print ("adding", parent, child, module, kls)
+        #print ("adding", parent, child, module, kls)
         if not parent:
             parent = j
         else:
             parent = getattr(j, parent)
         if kls:
             parent._add_instance(child, "Jumpscale." + module, kls)
-            child = getattr(parent, child)
-            print ("added", parent, child)
+            #print ("added", parent, child)
         else:
             walkfrom = j
             for subname in module.split('.'):
@@ -151,9 +150,6 @@ else:
         ]:
         add_dynamic_instance(parent, child, module, kls)
 
-    print ("state", j.core.state)
-    print ("state", j.tools.executorLocal.state)
-
     # check that locally init has been done
     j.tools.executorLocal.env_check_init()
 
@@ -161,32 +157,13 @@ else:
         ('data', 'idgenerator', 'data.idgenerator.IDGenerator', 'IDGenerator'),
         ('', 'errorhandler', 'errorhandling.ErrorHandler', 'ErrorHandler'),
         ('core', 'errorhandler', 'errorhandler', None),
+        ('sal', 'fswalker', 'fs.SystemFSWalker', 'SystemFSWalker'),
+        ('tools', 'jsloader', 'tools.loader.JSLoader', 'JSLoader'),
+        ('tools', 'tmux', 'tools.tmux.Tmux', 'Tmux'),
+        ('tools', 'path', 'tools.path.PathFactory', 'PathFactory'),
+        ('tools', 'console', 'tools.console.Console', 'Console'),
         ]:
         add_dynamic_instance(parent, child, module, kls)
-
-    from .fs.SystemFSWalker import SystemFSWalker
-
-    j.sal.fswalker = SystemFSWalker
-
-    from .tools.loader.JSLoader import JSLoader
-
-    j.tools.jsloader = JSLoader()
-
-    from .tools.tmux.Tmux import Tmux
-
-    j.tools.tmux = Tmux()
-
-    # from .clients.git.GitFactory import GitFactory
-
-    # j.clients.git = GitFactory()
-
-    from .tools.path.PathFactory import PathFactory
-
-    j.tools.path = PathFactory()
-
-    from .tools.console.Console import Console
-
-    j.tools.console = Console()
 
     from Jumpscale.errorhandling import JSExceptions
 
@@ -194,30 +171,20 @@ else:
 
     j.logging.init()  # will reconfigure the logging to use the config file
 
-    from .data.serializers.SerializersFactory import SerializersFactory
-    j.data.serializers = SerializersFactory()
+    for (parent, child, module, kls) in [
+        ('data', 'serializers', 'data.serializers.SerializersFactory',
+                                'SerializersFactory'),
+        ('clients', 'git ', 'clients.git.GitFactory', 'GitFactory'),
+        ('tools', 'formbuilder', 'tools.formbuilder.FormBuilder',
+                                        'FormBuilderFactory'),
+        ('tools', 'configmanager', 'tools.configmanager.ConfigManager',
+                                        'ConfigFactory'),
+        ('clients', 'sshkey', 'clients.sshkey.SSHKeys', 'SSHKeys'),
+        ('data', 'nacl', 'data.nacl.NACLFactory', 'NACLFactory'),
+        ('data', 'hash', 'data.hash.HashTool', 'HashTool'),
+        ('tools', 'myconfig', 'tools.myconfig.MyConfig', 'MyConfig'),
+        ]:
+        add_dynamic_instance(parent, child, module, kls)
 
-    from .clients.git.GitFactory import GitFactory
-    j.clients.git = GitFactory()
-
-    from .tools.formbuilder.FormBuilder import FormBuilderFactory
-    j.tools.formbuilder = FormBuilderFactory()  # needed in ConfigManager
-
-    from .tools.formbuilder.FormBuilder import FormBuilderFactory
-    j.tools.formbuilder = FormBuilderFactory()  # needed in ConfigManager
-
-    from .tools.configmanager.ConfigManager import ConfigFactory
-    j.tools.configmanager = ConfigFactory()  # needed in platformtypes
-
-    from .clients.sshkey.SSHKeys import SSHKeys
-    j.clients.sshkey = SSHKeys()
-
-    from .data.nacl.NACLFactory import NACLFactory
-    j.data.nacl = NACLFactory()
-
-    from .data.hash.HashTool import HashTool
-    j.data.hash = HashTool()
-
-    from .tools.myconfig.MyConfig import MyConfig
-    j.tools.myconfig = MyConfig()
-
+    print (j.__subgetters__)
+    print (j.data.__subgetters__)

@@ -166,8 +166,7 @@ class JSBase(BaseGetter):
 
         def initfn(self):
             sup = super(JSBase, self)
-            print ("dynamic init fn", self.__name__, self,
-                            type(sup))
+            #print ("dynamic init fn", self.__name__, self, type(sup))
             sup.__init__()
             JSBase.__init__(self)
         inits = {'__init__': initfn}
