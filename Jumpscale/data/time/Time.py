@@ -1,5 +1,3 @@
-
-from Jumpscale import j
 import datetime
 import time
 from .TimeInterval import TimeInterval
@@ -13,10 +11,8 @@ TIMES = {'s': 1,
          'w': 3600 * 24 * 7
          }
 
-JSBASE = j.application.jsbase_get_class()
 
-
-class Time_(JSBASE):
+class Time_(object):
     """
     generic provider of time functions
     lives at j.data.time
@@ -25,7 +21,6 @@ class Time_(JSBASE):
     def __init__(self):
         self.timeinterval = TimeInterval
         self.__jslocation__ = "j.data.time"
-        JSBASE.__init__(self)
 
     @property
     def epoch(self):
@@ -110,14 +105,14 @@ class Time_(JSBASE):
 
     def pythonDateTime2HRDateTime(self, pythonDateTime, local=True):
         if not isinstance(pythonDateTime, datetime.datetime):
-            raise j.exceptions.Input(
+            raise self.j.exceptions.Input(
                 "needs to be python date.time obj:%s" % pythonDateTime)
         epoch = pythonDateTime.timestamp()
         return self.epoch2HRDateTime(epoch)
 
     def pythonDateTime2Epoch(self, pythonDateTime, local=True):
         if not isinstance(pythonDateTime, datetime.datetime):
-            raise j.exceptions.Input(
+            raise self.j.exceptions.Input(
                 "needs to be python date.time obj:%s" % pythonDateTime)
 
         epoch = pythonDateTime.timestamp()
@@ -143,7 +138,7 @@ class Time_(JSBASE):
         if epoch is None:
             epoch = time.time()
         if epoch < 1262318400.0:
-            raise j.exceptions.RuntimeError(
+            raise self.j.exceptions.RuntimeError(
                 "epoch cannot be smaller than 1262318400, given epoch:%s" % epoch)
 
         return int((epoch - 1262318400.0) / 60.0)
@@ -179,7 +174,7 @@ class Time_(JSBASE):
         txt = txt.strip()
         unit = txt[-1]
         if txt[-1] not in list(TIMES.keys()):
-            raise j.exceptions.RuntimeError(
+            raise self.j.exceptions.RuntimeError(
                 "Cannot find time, needs to be in format have time indicator %s " % list(TIMES.keys()))
         value = float(txt[:-1])
         return int(value * TIMES[unit])
@@ -232,7 +227,7 @@ class Time_(JSBASE):
         if string is human readable format
         if date.time yeh ...
         """
-        if j.data.types.list.check(val):
+        if self.j.data.types.list.check(val):
             for item in val:
                 res = self.any2epoch(item, in_list=True)
                 if res != 0:
@@ -240,9 +235,9 @@ class Time_(JSBASE):
             return 0
         if val is None:
             return 0
-        if j.data.types.int.check(val):
+        if self.j.data.types.int.check(val):
             return val
-        if j.data.types.string.check(val):
+        if self.j.data.types.string.check(val):
             try:
                 return self.HRDateTime2epoch(val)
             except BaseException:
@@ -254,7 +249,7 @@ class Time_(JSBASE):
         if isinstance(val, datetime.datetime):
             return self.pythonDateTime2Epoch(val)
         if not in_list:
-            raise j.exceptions.Input(
+            raise self.j.exceptions.Input(
                 "Could not define format of time value, needs to be int, human readable time, list or python datetime obj.")
         else:
             return 0
