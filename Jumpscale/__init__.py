@@ -59,6 +59,7 @@ else:
                          'Portal', 'AtYourService']:
                 instancename = name.lower()
                 instance = self._create_jsbase_instance(name)
+                instance.j = self
                 setattr(self, instancename, instance)
             self.core = Core()
             self.sal_zos = SALZos()

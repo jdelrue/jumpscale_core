@@ -59,7 +59,9 @@ class BaseGetter(object):
             return object.__getattribute__(self, name)
         d = object.__getattribute__(self, '__subgetters__')
         if name in d:
-            return d[name].getter()
+            instance = d[name].getter()
+            instance.j = self.j
+            return instance
         return object.__getattribute__(self, name)
 
 
@@ -154,7 +156,7 @@ class JSBase(BaseGetter):
         self._cache = cache
 
     @staticmethod
-    def _create_jsbase_instance(jname, derived_classes=None):
+    def _create_jsbase_instance(jname, basej=None, derived_classes=None):
         """ dynamically creates a class which is derived from JSBase,
             that has the name "jname".  sets up a "super" caller 
             (a dynamic __init__) that calls __init__ on the derived classes
@@ -172,6 +174,8 @@ class JSBase(BaseGetter):
         inits = {'__init__': initfn}
 
         memberkls = type(jname, tuple(classes), inits)
+        if basej:
+            memberkls.j = basej
         return memberkls()
 
 # don't touch this directly - go through any instance of JSBase, assign self.j
