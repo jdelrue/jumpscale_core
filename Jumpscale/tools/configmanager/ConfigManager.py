@@ -37,6 +37,8 @@ class ConfigFactory(JSBASE):
         self._keyname = ""  # if set will overrule from the main js config file
         self._init = False
 
+        self.Config = self._jsbase(self.j, "Config", [Config]) # dynamic config class
+
     def reset(self, location=None, instance=None, force=False):
         """
         Reset configurations
@@ -265,7 +267,7 @@ class ConfigFactory(JSBASE):
 
         if ui is not None:
             jsobj.ui = ui
-        sc = Config(
+        sc = self.Config(
             instance=instance,
             location=location,
             template=template,
@@ -315,7 +317,7 @@ class ConfigFactory(JSBASE):
         if instance == "" or instance is None:
             raise RuntimeError("instance cannot be empty")
         key = "%s_%s" % (location, instance)
-        sc = Config(instance=instance, location=location)
+        sc = self.Config(instance=instance, location=location)
         return sc
 
     # should use config_update

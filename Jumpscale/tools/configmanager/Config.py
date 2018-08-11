@@ -1,17 +1,16 @@
 from Jumpscale import j # required because jumpscale.py doesn't exist at setup
 
-JSBASE = j.application.jsbase_get_class()
 
+class Config(object):
 
-class Config(JSBASE):
-
-    def __init__(self, instance="main", location=None, template=None, data={}):
+    def __init__(self, instance="main", location=None, template=None,
+                       data=None):
         """
         jsclient_object is e.g. j.clients.packet.net
         """
-
-        JSBASE.__init__(self)
-
+        self.new = False
+        if data is None:
+            data = {}
         self.location = j.data.text.toStr(location)
         self.instance = j.data.text.toStr(instance)
         self.error = False  # if this is true then need to call the configure part
