@@ -435,22 +435,37 @@ class JSLoader():
         if moduleList is None and baseList is None:
             moduleList, baseList = self.gather_modules()
 
+        if isinstance(moduleList, dict):
+            moduleList = moduleList.items()
         if aliases is None:
             aliases = map(lambda x: (x['from'], x['to']), patchers)
 
         _j = basej._create_jsbase_instance('Jumpscale')
+        rootmembers = {}
 
-        for jlocationRoot, jlocationRootDict in moduleList.items():
+        for jlocationRoot, jlocationRootDict in moduleList:
+            #print (jlocationRoot, jlocationRootDict)
             jname = jlocationRoot.split(".")[1].strip()
             #print ("dynamic generate root", jname, jlocationRoot)
             if jlocationRoot in baseList:
                 kls = baseList[jlocationRoot]
                 m = _j._add_instance(jname, "Jumpscale."+jname, kls, basej=_j)
                 member = m.getter()
+                setattr(_j, jname, member)
                 #print ("baselisted", jname, member)
             else:
                 member = JSBase._create_jsbase_instance(jname)
                 setattr(_j, jname, member)
+                #print ("created", jname, member)
+            rootmembers[jname] = member
+
+        #print ("rootmembers", rootmembers)
+
+        for jlocationRoot, jlocationRootDict in moduleList:
+            #print (jlocationRoot, jlocationRootDict)
+            jname = jlocationRoot.split(".")[1].strip()
+            member = rootmembers[jname] 
+            #print ("dynamic generate root", jname, jlocationRoot)
             for subname, sublist in jlocationRootDict.items():
                 modulename, classname, imports = sublist
                 #print ("subs", jlocationRoot, subname, sublist)
@@ -462,6 +477,7 @@ class JSLoader():
                                      basej=basej)
 
         for frommodule, tomodule in aliases:
+            #print ("alias", frommodule, tomodule)
             #print ("patching", p)
             walkfrom = _j
             frommodule = frommodule.split('.')
@@ -474,13 +490,6 @@ class JSLoader():
                 #print ("patchto", walkto, subname)
                 walkto = getattr(walkto, subname)
             setattr(walkfrom, child, walkto)
-
-        #print (dir(_j))
-        #print (dir(_j.core))
-        #print (type(_j.core.errorhandler))
-        #print (dir(_j.core.errorhandler))
-        #_j.application = _j.core().application
-        #_j.exceptions = _j.core().errorhandler().exceptions
 
         _j.j = _j
 
@@ -825,9 +834,11 @@ class JSLoader():
         self.prepare_config(autocompletepath)
         self._generate()
 
-    def dynamic_generate(self, autocompletepath=None, basej=None):
+    def dynamic_generate(self, autocompletepath=None, basej=None,
+                               moduleList=None, baseList=None,
+                                       aliases=None):
         """
         """
         assert basej is not None
         self.prepare_config(autocompletepath)
-        return self._dynamic_generate(basej)
+        return self._dynamic_generate(basej, moduleList, baseList, aliases)
