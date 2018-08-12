@@ -12,20 +12,20 @@ class TestJCONFIG(TestcasesBase):
     @classmethod
     def get_config(cls):
         with open(cls.config_path, 'r') as f:
-            content = pytoml.load(f)
+            content = pytoml.loads(f.read().strip())
         return content
 
     @classmethod
     def reset_config(cls):
         with open(cls.config_path, 'w') as f:
-            f.write(pytoml.dumps(cls.config_file_content))
+            f.write(pytoml.dumps(cls.config_file_content).strip())
 
     @classmethod
     def update_config(cls, data):
         content = dict(cls.config_file_content)
         content.update(data)
         with open(cls.config_path, 'w') as f:
-            f.write(pytoml.dumps(content))
+            f.write(pytoml.dumps(content).strip())
         return content
 
     @classmethod
