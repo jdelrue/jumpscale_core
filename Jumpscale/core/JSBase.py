@@ -168,6 +168,23 @@ class JSBase(BaseGetter):
         self._cache = None
         self._cache_expiration = 3600
         self._logger_force = False
+        self._late_init_called = False
+        self._late_init_fns = []
+
+    def add_late_init(self, fn, *args, **kwargs):
+        """ use this for when lazy-load needs to do some work
+            after the constructor has been initialised.
+            gets rid of potential side-effects
+        """
+        assert self._late_init_called == False, "late init already called!"
+        self._late_init_fns.append((fn, args, kwargs))
+
+    def _call_late_inits(self):
+        assert self._late_init_called == False, "late init already called!"
+        self._late_init_called = True
+        for (fn, args, kwargs) in self._late_init_fns:
+            #print ("calling late init", self.__class__, fn, args, kwargs)
+            fn(*args, *kwargs)
 
     @property
     def j(self):
@@ -256,6 +273,7 @@ class JSBase(BaseGetter):
                     else:
                         next_class.__init__(self, *args, **kwargs)
                     break
+            self._call_late_inits()
             #print ("dynamic init fn", self.__name__, self.__class__)
         inits = {'__init__': initfn}
 
