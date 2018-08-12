@@ -76,7 +76,8 @@ class ExecutorFactory(object):
         with self._lock:
             key = '%s:%s:%s' % (addr, port, login)
             if key not in self._executors_async or usecache is False:
-                self._executors_async[key] = ExecutorAsyncSSH(
+                D = self._jsbase(self.j, "ExecutorAsyncSSH", [ExecutorAsyncSSH])
+                self._executors_async[key] = D(
                     addr=addr, port=port, login=login, passwd=passwd,
                     debug=debug, allow_agent=allow_agent,
                     look_for_keys=look_for_keys, timeout=timeout,
@@ -86,7 +87,8 @@ class ExecutorFactory(object):
 
     def getLocalDocker(self, container_id_or_name):
         from .ExecutorDocker import ExecutorDocker
-        return ExecutorDocker.from_local_container(container_id_or_name)
+        D = self._jsbase(self.j, "ExecutorDocker", [ExecutorDocker])
+        return D.from_local_container(container_id_or_name)
 
     def reset(self, executor=None):
         """
