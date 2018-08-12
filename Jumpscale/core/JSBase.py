@@ -43,6 +43,7 @@ class BaseGetter(object):
         #print (dir(self))
         d = object.__getattribute__(self, '__subgetters__')
         d[subname] = ms
+        return ms
 
     def __getattribute__(self, name):
         if name == 'logger': # special-case for logger property

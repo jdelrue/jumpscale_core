@@ -1,22 +1,5 @@
 import os
-import socket
 from .core.JSBase import JSBase
-
-def tcpPortConnectionTest(ipaddr, port, timeout=None):
-    conn = None
-    try:
-        conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        if timeout:
-            conn.settimeout(timeout)
-        try:
-            conn.connect((ipaddr, port))
-        except BaseException:
-            return False
-    finally:
-        if conn:
-            conn.close()
-    return True
-
 
 if os.environ.get('JUMPSCALEMODE') == 'TESTING':
     from unittest.mock import MagicMock
@@ -24,47 +7,27 @@ if os.environ.get('JUMPSCALEMODE') == 'TESTING':
     j = MagicMock()
 
 else:
-    class SALZos(JSBase):
-        pass
-
-    class Core(JSBase):
-        def __init__(self):
-            JSBase.__init__(self)
-            self._db = None
-
-        @property
-        def db(self):
-            if not self._db:
-                if tcpPortConnectionTest("localhost", 6379):
-                    # print("CORE_REDIS")
-                    self._db = j.clients.redis.core_get()
-                else:
-                    # print("CORE_MEMREDIS")
-                    import fakeredis
-                    self._db = fakeredis.FakeStrictRedis()
-            return self._db
-
-        def db_reset(self):
-            j.data.datacache._cache = {}
-            self._db = None
-
-    class DataUnits(JSBase):
-        pass
 
     class Jumpscale(JSBase):
 
         def __init__(self):
             JSBase.__init__(self)
-            for name in ['Tools', 'Sal', 'Data', 'Clients', 'Servers',
-                         'Portal', 'AtYourService']:
-                instancename = name.lower()
-                instance = self._create_jsbase_instance(name)
-                instance.j = self
-                setattr(self, instancename, instance)
-            self.core = Core()
-            self.sal_zos = SALZos()
-            self.data_units = DataUnits()
             self.exceptions = None
+
+    def add_dynamic_instance(parent, child, module, kls):
+        #print ("adding", parent, child, module, kls)
+        if not parent:
+            parent = j
+        else:
+            parent = getattr(j, parent)
+        if kls:
+            parent._add_instance(child, "Jumpscale." + module, kls, basej=j)
+            #print ("added", parent, child)
+        else:
+            walkfrom = j
+            for subname in module.split('.'):
+                walkfrom = getattr(walkfrom, subname)
+            setattr(parent, child, walkfrom)
 
     from .logging.LoggerFactory import LoggerFactory
 
@@ -75,8 +38,18 @@ else:
     # the ONLY class that's not fully aware of it... for now.
     l = LoggerFactory()
 
+    #j = JSBase().j._create_jsbase_instance('Jumpscale')
     j = Jumpscale()
     j.j = j # sets up the global singleton
+    add_dynamic_instance('', 'core', 'core', 'Core')
+    add_dynamic_instance('', 'sal', 'sal', 'Sal')
+    add_dynamic_instance('', 'data', 'data', 'Data')
+    add_dynamic_instance('', 'tools', 'tools', 'Tools')
+    add_dynamic_instance('', 'clients', 'clients', 'Clients')
+    add_dynamic_instance('', 'portal', 'portal', 'Portal')
+    add_dynamic_instance('', 'atyourservice', 'atyourservice', 'AtYourService')
+    add_dynamic_instance('', 'sal_zos', 'sal_zos', 'SALZos')
+    add_dynamic_instance('', 'data_units', 'data_units', 'DataUnits')
     j.logging = l # and the logging instance...
     l.j = j # ... which isn't aware of the JSBase j singleton sigh...
 
@@ -112,21 +85,6 @@ else:
     from .core.Application import Application
     j.application = Application(logging=l)
     j.core.application = j.application
-
-    def add_dynamic_instance(parent, child, module, kls):
-        #print ("adding", parent, child, module, kls)
-        if not parent:
-            parent = j
-        else:
-            parent = getattr(j, parent)
-        if kls:
-            parent._add_instance(child, "Jumpscale." + module, kls, basej=j)
-            #print ("added", parent, child)
-        else:
-            walkfrom = j
-            for subname in module.split('.'):
-                walkfrom = getattr(walkfrom, subname)
-            setattr(parent, child, walkfrom)
 
     for (parent, child, module, kls) in [
         ('data', 'datacache', 'data.cache.Cache', 'Cache'),
@@ -168,6 +126,7 @@ else:
         ]:
         add_dynamic_instance(parent, child, module, kls)
 
+    #print (j.core, dir(j.core))
     # check that locally init has been done
     j.tools.executorLocal.env_check_init()
 

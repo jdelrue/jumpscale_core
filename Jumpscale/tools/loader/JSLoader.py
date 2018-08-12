@@ -374,6 +374,7 @@ class JSLoader():
         self.j.tools.executorLocal.initEnv()
 
         moduleList = {}
+        baseList = {}
 
         for name, path in self.j.tools.executorLocal.state.configGet(
                 'plugins', {}).items():
@@ -385,7 +386,9 @@ class JSLoader():
                         pth = pth[:-1]
                     pth = os.path.split(pth)[0]
                     sys.path = [pth] + sys.path
-                moduleList = self.findModules(path=path, moduleList=moduleList)
+                moduleList, baseList = self.findModules(path=path,
+                                        moduleList=moduleList,
+                                        baseList=baseList)
             else:
                 raise RuntimeError("Could not find plugin dir:%s" % path)
                 # try:
@@ -408,24 +411,34 @@ class JSLoader():
                     # remove unneeded items
                     del jlocationRootDict[subname]
 
-        return moduleList
+        return moduleList, baseList
 
-    def _dynamic_generate(self, basej=None):
+    def _dynamic_generate(self, basej):
         """ dynamically generates a jumpscale instance
         """
 
         # gather list of modules (also initialises environment)
-        moduleList = self.gather_modules()
+        moduleList, baseList = self.gather_modules()
 
         #def initfn(self):
         #    JSBase.__init__(self)
         #    BaseGetter.__init__(self)
 
-        instances = {}
+        #print ("baselist", baseList)
+
+        _j = basej._create_jsbase_instance('Jumpscale')
+
         for jlocationRoot, jlocationRootDict in moduleList.items():
             jname = jlocationRoot.split(".")[1].strip()
-            member = JSBase._create_jsbase_instance(jname)
-            instances[jname] = member
+            #print ("dynamic generate root", jname, jlocationRoot)
+            if jlocationRoot in baseList:
+                kls = baseList[jlocationRoot]
+                m = _j._add_instance(jname, "Jumpscale."+jname, kls, basej=_j)
+                member = m.getter()
+                #print ("baselisted", jname, member)
+            else:
+                member = JSBase._create_jsbase_instance(jname)
+                setattr(_j, jname, member)
             for subname, sublist in jlocationRootDict.items():
                 modulename, classname, imports = sublist
                 #print ("subs", jlocationRoot, subname, sublist)
@@ -436,7 +449,21 @@ class JSLoader():
                                      fullpath=modulename,
                                      basej=basej)
 
-        _j = type("Jumpscale", (JSBase, ), instances)
+        for p in patchers:
+            #print ("patching", p)
+            frommodule = p['from']
+            walkfrom = _j
+            frommodule = frommodule.split('.')
+            for fromname in frommodule[:-1]:
+                #print ("patchfrom", walkfrom, fromname)
+                walkfrom = getattr(walkfrom, fromname)
+            child = frommodule[-1]
+            walkto = _j
+            module = p['to']
+            for subname in module.split('.'):
+                #print ("patchto", walkto, subname)
+                walkto = getattr(walkto, subname)
+            setattr(walkfrom, child, walkto)
 
         #print (dir(_j))
         #print (dir(_j.core))
@@ -445,12 +472,9 @@ class JSLoader():
         #_j.application = _j.core().application
         #_j.exceptions = _j.core().errorhandler().exceptions
 
-        newj = _j()
-        if basej is None:
-            basej = newj
-        _j.j = basej
+        _j.j = _j
 
-        return newj
+        return _j
 
     def _generate(self):
         """ generates the jumpscale init file: jumpscale
@@ -461,7 +485,7 @@ class JSLoader():
         """
 
         # gather list of modules (also initialises environment)
-        moduleList = self.gather_modules()
+        moduleList, baseList = self.gather_modules()
 
         # outCC = outpath for code completion
         # out = path for core of jumpscale
@@ -598,7 +622,7 @@ class JSLoader():
 
     # import json
 
-    def findModules(self, path, moduleList=None):
+    def findModules(self, path, moduleList=None, baseList=None):
         """
         walk over code files & find locations for jumpscale modules
 
@@ -612,12 +636,24 @@ class JSLoader():
         # self.logger.debug("modulelist:%s"%moduleList)
         if moduleList is None:
             moduleList = {}
+        if baseList is None:
+            baseList = {}
 
         self.logger.info("findmodules in %s" % path)
 
         for classfile in self.j.sal.fs.listFilesInDir(path, True, "*.py"):
             # print(classfile)
             basename = self.j.sal.fs.getBaseName(classfile)
+            if basename.startswith('__init__'):
+                for classname, item in self.findJumpscaleLocationsInFile(
+                        classfile).items():
+                    #print ("found", classfile, classname, item)
+                    # hmm probably can use moduleList but not sure...
+                    if "location" not in item:
+                        continue
+                    location = item["location"]
+                    baseList[location] = classname
+
             if basename.startswith("_"):
                 continue
             if "actioncontroller" in basename.lower():
@@ -629,20 +665,21 @@ class JSLoader():
             for classname, item in self.findJumpscaleLocationsInFile(
                     classfile).items():
                 # item has "import" & "location" as key in the dict
-                if "location" in item:
-                    location = item["location"]
-                    if "import" in item:
-                        importItems = item["import"]
-                    else:
-                        importItems = []
+                if "location" not in item:
+                    continue
+                location = item["location"]
+                if "import" in item:
+                    importItems = item["import"]
+                else:
+                    importItems = []
 
-                    locRoot = ".".join(location.split(".")[:-1])
-                    locSubName = location.split(".")[-1]
-                    if locRoot not in moduleList:
-                        moduleList[locRoot] = {}
-                    moduleList[locRoot][locSubName] = (
-                        classfile, classname, importItems)
-        return moduleList
+                locRoot = ".".join(location.split(".")[:-1])
+                locSubName = location.split(".")[-1]
+                if locRoot not in moduleList:
+                    moduleList[locRoot] = {}
+                moduleList[locRoot][locSubName] = (
+                    classfile, classname, importItems)
+        return moduleList, baseList
 
     def removeEggs(self):
         for key, path in self.j.clients.git.getGitReposListLocal(
@@ -749,6 +786,6 @@ class JSLoader():
     def dynamic_generate(self, autocompletepath=None, basej=None):
         """
         """
-
+        assert basej is not None
         self.prepare_config(autocompletepath)
         return self._dynamic_generate(basej)
