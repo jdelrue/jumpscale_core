@@ -45,6 +45,14 @@ class BaseGetter(object):
         d[subname] = ms
         return ms
 
+    def __dir__(self):
+        d = object.__getattribute__(self, '__subgetters__')
+        keys = set(object.__dir__(self))
+        keys.update(d.keys())
+        keys = list(keys)
+        keys.sort()
+        return keys
+
     def __getattribute__(self, name):
         if name == 'logger': # special-case for logger property
             #print ("found name logger", type(self))
