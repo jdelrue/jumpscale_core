@@ -12,14 +12,14 @@ else:
     from .logging.LoggerFactory import LoggerFactory
 
     def add_dynamic_instance(parent, child, module, kls):
-        print ("adding", parent, child, module, kls)
+        #print ("adding", parent, child, module, kls)
         if not parent:
             parent = j
         else:
             parent = getattr(j, parent)
         if kls:
             parent._add_instance(child, "Jumpscale." + module, kls, basej=j)
-            print ("added", parent, child)
+            #print ("added", parent, child)
         else:
             walkfrom = j
             for subname in module.split('.'):
