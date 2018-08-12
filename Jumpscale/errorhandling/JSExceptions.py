@@ -43,8 +43,7 @@ class BaseJSException(Exception, JSBASE):
         return "%s ((%s))" % (self.message, self.tags)
 
     def __str__(self):
-        out = "ERROR: %s ((%s)" % (self.message, self.tags)
-        return out
+        return "ERROR: %s" % self.msg
 
     __repr__ = __str__
 
