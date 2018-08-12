@@ -37,11 +37,11 @@ need to redo:
   however there are still classes that do not inherit from JSBase which will
   have to temporarily use the global import until they are converted.
 * JSBase now inherits from something called "BaseGetter", which has the
-  very specific task of over-riding __getattribute__ in order to provide
+  very specific task of over-riding \_\_getattribute\_\_ in order to provide
   "on-demand" properties which are lazily-created.  Normally, a lazyprop
   decorator would be created, and dropped into the class, however it was
-  too challenging to do that, so __getattribute__ was over-ridden instead.
-  the BaseGetter.__subgetters__ dictionary stores the information needed
+  too challenging to do that, so \_\_getattribute\_\_ was over-ridden instead.
+  the BaseGetter.\_\_subgetters\_\_ dictionary stores the information needed
   to create the class instance on-demand, and calls ModuleSetup.getter
   to do it
 * ModuleSetup.getter is a particularly unusual function in that it
@@ -57,8 +57,8 @@ need to redo:
   making sure that args and kwargs are properly passed through.
   It uses the extremely unusual and little-known THREE argument
   version of the standard "type" function to do it.  A special
-  __init__ method is patched in which manually examines the
-  base classes and takes care of properly calling the JSBase.__init__
+  \_\_init\_\_ method is patched in which manually examines the
+  base classes and takes care of properly calling the JSBase.\_\_init\_\_
   as well as any other multiply-inherited base classes.
 * With that infrastructure in place it became possible to use the
   lazy-evaluation capabilities to break circular dependencies
@@ -73,8 +73,8 @@ need to redo:
   code kicks in (split now into JSLoader.gather_modules), walking
   the [plugins] directories listed in the jumpscale.toml config
   file.  The walker-process has been modified to also give a
-  dictionary of any modules (root modules) in files named "__init__.py"
-  that have a __jslocation__ in them.
+  dictionary of any modules (root modules) in files named "\_\_init\_\_.py"
+  that have a \_\_jslocation\_\_ in them.
 * From the information obtained, the BaseGetter._add_instance
   and JSBase._jsbase process can be repeated, this time dropping
   in the ENTIRE series of modules into a new "j" instance,
@@ -102,13 +102,13 @@ need to redo:
   (and there are genuinely very few of those).  Over time these
   should be removed.
 * If ever a new class instance is needed
-* Many of the class __init__ methods have critical inter-dependencies
+* Many of the class \_\_init\_\_ methods have critical inter-dependencies
   that really should not be there.  Also, they often refer to "j"
   (now self.j) which they really should not do, as that sets up a
   critical dependency chain.  To help break the cycle,
   a "late initialisation" system has been added to JSBase.  It is
   used by calling self.add_late_init(self.load, "loadarg1", kwarg=5)
-  and, on lazy-instantiation, AFTER the __init__ has been set up,
+  and, on lazy-instantiation, AFTER the \_\_init\_\_ has been set up,
   all the registered late initialisations are called.
   However extreme care has to be taken as this basically changes
   the order of calling of functions.
