@@ -141,6 +141,8 @@ class TestJSTATE(TestcasesBase):
         self.assertEqual(value, 'new_dict_value')
         self.assertTrue(isinstance(value, bool))
 
+    @unittest.skip(
+        'https://github.com/threefoldtech/jumpscale_core/issues/67')
     def test004_state_set(self):
         """ JS-011
         **Test Scenario:**
@@ -213,6 +215,8 @@ class TestJSTATE(TestcasesBase):
         self.assertEqual(self.get_state()['dict_1']['d_key_1'], '1')
         self.assertEqual(self.get_state()['dict_1']['d_key_2'], '0')
 
+    @unittest.skip(
+        'https://github.com/threefoldtech/jumpscale_core/issues/67')
     def test007_state_save(self):
         """ JS-014
         **Test Scenario:**
