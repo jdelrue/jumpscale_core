@@ -38,8 +38,7 @@ else:
     # the ONLY class that's not fully aware of it... for now.
     l = LoggerFactory()
 
-    #j = JSBase().j._create_jsbase_instance('Jumpscale')
-    j = Jumpscale()
+    j = JSBase().j._create_jsbase_instance('Jumpscale')
     j.j = j # sets up the global singleton
     add_dynamic_instance('', 'core', 'core', 'Core')
     add_dynamic_instance('', 'sal', 'sal', 'Sal')
