@@ -1,5 +1,6 @@
 import socket
 
+
 def tcpPortConnectionTest(ipaddr, port, timeout=None):
     conn = None
     try:
@@ -14,6 +15,7 @@ def tcpPortConnectionTest(ipaddr, port, timeout=None):
         if conn:
             conn.close()
     return True
+
 
 class Core(object):
 
@@ -41,4 +43,3 @@ class Core(object):
     def db_reset(self):
         self.j.data.datacache._cache = {}
         self._db = None
-

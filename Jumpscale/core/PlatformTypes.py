@@ -91,7 +91,7 @@ class PlatformTypes(JSBASE):
 
     def get(self, executor):
         """
-        @param executor is an executor object, None or $hostname:$port or 
+        @param executor is an executor object, None or $hostname:$port or
                     $ipaddr:$port or $hostname or $ipaddr
         """
         key = executor.id
@@ -191,8 +191,8 @@ class PlatformType(JSBASE):
             raise RuntimeError("need to fix, osversion should not be none")
             # print("####OSVERSION")
             # TELL KRISTOF YOU GOT HERE
-            rc, lsbcontent, err = self.executor.execute("cat /etc/*-release",
-                            replaceArgs=False, showout=False, die=False)
+            rc, lsbcontent, err = self.executor.execute(
+                "cat /etc/*-release", replaceArgs=False, showout=False, die=False)
             if rc == 0:
                 import re
                 try:
@@ -241,7 +241,7 @@ class PlatformType(JSBASE):
     def dieIfNotPlatform(self, platform):
         if not self.has_parent(platform):
             raise j.exceptions.RuntimeError(
-                "Can not continue, supported platform is %s, " + \
+                "Can not continue, supported platform is %s, " +
                 "this platform is %s" % (platform, self.myplatform))
 
     @property

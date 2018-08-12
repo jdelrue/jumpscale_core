@@ -34,7 +34,7 @@ class BaseGetter(object):
         self.__subgetters__ = {}
 
     def _add_instance(self, subname, modulepath, objectname,
-                            fullpath=None, basej=None):
+                      fullpath=None, basej=None):
         """ adds an instance to the dictionary, for when
             __getattribute__ is called, the instance will be loaded
         """
@@ -49,12 +49,11 @@ class BaseGetter(object):
         d = object.__getattribute__(self, '__subgetters__')
         keys = set(object.__dir__(self))
         keys.update(d.keys())
-        keys = list(keys)
-        keys.sort()
+        keys = sorted(keys)
         return keys
 
     def __getattribute__(self, name):
-        if name == 'logger': # special-case for logger property
+        if name == 'logger':  # special-case for logger property
             #print ("found name logger", type(self))
             try:
                 jsl = object.__getattribute__(self, '__jslocation__')
@@ -92,7 +91,11 @@ class ModuleSetup(object):
         print ("spec", spec)
         if spec:
             module = importlib.util.module_from_spec(spec)
-            print ("adding module", mpathname, module, mpathname not in sys.modules)
+            print (
+                "adding module",
+                mpathname,
+                module,
+                mpathname not in sys.modules)
             if mpathname not in sys.modules:
                 sys.modules[mpathname] = module
         mpathname = mpathname.rpartition('.')[0]
@@ -102,12 +105,12 @@ class ModuleSetup(object):
 
     def getter(self):
         if self._obj is None:
-            #print ("about to get modulepath %s object %s path %s" % \
+            # print ("about to get modulepath %s object %s path %s" % \
             #        (self.modulepath, self.objectname, self.fullpath))
 
             module = importlib.import_module(self.modulepath)
 
-            if False: # hmmm..... still doesn't want to play ball....
+            if False:  # hmmm..... still doesn't want to play ball....
                 parent_name = self.modulepath.rpartition('.')[0]
                 print ("parentname", self.modulepath, parent_name)
                 if parent_name:
@@ -120,19 +123,19 @@ class ModuleSetup(object):
                                                      parent.__path__)
                     if spec is None:
                         spec = importlib.util.spec_from_file_location(
-                                                            self.modulepath,
-                                                            self.fullpath)
+                            self.modulepath,
+                            self.fullpath)
                 else:
                     print ("no parent")
-                    #spec = importlib.util._find_spec_from_path(self.modulepath,
+                    # spec = importlib.util._find_spec_from_path(self.modulepath,
                     #                                        self.fullpath)
                     spec = importlib.util.spec_from_file_location(
-                                                        self.modulepath,
-                                                            self.fullpath)
+                        self.modulepath,
+                        self.fullpath)
                 print ("spec", spec, dir(spec))
                 module = importlib.util.module_from_spec(spec)
                 spec.loader.exec_module(module)
-            #print ("about to set fullpath %s modulepath %s object %s" % \
+            # print ("about to set fullpath %s modulepath %s object %s" % \
             #        (self.fullpath, self.modulepath, self.objectname))
             if module not in sys.modules:
                 sys.modules[self.modulepath] = module
@@ -151,7 +154,7 @@ class ModuleSetup(object):
             if not jsbased:
                 #klsname = "%s.%s" % (self.modulepath, self.objectname)
                 kls = JSBase._jsbase(self.basej, self.objectname,
-                        [kls])
+                                     [kls])
             self._obj = kls()
         return self._obj
 
@@ -227,7 +230,7 @@ class JSBase(BaseGetter):
     @staticmethod
     def _jsbase(basej, jname, derived_classes=None):
         """ dynamically creates a class which is derived from JSBase,
-            that has the name "jname".  sets up a "super" caller 
+            that has the name "jname".  sets up a "super" caller
             (a dynamic __init__) that calls __init__ on the derived classes
         """
         #print ("_jsbase", basej, jname, derived_classes)
@@ -236,13 +239,14 @@ class JSBase(BaseGetter):
         classes = [JSBase] + copy(derived_classes)
 
         import inspect
+
         def initfn(self, *args, **kwargs):
             JSBase.__init__(self, _logger=basej and basej.logger or None)
             mro = type(self).mro()
             #print ("baseinit", basej, self.__name__, args, kwargs)
             #print ("mro", type(self), inspect.getmro(self.__class__))
             #print ("mrolist", mro, mro.index(self.__class__))
-            for next_class in mro[1:]: # slice to end
+            for next_class in mro[1:]:  # slice to end
                 if hasattr(next_class, '__init__'):
                     #print ("calling", next_class.__name__)
                     if next_class.__name__ == 'BaseGetter':
@@ -255,7 +259,7 @@ class JSBase(BaseGetter):
             #print ("dynamic init fn", self.__name__, self.__class__)
         inits = {'__init__': initfn}
 
-        memberkls = type("JSBased"+jname, tuple(classes), inits)
+        memberkls = type("JSBased" + jname, tuple(classes), inits)
         return memberkls
 
     @staticmethod
@@ -267,6 +271,7 @@ class JSBase(BaseGetter):
         if basej:
             instance.j = basej
         return instance
+
 
 # don't touch this directly - go through any instance of JSBase, assign self.j
 # and it will get globally set.
