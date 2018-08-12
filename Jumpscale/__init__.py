@@ -83,7 +83,8 @@ else:
     l.filter = []  # default filter which captures all is *
 
     from .core.Application import Application
-    j.application = Application(logging=l)
+    j.application = Application()
+    j.application.logger = l
     j.core.application = j.application
 
     for (parent, child, module, kls) in [

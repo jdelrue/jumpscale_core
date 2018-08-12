@@ -1,4 +1,3 @@
-from Jumpscale import j
 import os
 # import sys
 import atexit
@@ -8,14 +7,10 @@ import psutil
 from .JSBase import JSBase
 
 
-class Application(JSBase):
+class Application(object):
 
-    def __init__(self, logging=None):
-
-        JSBase.__init__(self)
-        if logging is None:
-            logging = j.logging
-        self.logger = logging.get("application")
+    def __init__(self):
+        self.__jslocation__ = "j.core.application"
 
         self._calledexit = False
 
@@ -27,7 +22,16 @@ class Application(JSBase):
         self._systempid = None
 
         self.interactive = True
-        self.__jslocation__ = "j.core.application"
+
+    @property
+    def logger(self):
+        if self._logger is None:
+            self._logger = self.j.logging.get("application")
+        return self._logger
+
+    @logger.setter
+    def logger(self, newlogger):
+        self._logger = newlogger
 
     def jsbase_get_class(self):
         """
@@ -46,18 +50,18 @@ class Application(JSBase):
         """
         empties the core.db
         """
-        if j.core.db is not None:
-            for key in j.core.db.keys():
-                j.core.db.delete(key)
+        if self.j.core.db is not None:
+            for key in self.j.core.db.keys():
+                self.j.core.db.delete(key)
         self.reload()
 
     def reload(self):
-        j.tools.jsloader.generate()
+        self.j.tools.jsloader.generate()
 
     @property
     def debug(self):
         if self._debug is None:
-            self._debug = j.core.state.configGetFromDictBool(
+            self._debug = self.j.core.state.configGetFromDictBool(
                 "system", "debug", False)
         return self._debug
 
@@ -71,7 +75,7 @@ class Application(JSBase):
             from IPython import embed
             embed()
         else:
-            raise j.exceptions.RuntimeError(
+            raise self.j.exceptions.RuntimeError(
                 "Can't break into jsshell in production mode.")
 
     def init(self):
@@ -87,7 +91,7 @@ class Application(JSBase):
         '''Start the application
 
         You can only stop the application with return code 0 by calling
-        j.application.stop(). Don't call sys.exit yourself, don't try to run
+        self.j.application.stop(). Don't call sys.exit yourself, don't try to run
         to end-of-script, I will find you anyway!
         '''
         if name:
@@ -97,7 +101,7 @@ class Application(JSBase):
             self.appname = os.environ["JSPROCNAME"]
 
         if self.state == "RUNNING":
-            raise j.exceptions.RuntimeError(
+            raise self.j.exceptions.RuntimeError(
                 "Application %s already started" % self.appname)
 
         # Register exit handler for sys.exit and for script termination
@@ -145,10 +149,10 @@ class Application(JSBase):
         # Abnormal exit
         # You can only come here if an application has been started, and if
         # an abnormal exit happened, i.e. somebody called sys.exit or the end of script was reached
-        # Both are wrong! One should call j.application.stop(<exitcode>)
+        # Both are wrong! One should call self.j.application.stop(<exitcode>)
         # TODO: can we get the line of code which called sys.exit here?
 
-        # j.logger.log("UNCLEAN EXIT OF APPLICATION, SHOULD HAVE USED j.application.stop()", 4)
+        # self.j.logger.log("UNCLEAN EXIT OF APPLICATION, SHOULD HAVE USED self.j.application.stop()", 4)
         import sys
         if not self._calledexit:
             self.stop(stop=False)
@@ -160,18 +164,18 @@ class Application(JSBase):
     #     """
     #     try:
     #         pid = os.getpid()
-    #         if j.core.platformtype.myplatform.isWindows:
+    #         if self.j.core.platformtype.myplatform.isWindows:
     #             return 0
-    #         if j.core.platformtype.myplatform.isLinux:
+    #         if self.j.core.platformtype.myplatform.isLinux:
     #             command = "ps -o pcpu %d | grep -E --regex=\"[0.9]\"" % pid
     #             self.logger.debug("getCPUusage on linux with: %s" % command)
-    #             exitcode, output, err = j.sal.process.execute(
+    #             exitcode, output, err = self.j.sal.process.execute(
     #                 command, True, False)
     #             return output
-    #         elif j.core.platformtype.myplatform.isSolaris():
+    #         elif self.j.core.platformtype.myplatform.isSolaris():
     #             command = 'ps -efo pcpu,pid |grep %d' % pid
     #             self.logger.debug("getCPUusage on linux with: %s" % command)
-    #             exitcode, output, err = j.sal.process.execute(
+    #             exitcode, output, err = self.j.sal.process.execute(
     #                 command, True, False)
     #             cpuUsage = output.split(' ')[1]
     #             return cpuUsage
@@ -199,32 +203,32 @@ class Application(JSBase):
 
     # TODO: *2 is this still being used?
     def appGetPids(self, appname):
-        if j.core.db is None:
-            raise j.exceptions.RuntimeError(
+        if self.j.core.db is None:
+            raise self.j.exceptions.RuntimeError(
                 "Redis was not running when applications started, cannot get pid's")
-        if not j.core.db.hexists("application", appname):
+        if not self.j.core.db.hexists("application", appname):
             return list()
         else:
-            pids = j.data.serializers.json.loads(
-                j.core.db.hget("application", appname))
+            pids = self.j.data.serializers.json.loads(
+                self.j.core.db.hget("application", appname))
             return pids
 
     def appsGetNames(self):
-        if j.core.db is None:
-            raise j.exceptions.RuntimeError(
+        if self.j.core.db is None:
+            raise self.j.exceptions.RuntimeError(
                 "Make sure redis is running for port 9999")
-        return j.core.db.hkeys("application")
+        return self.j.core.db.hkeys("application")
 
     def appsGet(self):
 
-        defunctlist = j.sal.process.getDefunctProcesses()
+        defunctlist = self.j.sal.process.getDefunctProcesses()
         result = {}
         for item in self.appsGetNames():
             pids = self.appGetPidsActive(item)
             pids = [pid for pid in pids if pid not in defunctlist]
 
             if not pids:
-                j.core.db.hdelete("application", item)
+                self.j.core.db.hdelete("application", item)
             else:
                 result[item] = pids
         return result
@@ -241,15 +245,15 @@ class Application(JSBase):
                     todelete.append(pid)
         for item in todelete:
             pids.remove(item)
-        j.core.db.hset(
+        self.j.core.db.hset(
             "application",
             appname,
-            j.data.serializers.json.dumps(pids))
+            self.j.data.serializers.json.dumps(pids))
 
         return pids
 
     def _setWriteExitcodeOnExit(self, value):
-        if not j.data.types.bool.check(value):
+        if not self.j.data.types.bool.check(value):
             raise TypeError
         self._writeExitcodeOnExit = value
 
