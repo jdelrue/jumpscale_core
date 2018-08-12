@@ -11,11 +11,11 @@ class Config(object):
         self.new = False
         if data is None:
             data = {}
-        self.location = j.data.text.toStr(location)
-        self.instance = j.data.text.toStr(instance)
+        self.location = self.j.data.text.toStr(location)
+        self.instance = self.j.data.text.toStr(instance)
         self.error = False  # if this is true then need to call the configure part
         self._template = template
-        if not j.data.types.string.check(template):
+        if not self.j.data.types.string.check(template):
             if template is not None:
                 raise RuntimeError(
                     "template needs to be None or string:%s" %
@@ -24,8 +24,8 @@ class Config(object):
             raise RuntimeError("instance cannot be None")
 
         self.reset()
-        if not j.sal.fs.exists(self.path):
-            j.sal.fs.createDir(j.sal.fs.getDirName(self.path))
+        if not self.j.sal.fs.exists(self.path):
+            self.j.sal.fs.createDir(j.sal.fs.getDirName(self.path))
             self.new = True
             dataOnFS = {}
         else:
@@ -35,12 +35,12 @@ class Config(object):
             dataOnFS = self.data  # now decrypt
 
         # make sure template has been applied !
-        data2, error = j.data.serializers.toml.merge(
+        data2, error = self.j.data.serializers.toml.merge(
             tomlsource=self.template, tomlupdate=dataOnFS, listunique=True)
 
         if data != {}:
             # update with data given
-            data, error = j.data.serializers.toml.merge(
+            data, error = self.j.data.serializers.toml.merge(
                 tomlsource=data2, tomlupdate=data, listunique=True)
             self.data = data
         else:
@@ -48,8 +48,8 @@ class Config(object):
             self.data = data2
 
         # do the fancydump to make sure we really look at differences
-        if j.data.serializers.toml.fancydumps(
-                self.data) != j.data.serializers.toml.fancydumps(dataOnFS):
+        if self.j.data.serializers.toml.fancydumps(
+                self.data) != self.j.data.serializers.toml.fancydumps(dataOnFS):
             self.logger.debug("change of data in config, need to save")
             self.save()
 
@@ -64,8 +64,8 @@ class Config(object):
     def path(self):
         self.logger.debug("init getpath:%s" % self._path)
         if not self._path:
-            self._path = j.sal.fs.joinPaths(
-                j.data.text.toStr(j.tools.configmanager.path),
+            self._path = self.j.sal.fs.joinPaths(
+                self.j.data.text.toStr(j.tools.configmanager.path),
                 self.location, self.instance + '.toml')
             self.logger.debug("getpath:%s" % self._path)
         return self._path
@@ -73,11 +73,11 @@ class Config(object):
     @property
     def nacl(self):
         if not self._nacl:
-            if j.tools.configmanager.keyname:
-                self._nacl = j.data.nacl.get(
+            if self.j.tools.configmanager.keyname:
+                self._nacl = self.j.data.nacl.get(
                     sshkeyname=j.tools.configmanager.keyname)
             else:
-                self._nacl = j.data.nacl.get()
+                self._nacl = self.j.data.nacl.get()
         return self._nacl
 
     def instance_set(self, instance):
@@ -92,12 +92,12 @@ class Config(object):
         @RETURN if 1 means did not find the toml file so is new
         """
         if reset or self._data == {}:
-            if not j.sal.fs.exists(self.path):
+            if not self.j.sal.fs.exists(self.path):
                 raise RuntimeError("should exist at this point")
             else:
-                content = j.sal.fs.fileGetContents(self.path)
+                content = self.j.sal.fs.fileGetContents(self.path)
                 try:
-                    self._data = j.data.serializers.toml.loads(content)
+                    self._data = self.j.data.serializers.toml.loads(content)
                 except Exception as e:
                     if "deserialization failed" in str(e):
                         raise RuntimeError(
@@ -105,7 +105,7 @@ class Config(object):
                             (self.path, content))
                     raise e
             for key, val in self.template.items():
-                ttype = j.data.types.type_detect(self.template[key])
+                ttype = self.j.data.types.type_detect(self.template[key])
                 if ttype.BASETYPE == "string":
                     if key in self._data:
                         self._data[key] = self._data[key].strip()
@@ -113,11 +113,11 @@ class Config(object):
     def save(self):
         # at this point we have the config & can write (self._data has the
         # encrypted pieces)
-        j.sal.fs.writeFile(
-            self.path, j.data.serializers.toml.fancydumps(self._data))
+        self.j.sal.fs.writeFile(
+            self.path, self.j.data.serializers.toml.fancydumps(self._data))
 
     def delete(self):
-        j.sal.fs.remove(self.path)
+        self.j.sal.fs.remove(self.path)
 
     @property
     def template(self):
@@ -149,9 +149,9 @@ class Config(object):
                             obj._child_class.__module__)
                     raise e
             self._template = myvars["template"]
-        if j.data.types.string.check(self._template):
+        if self.j.data.types.string.check(self._template):
             try:
-                self._template = j.data.serializers.toml.loads(self._template)
+                self._template = self.j.data.serializers.toml.loads(self._template)
             except Exception as e:
                 if "deserialization failed" in str(e):
                     raise RuntimeError(
@@ -174,7 +174,7 @@ class Config(object):
                 self.logger.debug("template was:%s\n" % self.template)
                 self.error = True
             else:
-                ttype = j.data.types.type_detect(self.template[key])
+                ttype = self.j.data.types.type_detect(self.template[key])
                 if key.endswith("_"):
                     if ttype.BASETYPE == "string":
                         if item != '' and item != '""':
@@ -190,7 +190,7 @@ class Config(object):
 
     @data.setter
     def data(self, value):
-        if j.data.types.dict.check(value) is False:
+        if self.j.data.types.dict.check(value) is False:
             raise TypeError("value needs to be dict")
 
         changed = False
@@ -209,7 +209,7 @@ class Config(object):
                 "Cannot find key:%s in template for %s" % (key, self))
 
         if key not in self._data or self._data[key] != val:
-            ttype = j.data.types.type_detect(self.template[key])
+            ttype = self.j.data.types.type_detect(self.template[key])
             if key.endswith("_"):
                 if ttype.BASETYPE == "string":
                     if val != '' and val != '""':
@@ -226,11 +226,11 @@ class Config(object):
 
     @property
     def yaml(self):
-        return j.data.serializers.toml.fancydumps(self._data)
+        return self.j.data.serializers.toml.fancydumps(self._data)
 
     def __str__(self):
         out = "config:%s:%s\n\n" % (self.location, self.instance)
-        out += j.data.text.indent(self.yaml)
+        out += self.j.data.text.indent(self.yaml)
         return out
 
     __repr__ = __str__
