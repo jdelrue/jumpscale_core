@@ -1,5 +1,3 @@
-from Jumpscale import j
-
 import sys
 import os
 import platform
@@ -19,14 +17,12 @@ import platform
 #         result = 0
 #     os.close(fd)
 #     return result
-JSBASE = j.application.jsbase_get_class()
 
 
-class PlatformTypes(JSBASE):
+class PlatformTypes(object):
 
     def __init__(self):
         self.__jslocation__ = "j.core.platformtype"
-        JSBASE.__init__(self)
         self._myplatform = None
         self._platformParents = {}
         self._platformParents["unix"] = ["generic"]
@@ -73,7 +69,8 @@ class PlatformTypes(JSBASE):
     @property
     def myplatform(self):
         if self._myplatform is None:
-            self._myplatform = PlatformType()
+            DP = self._jsbase(self.j, 'PlatformType', [PlatformType])
+            self._myplatform = DP()
         return self._myplatform
 
     def getParents(self, name):
@@ -96,15 +93,15 @@ class PlatformTypes(JSBASE):
         """
         key = executor.id
         if key not in self._cache:
-            self._cache[key] = PlatformType(executor=executor)
+            DP = self._jsbase(self.j, 'PlatformType', [PlatformType])
+            self._cache[key] = DP(executor=executor)
         return self._cache[key]
 
 
-class PlatformType(JSBASE):
+class PlatformType(object):
 
     def __init__(self, name="", executor=None):
         # print("INIT PLATFORMTYPE:%s" % executor)
-        JSBASE.__init__(self)
         self.myplatform = name
         self._platformtypes = None
         self._is64bit = None
@@ -112,7 +109,7 @@ class PlatformType(JSBASE):
         self._hostname = None
         self._uname = None
         if executor is None:
-            self.executor = j.tools.executorLocal
+            self.executor = self.j.tools.executorLocal
         else:
             self.executor = executor
 
@@ -124,7 +121,7 @@ class PlatformType(JSBASE):
     @property
     def platformtypes(self):
         if self._platformtypes is None:
-            platformtypes = j.core.platformtype.getParents(self.myplatform)
+            platformtypes = self.j.core.platformtype.getParents(self.myplatform)
             self._platformtypes = [
                 item for item in platformtypes if item != ""]
         return self._platformtypes
@@ -137,7 +134,7 @@ class PlatformType(JSBASE):
             unn = os.uname()
             self._hostname = unn.nodename
             distro_info = platform.linux_distribution()
-            os_type = j.tools.executorLocal.stateOnSystem['os_type'].lower()
+            os_type = self.j.tools.executorLocal.stateOnSystem['os_type'].lower()
             if 'Ubuntu' in distro_info:
                 self._osversion = distro_info[1]
             elif 'ubuntu' in os_type:
@@ -240,7 +237,7 @@ class PlatformType(JSBASE):
 
     def dieIfNotPlatform(self, platform):
         if not self.has_parent(platform):
-            raise j.exceptions.RuntimeError(
+            raise self.j.exceptions.RuntimeError(
                 "Can not continue, supported platform is %s, " +
                 "this platform is %s" % (platform, self.myplatform))
 
@@ -274,7 +271,7 @@ class PlatformType(JSBASE):
     @property
     def isXen(self):
         '''Checks whether Xen support is enabled'''
-        return j.sal.process.checkProcessRunning('xen') == 0
+        return self.j.sal.process.checkProcessRunning('xen') == 0
 
     @property
     def isVirtualBox(self):
