@@ -276,7 +276,7 @@ def jumpscale_py_setup(location):
     setup_script = os.path.join(location, "jscale_setup.py")
     with open(setup_script, "w") as f:
         f.write(setup_cmd)
-    pipecmd(["/usr/bin/env", "python3", setup_script,
+    pipecmd([sys.executable, setup_script,
              "install", "--old-and-unmanageable", "--force"],
              location, "")
     # os.unlink(setup_script)
