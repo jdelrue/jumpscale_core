@@ -61,7 +61,6 @@ else:
         ('core', 'dirs', 'dirs', None),
         ('core', 'platformtype', 'core.PlatformTypes', 'PlatformTypes'),
         ('sal', 'process', 'sal.process.SystemProcess', 'SystemProcess'),
-        ('tools', 'jsloader', 'tools.loader.JSLoader', 'JSLoader'),
         ]:
         add_dynamic_instance(parent, child, module, kls)
 
