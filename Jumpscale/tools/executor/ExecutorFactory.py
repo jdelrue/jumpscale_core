@@ -1,15 +1,10 @@
-from jumpscale import j
-
 from .ExecutorSSH import ExecutorSSH
 from .ExecutorLocal import ExecutorLocal
 from .ExecutorAsyncSSH import ExecutorAsyncSSH
 from .ExecutorSerial import ExecutorSerial
 import threading
 
-JSBASE = j.application.jsbase_get_class()
-
-
-class ExecutorFactory(JSBASE):
+class ExecutorFactory(object):
     _lock = threading.Lock()
 
     _executors = {}
@@ -17,7 +12,6 @@ class ExecutorFactory(JSBASE):
 
     def __init__(self):
         self.__jslocation__ = "j.tools.executor"
-        JSBASE.__init__(self)
 
     def local_get(self):
         """
@@ -34,8 +28,8 @@ class ExecutorFactory(JSBASE):
 
     def ssh_get(self, sshclient):
         with self._lock:
-            if j.data.types.string.check(sshclient):
-                sshclient = j.clients.ssh.get(instance=sshclient)
+            if self.j.data.types.string.check(sshclient):
+                sshclient = self.j.clients.ssh.get(instance=sshclient)
             key = '%s:%s:%s' % (
                 sshclient.config.data['addr'],
                 sshclient.config.data['port'],
@@ -74,8 +68,8 @@ class ExecutorFactory(JSBASE):
         pubkey: uses this particular key (path) to connect
         usecache: gets cached executor if available. False to get a new one.
         """
-        if j.data.types.string.check(sshclient):
-            sshclient = j.clients.ssh.get(instance=sshclient)
+        if self.j.data.types.string.check(sshclient):
+            sshclient = self.j.clients.ssh.get(instance=sshclient)
         # @TODO: *1 needs to be fixed
         raise RuntimeError("not implemented")
         with self._lock:
@@ -100,10 +94,10 @@ class ExecutorFactory(JSBASE):
         if executor is None:
             self._executors = {}
             self._executors_async = {}
-            j.tools.prefab.prefabs_instance = {}
+            self.j.tools.prefab.prefabs_instance = {}
             return
 
-        if j.data.types.string.check(executor):
+        if self.j.data.types.string.check(executor):
             key = executor
         elif executor.type == 'ssh':
             sshclient = executor.sshclient
@@ -112,9 +106,9 @@ class ExecutorFactory(JSBASE):
                 sshclient.config.data['port'],
                 sshclient.config.data['login'])
         else:
-            raise j.exceptions.Input(message='executor type not recognize.')
+            raise self.j.exceptions.Input(message='executor type not recognize.')
         with self._lock:
             if key in self._executors:
                 exe = self._executors[key]
-                j.tools.prefab.reset(exe.prefab)
+                self.j.tools.prefab.reset(exe.prefab)
                 del self._executors[key]
