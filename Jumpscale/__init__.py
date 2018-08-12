@@ -29,17 +29,11 @@ else:
     # LoggerFactory isn't instantiated from JSBase so there has to
     # be a little bit of a dance to get it established and pointing
     # to the right global j.  JSBase now contains a property "j"
-    # which is actually a singleton (global), and LoggerFactory is
-    # the ONLY class that's not fully aware of it... for now.
+    # which is actually a singleton (global)
     bj = JSBase()
 
-    l = LoggerFactory()
-    l.enabled = False
-    l.filter = []  # default filter which captures all is *
     j = bj.j._create_jsbase_instance('Jumpscale')
     j.j = j # sets up the global singleton
-    j.logging = l
-    l.j = j # ... which isn't aware of the JSBase j singleton sigh...
 
     DLoggerFactory = bj._jsbase(j, 'LoggerFactory', [LoggerFactory])
     l = DLoggerFactory()

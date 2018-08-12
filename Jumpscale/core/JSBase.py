@@ -258,7 +258,7 @@ class JSBase(BaseGetter):
         import inspect
 
         def initfn(self, *args, **kwargs):
-            JSBase.__init__(self, _logger=basej and basej.logger or None)
+            JSBase.__init__(self, _logger=basej and basej._logger or None)
             mro = type(self).mro()
             #print ("baseinit", basej, self.__name__, args, kwargs)
             #print ("mro", type(self), inspect.getmro(self.__class__))
