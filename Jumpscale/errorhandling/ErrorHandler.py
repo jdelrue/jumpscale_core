@@ -74,8 +74,11 @@ class ErrorHandler(JSBASE):
     def blacklist(self):
         if self._blacklist is None:
             key = 'eco.blacklist'
-            if self.j.application.config.jumpscale.get('application').get(key):
-                self._blacklist = self.j.application.config.jumpscale.get('application').getList(key)
+            cfgj = self.j.core.state.config_js
+            if cfgj is not None:
+                cfgj = cfgj.get('application')
+            if cfgj is not None and cfgj.get(key):
+                self._blacklist = cfgj.getList(key)
             else:
                 self._blacklist = list()
         return self._blacklist
