@@ -48,7 +48,6 @@ else:
         ('', 'data', 'data', 'Data'),
         ('data', 'types', 'data.types.Types', 'Types'),
         ('data', 'text', 'data.text.Text', 'Text'),
-        ('', 'sal', 'sal', 'Sal'),
         ('sal', 'fs', 'fs.SystemFS', 'SystemFS'),
         ('core', 'application', 'core.Application', 'Application'),
         ('', 'application', 'core.application', None),
