@@ -193,10 +193,10 @@ class ExecutorDocker(ExecutorBase):
                 'bash -c "rm %s; rm %s.stderr"' %
                 (cmd_file, cmd_file))
 
-    def execute(self, cmds, die=True, checkok=False, showout=True, "
-                "timeout=0, env=None,  # pylint: disable=R0913
-                asScript=False, hide=False, "
-                "sudo=False):  # pylint: disable=W0613
+    def execute(self, cmds, die=True, checkok=False, showout=True, 
+                timeout=0, env=None,  # pylint: disable=R0913
+                asScript=False, hide=False, 
+                sudo=False):  # pylint: disable=W0613
         """
         Executes command in container
 
@@ -284,9 +284,9 @@ class ExecutorDocker(ExecutorBase):
             self.j.sal.process.execute(
                 "tar -cvf %s.tar *" %
                 archiveid, showout=False, cwd=tmpdir)
-            with open(self.j.sal.fs.joinPaths(tmpdir, "
-                                              "" % s.tar" % archiveid), "
-                                            "'rb') as fileh:
+            with open(self.j.sal.fs.joinPaths(tmpdir, 
+                                              " % s.tar" % archiveid), 
+                                            'rb') as fileh:
                 data=fileh.read()
             if createdir:
                 self.executeRaw("mkdir -p %s" % dest)
