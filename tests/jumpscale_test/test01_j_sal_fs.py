@@ -154,6 +154,11 @@ class TestJSALFS(TestcasesBase):
         current_dir = os.getcwd() + '/' + self.file_name
         st_old = os.stat(path=current_dir)
         old_mod = oct(st_old.st_mode)[-3:]
-        j.sal.fs.chmod(current_dir, 0o4444)
+        expected_fail=False
+        try:
+            j.sal.fs.chmod(current_dir, 0o4444)
+        except ValueError:
+            expected_fail=True
+        self.assertTrue(expected_fail)
         st = os.stat(path=current_dir)
         self.assertEqual(oct(st.st_mode)[-3:], old_mod)
