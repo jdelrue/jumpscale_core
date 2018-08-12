@@ -18,14 +18,14 @@ class TestJSTATE(TestcasesBase):
     @classmethod
     def reset_state(cls):
         with open(cls.state_path, 'w') as f:
-            pytoml.dump(cls.state_file_content, f)
+            f.write(pytoml.dumps(cls.state_file_content))
 
     @classmethod
     def update_state(cls, data):
         content = dict(cls.state_file_content)
         content.update(data)
         with open(cls.state_path, 'w') as f:
-            pytoml.dump(content, f)
+            f.write(pytoml.dumps(content))
         return content
 
     @classmethod
