@@ -51,6 +51,11 @@ class TestJSDynamicWalker(TestcasesBase):
         dj = j.tools.jsloader.dynamic_generate()
 
         from jumpscale import j as jgen
+        from Jumpscale.logging.LoggerFactory import LoggerFactory
+        l = LoggerFactory()
+        dj.logging = l
+        dj.j = j
+        dj.cache = j.data.cache
 
         compare('j', jgen, dj, 2)
 
