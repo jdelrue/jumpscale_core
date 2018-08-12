@@ -1,5 +1,4 @@
 import os
-from Jumpscale import j
 
 
 # def pathToUnicode(path):
@@ -17,20 +16,16 @@ from Jumpscale import j
 #
 #     return path.decode(sys.getfilesystemencoding())
 
-JSBASE = j.application.jsbase_get_class()
-
-
-class Dirs(JSBASE):
+class Dirs(object):
     """Utility class to configure and store all relevant directory paths"""
 
     def __init__(self):
         '''jumpscale sandbox base folder'''
         self.__jslocation__ = "j.core.dirs"
-        JSBASE.__init__(self)
         self.reload()
 
     def reload(self):
-        for key, val in j.core.state.configGet("dirs").items():
+        for key, val in self.j.core.state.configGet("dirs").items():
             self.__dict__[key] = val
             os.environ[key] = val
 
@@ -39,11 +34,13 @@ class Dirs(JSBASE):
 
     def replace_txt_dir_vars(self, txt, additional_args={}):
         """
-        replace $BASEDIR,$VARDIR,$JSCFGDIR,$bindir,$codedir,$tmpdir,$logdir,$appdir with props of
+        replace $BASEDIR,$VARDIR,$JSCFGDIR,$bindir,
+                $codedir,$tmpdir,$logdir,$appdir with props of
         this class also the Dir... get replaces e.g. varDir
         @param   txt:             Text to be replaced
         @type    txt:             string
-        @param   additional_args: Specify more variables and their values to be replaced in the path
+        @param   additional_args: Specify more variables and their 
+                values to be replaced in the path
         @type    additional_args: dict
         @return: string with replaced values
         """
@@ -72,10 +69,10 @@ class Dirs(JSBASE):
         """
         Returns location of Jumpscale library
         """
-        return j.sal.fs.getParent(
-            j.sal.fs.getDirName(
-                j.sal.fs.getPathOfRunningFunction(
-                    j.logger.__init__)))
+        return self.j.sal.fs.getParent(
+            self.j.sal.fs.getDirName(
+                self.j.sal.fs.getPathOfRunningFunction(
+                    self.j.logger.__init__)))
 
     def replace_files_dir_vars(
             self,
@@ -84,26 +81,30 @@ class Dirs(JSBASE):
             filter=None,
             additional_args={}):
         """
-            Replace JumpSacle directory variables in path with their values from this class
+            Replace JumpScale directory variables in path with their
+            values from this class
+
             @param path:            Could be either path to file or directory
             @type  path:            string
-            @param recursive:       If True will search recursively in all subdirectories
+            @param recursive:       If True will search recursively 
+                                    in all subdirectories
             @type  recursive:       boolean
-            @param filter:          unix-style wildcard (e.g. *.py) - this is not a regular expression
+            @param filter:          unix-style wildcard (e.g. *.py) -                                               this is not a regular expression
             @type  filter:          string
-            @param additional_args: Specify more variables and their values to be replaced in the path
+            @param additional_args: Specify more variables and their 
+                                    values to be replaced in the path
             @type  additional_args: dict
         """
-        if j.sal.fs.isFile(path):
+        if self.j.sal.fs.isFile(path):
             paths = [path]
         else:
-            paths = j.sal.fs.listFilesInDir(path, recursive, filter)
+            paths = self.j.sal.fs.listFilesInDir(path, recursive, filter)
 
         for path in paths:
-            content = j.sal.fs.fileGetContents(path)
+            content = self.j.sal.fs.fileGetContents(path)
             content2 = self.replace_txt_dir_vars(content, additional_args)
             if content2 != content:
-                j.sal.fs.writeFile(filename=path, contents=content2)
+                self.j.sal.fs.writeFile(filename=path, contents=content2)
 
     def __str__(self):
         out = ""
@@ -111,7 +112,7 @@ class Dirs(JSBASE):
             if key[0] == "_":
                 continue
             out += "%-20s : %s\n" % (key, value)
-        out = j.data.text.sort(out)
+        out = self.j.data.text.sort(out)
         return out
 
     __repr__ = __str__
