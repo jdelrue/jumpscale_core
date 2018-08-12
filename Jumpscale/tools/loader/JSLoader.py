@@ -413,7 +413,8 @@ class JSLoader():
 
         return moduleList, baseList
 
-    def _dynamic_generate(self, basej):
+    def _dynamic_generate(self, basej, moduleList=None, baseList=None,
+                                       aliases=None):
         """ dynamically generates a jumpscale instance.
 
             uses gather_modules (which strips out non-Jumpscale modules for us)
@@ -431,7 +432,11 @@ class JSLoader():
         """
 
         # gather list of modules (also initialises environment)
-        moduleList, baseList = self.gather_modules()
+        if moduleList is None and baseList is None:
+            moduleList, baseList = self.gather_modules()
+
+        if aliases is None:
+            aliases = map(lambda x: (x['from'], x['to']), patchers)
 
         _j = basej._create_jsbase_instance('Jumpscale')
 
@@ -456,9 +461,8 @@ class JSLoader():
                                      fullpath=modulename,
                                      basej=basej)
 
-        for p in patchers:
+        for frommodule, tomodule in aliases:
             #print ("patching", p)
-            frommodule = p['from']
             walkfrom = _j
             frommodule = frommodule.split('.')
             for fromname in frommodule[:-1]:
@@ -466,8 +470,7 @@ class JSLoader():
                 walkfrom = getattr(walkfrom, fromname)
             child = frommodule[-1]
             walkto = _j
-            module = p['to']
-            for subname in module.split('.'):
+            for subname in tomodule.split('.'):
                 #print ("patchto", walkto, subname)
                 walkto = getattr(walkto, subname)
             setattr(walkfrom, child, walkto)
