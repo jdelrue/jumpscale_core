@@ -191,48 +191,50 @@ class ExecutorBase(object):
 
             self.logger.debug("stateonsystem for non local:%s" % self)
             C = """
-            set +ex
-            ls "/root/.iscontainer"  > /dev/null 2>&1 && echo 'ISCONTAINER = 1' || echo 'ISCONTAINER = 0'
-            echo UNAME = \""$(uname -mnprs)"\"
+set +ex
+ls "/root/.iscontainer"  > /dev/null 2>&1 && \
+            echo 'ISCONTAINER = 1' || echo 'ISCONTAINER = 0'
+echo UNAME = \""$(uname -mnprs)"\"
 
-            if [ "$(uname)" == "Darwin" ]; then
-                export PATH_JSCFG="$HOME/jumpscale/cfg"
-            elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-                export PATH_JSCFG="$HOME/jumpscale/cfg"
-            else
-                die "platform not supported"
-            fi
-            echo PATH_JSCFG = \"$PATH_JSCFG\"
+if [ "$(uname)" == "Darwin" ]; then
+    export PATH_JSCFG="$HOME/jumpscale/cfg"
+elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+    export PATH_JSCFG="$HOME/jumpscale/cfg"
+else
+    die "platform not supported"
+fi
+echo PATH_JSCFG = \"$PATH_JSCFG\"
 
-            echo "PATH_HOME = $HOME"
-            echo HOSTNAME = "$(hostname)"
+echo "PATH_HOME = $HOME"
+echo HOSTNAME = "$(hostname)"
 
-            lsmod > /dev/null 2>&1|grep vboxdrv |grep -v grep  > /dev/null 2>&1 && echo 'VBOXDRV=1' || echo 'VBOXDRV=0'
+lsmod > /dev/null 2>&1|grep vboxdrv |grep -v grep  > \
+            /dev/null 2>&1 && echo 'VBOXDRV=1' || echo 'VBOXDRV=0'
 
-            #OS
-            apt-get -v > /dev/null 2>&1 && echo 'OS_TYPE="ubuntu"'
-            test -f /etc/arch-release > /dev/null 2>&1 && echo 'OS_TYPE="arch"'
-            test -f /etc/redhat-release > /dev/null 2>&1 && echo 'OS_TYPE="redhat"'
-            apk -v > /dev/null 2>&1 && echo 'OS_TYPE="alpine"'
-            brew -v > /dev/null 2>&1 && echo 'OS_TYPE="darwin"'
-            opkg -v > /dev/null 2>&1 && echo 'OS_TYPE="LEDE"'
-            cat /etc/os-release | grep "VERSION_ID"
+#OS
+apt-get -v > /dev/null 2>&1 && echo 'OS_TYPE="ubuntu"'
+test -f /etc/arch-release > /dev/null 2>&1 && echo 'OS_TYPE="arch"'
+test -f /etc/redhat-release > /dev/null 2>&1 && echo 'OS_TYPE="redhat"'
+apk -v > /dev/null 2>&1 && echo 'OS_TYPE="alpine"'
+brew -v > /dev/null 2>&1 && echo 'OS_TYPE="darwin"'
+opkg -v > /dev/null 2>&1 && echo 'OS_TYPE="LEDE"'
+cat /etc/os-release | grep "VERSION_ID"
 
-            echo "CFG_JUMPSCALE = --TEXT--"
-            cat $PATH_JSCFG/jumpscale.toml 2>/dev/null || echo ""
-            echo --TEXT--
+echo "CFG_JUMPSCALE = --TEXT--"
+cat $PATH_JSCFG/jumpscale.toml 2>/dev/null || echo ""
+echo --TEXT--
 
-            echo "CFG_STATE = --TEXT--"
-            cat $PATH_JSCFG/state.toml 2> /dev/null || echo ""
-            echo --TEXT--
+echo "CFG_STATE = --TEXT--"
+cat $PATH_JSCFG/state.toml 2> /dev/null || echo ""
+echo --TEXT--
 
-            echo "BASHPROFILE = --TEXT--"
-            cat $HOME/.profile_js 2>/dev/null || echo ""
-            echo --TEXT--
+echo "BASHPROFILE = --TEXT--"
+cat $HOME/.profile_js 2>/dev/null || echo ""
+echo --TEXT--
 
-            echo "ENV = --TEXT--"
-            export
-            echo --TEXT--
+echo "ENV = --TEXT--"
+export
+echo --TEXT--
             """
             C = j.data.text.strip(C)
             rc, out, err = self.execute(C, showout=True, sudo=False)
@@ -274,7 +276,8 @@ class ExecutorBase(object):
                     res["cfg_jumpscale"] = pytoml.loads(res["cfg_jumpscale"])
                 except Exception as e:
                     raise RuntimeError(
-                        "Could not load jumpscale config file (pytoml error)\n%s\n" %
+                        "Could not load jumpscale config file "
+                        "(pytoml error)\n%s\n" %
                         res["cfg_jumpscale"])
             else:
                 res["cfg_jumpscale"] = {}
@@ -283,7 +286,8 @@ class ExecutorBase(object):
                     res["cfg_state"] = pytoml.loads(res["cfg_state"])
                 except Exception as e:
                     raise RuntimeError(
-                        "Could not load jumpscale config file (pytoml error)\n%s\n" %
+                        "Could not load jumpscale config file "
+                        "(pytoml error)\n%s\n" %
                         res["cfg_state"])
 
             else:
@@ -374,7 +378,8 @@ class ExecutorBase(object):
 
         if counter > 9:
             raise RuntimeError(
-                "cannot convert default configfile, template arguments still in")
+                "cannot convert default configfile, "
+                "template arguments still in")
 
         return T
 
