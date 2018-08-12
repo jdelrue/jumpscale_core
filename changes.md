@@ -97,6 +97,11 @@ need to redo:
   be replaced TEMPORARILY with "from Jumpscale import j"
   but even that should now be completely REMOVED as only
   self.j should ever be used.
+* Classes - all classes - should now NEVER inherit from JSBase
+  except unless they have an absolute, absolute damn good reason
+  (and there are genuinely very few of those).  Over time these
+  should be removed.
+* If ever a new class instance is needed
 * Many of the class __init__ methods have critical inter-dependencies
   that really should not be there.  Also, they often refer to "j"
   (now self.j) which they really should not do, as that sets up a
@@ -107,3 +112,20 @@ need to redo:
   all the registered late initialisations are called.
   However extreme care has to be taken as this basically changes
   the order of calling of functions.
+
+Lastly: if ever a new class instance is needed, it should NOT
+be inherited from JSBase, and it should NOT be instantiated
+without first going through JSBase._jsbase, as follows:
+
+    DynamicCC = self._jsbase(self.j, 'CacheCategory', [CacheCategory])
+    self._cache[id] = DynamicCC( id=id, expiration=expiration, reset=reset)
+
+This basically ensures that everything can remain "clean" of
+"from Jumpscale import j", yet still have everything be aware of
+Jumpscale... just without having to explicitly code it that way
+(across hundreds of files).  It also means that if ever a new
+technique is needed, it can be handled easily through modifying
+*one single function*... not patching the code in literally hundreds
+of places.
+
+
