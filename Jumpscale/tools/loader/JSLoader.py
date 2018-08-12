@@ -1,4 +1,3 @@
-from Jumpscale import j
 import os
 import sys
 import importlib
@@ -6,6 +5,7 @@ import json
 import fcntl
 import pystache
 from subprocess import Popen, PIPE
+from ...core.JSBase import JSBase
 
 import importlib
 import functools
@@ -167,7 +167,8 @@ if os.environ.get('JUMPSCALEMODE') == 'STATICLOADER':
     j = Jumpscale()
 else:
     from Jumpscale.tools.loader.JSLoader import JSLoader
-    jl = JSLoader()
+    DJ = JSBase._jsbase(j, 'JSLoader', [JSLoader])
+    jl = DJ()
     j = jl.dynamic_generate(basej=j)
 j.j = j # patch the (new) global j instance to know itself (zennnn.....)
 
@@ -285,19 +286,25 @@ def jumpscale_py_setup(location):
 class JSLoader():
 
     def __init__(self):
-        self.logger = j.logging.get("jsloader")
         self.__jslocation__ = "j.tools.jsloader"
         self.tryimport = False
+        self._logger = None
+
+    @property
+    def logger(self):
+        if self._logger is None:
+            self._logger = self.j.logging.get("jsloader")
+        return self._logger
 
     @property
     def autopip(self):
-        return j.core.state.config["system"]["autopip"] in [
+        return self.j.core.state.config["system"]["autopip"] in [
             True, "true", "1", 1]
 
     def _installDevelopmentEnv(self):
         cmd = "apt-get install python3-dev libssl-dev -y"
-        j.sal.process.execute(cmd)
-        j.sal.process.execute("pip3 install pudb")
+        self.j.sal.process.execute(cmd)
+        self.j.sal.process.execute("pip3 install pudb")
 
     def _findSitePath(self):
         res = ""
@@ -319,18 +326,18 @@ class JSLoader():
     def initPath(self):
         path = self._findSitePath() + "/jumpscale.py"
         # print("initpath:%s" % path)
-        j.sal.fs.remove(path)
+        self.j.sal.fs.remove(path)
 
         return path
 
     def _pip(self, item):
-        rc, out, err = j.sal.process.execute(
+        rc, out, err = self.j.sal.process.execute(
             "pip3 install %s" %
             item, die=False)
         if rc > 0:
             if "gcc' failed" in out:
                 self._installDevelopmentEnv()
-                rc, out, err = j.sal.process.execute(
+                rc, out, err = self.j.sal.process.execute(
                     "pip3 install %s" % item, die=False)
         if rc > 0:
             print("WARNING: COULD NOT PIP INSTALL:%s\n\n" % item)
@@ -364,14 +371,14 @@ class JSLoader():
 
         # make sure the jumpscale toml file is set / will also link cmd files
         # to system
-        j.tools.executorLocal.initEnv()
+        self.j.tools.executorLocal.initEnv()
 
         moduleList = {}
 
-        for name, path in j.tools.executorLocal.state.configGet(
+        for name, path in self.j.tools.executorLocal.state.configGet(
                 'plugins', {}).items():
             self.logger.info("find modules in jumpscale for : '%s'" % path)
-            if j.sal.fs.exists(path, followlinks=True):
+            if self.j.sal.fs.exists(path, followlinks=True):
                 if False: # XXX hmmm.... nasty hack... disable....
                     pth = path
                     if pth[-1] == '/':
@@ -388,7 +395,7 @@ class JSLoader():
                 #     pass
 
         for jlocationRoot, jlocationRootDict in moduleList.items():
-            # is per item under j e.g. j.clients
+            # is per item under j e.g. self.j.clients
 
             if not jlocationRoot.startswith("j."):
                 raise RuntimeError(
@@ -410,16 +417,14 @@ class JSLoader():
         # gather list of modules (also initialises environment)
         moduleList = self.gather_modules()
 
-        JSBASE = j.application.jsbase_get_class()
-
         #def initfn(self):
-        #    JSBASE.__init__(self)
+        #    JSBase.__init__(self)
         #    BaseGetter.__init__(self)
 
         instances = {}
         for jlocationRoot, jlocationRootDict in moduleList.items():
             jname = jlocationRoot.split(".")[1].strip()
-            member = JSBASE._create_jsbase_instance(jname)
+            member = JSBase._create_jsbase_instance(jname)
             instances[jname] = member
             for subname, sublist in jlocationRootDict.items():
                 modulename, classname, imports = sublist
@@ -431,7 +436,7 @@ class JSLoader():
                                      fullpath=modulename,
                                      basej=basej)
 
-        _j = type("Jumpscale", (JSBASE, ), instances)
+        _j = type("Jumpscale", (JSBase, ), instances)
 
         #print (dir(_j))
         #print (dir(_j.core))
@@ -461,12 +466,12 @@ class JSLoader():
         # outCC = outpath for code completion
         # out = path for core of jumpscale
 
-        outCC = os.path.join(j.dirs.HOSTDIR, "autocomplete", "jumpscale.py")
+        outCC = os.path.join(self.j.dirs.HOSTDIR, "autocomplete", "jumpscale.py")
         outJSON = os.path.join(
-            j.dirs.HOSTDIR,
+            self.j.dirs.HOSTDIR,
             "autocomplete",
             "jumpscale.json")
-        j.sal.fs.createDir(os.path.join(j.dirs.HOSTDIR, "autocomplete"))
+        self.j.sal.fs.createDir(os.path.join(self.j.dirs.HOSTDIR, "autocomplete"))
 
         out = self.initPath
         self.logger.info("* jumpscale path:%s" % out)
@@ -480,7 +485,7 @@ class JSLoader():
         jlocations["locations"] = []
 
         modlistout_json = json.dumps(moduleList, sort_keys=True, indent=4)
-        j.sal.fs.writeFile(outJSON, modlistout_json)
+        self.j.sal.fs.writeFile(outJSON, modlistout_json)
 
         for jlocationRoot, jlocationRootDict in moduleList.items():
             # is per item under j e.g. j.clients
@@ -519,16 +524,16 @@ class JSLoader():
         content += pystache.render(GEN_END, **jlocations)
 
         self.logger.info("wrote jumpscale autocompletion file in %s" % outCC)
-        j.sal.fs.writeFile(outCC, contentCC)
+        self.j.sal.fs.writeFile(outCC, contentCC)
 
         self.logger.info("installing jumpscale.py file using setuptools")
-        autodir = os.path.join(j.dirs.HOSTDIR, "autocomplete")
+        autodir = os.path.join(self.j.dirs.HOSTDIR, "autocomplete")
         jumpscale_py_setup(autodir)
 
     def _pip_installed(self):
         "return the list of all installed pip packages"
         import json
-        _, out, _ = j.sal.process.execute(
+        _, out, _ = self.j.sal.process.execute(
             'pip3 list --format json', die=False, showout=False)
         pip_list = json.loads(out)
         return [p['name'] for p in pip_list]
@@ -540,7 +545,7 @@ class JSLoader():
             [$classname]["import"] = $importitems
         """
         res = {}
-        C = j.sal.fs.readFile(path)
+        C = self.j.sal.fs.readFile(path)
         classname = None
         locfound = False
         for line in C.split("\n"):
@@ -610,9 +615,9 @@ class JSLoader():
 
         self.logger.info("findmodules in %s" % path)
 
-        for classfile in j.sal.fs.listFilesInDir(path, True, "*.py"):
+        for classfile in self.j.sal.fs.listFilesInDir(path, True, "*.py"):
             # print(classfile)
-            basename = j.sal.fs.getBaseName(classfile)
+            basename = self.j.sal.fs.getBaseName(classfile)
             if basename.startswith("_"):
                 continue
             if "actioncontroller" in basename.lower():
@@ -640,11 +645,11 @@ class JSLoader():
         return moduleList
 
     def removeEggs(self):
-        for key, path in j.clients.git.getGitReposListLocal(
+        for key, path in self.j.clients.git.getGitReposListLocal(
                 account="jumpscale").items():
-            for item in [item for item in j.sal.fs.listDirsInDir(
+            for item in [item for item in self.j.sal.fs.listDirsInDir(
                     path) if item.find("egg-info") != -1]:
-                j.sal.fs.removeDirTree(item)
+                self.j.sal.fs.removeDirTree(item)
 
     def _copyPyLibs(self, autocompletepath=None):
         """
@@ -654,8 +659,8 @@ class JSLoader():
         NOT NEEDED NOW
         """
         if autocompletepath is None:
-            autocompletepath = os.path.join(j.dirs.HOSTDIR, "autocomplete")
-            j.sal.fs.createDir(autocompletepath)
+            autocompletepath = os.path.join(self.j.dirs.HOSTDIR, "autocomplete")
+            self.j.sal.fs.createDir(autocompletepath)
 
         for item in sys.path:
             if item.endswith(".zip"):
@@ -669,8 +674,8 @@ class JSLoader():
             if item[-1] != "/":
                 item += "/"
 
-            if j.sal.fs.exists(item, followlinks=True):
-                j.sal.fs.copyDirTree(item,
+            if self.j.sal.fs.exists(item, followlinks=True):
+                self.j.sal.fs.copyDirTree(item,
                                      autocompletepath,
                                      overwriteFiles=True,
                                      ignoredir=['*.egg-info',
@@ -688,7 +693,7 @@ class JSLoader():
                                      rsyncdelete=False,
                                      createdir=True)
 
-        j.sal.fs.writeFile(
+        self.j.sal.fs.writeFile(
             filename=os.path.join(
                 autocompletepath,
                 "__init__.py"),
@@ -698,18 +703,18 @@ class JSLoader():
         """ prepares the plugin configuration
         """
 
-        if j.dirs.HOSTDIR == "":
+        if self.j.dirs.HOSTDIR == "":
             raise RuntimeError(
                 "dirs in your jumpscale.toml not ok, hostdir cannot be empty")
 
         if autocompletepath is None:
-            autocompletepath = os.path.join(j.dirs.HOSTDIR, "autocomplete")
-            j.sal.fs.createDir(autocompletepath)
+            autocompletepath = os.path.join(self.j.dirs.HOSTDIR, "autocomplete")
+            self.j.sal.fs.createDir(autocompletepath)
 
-        for name, path in j.core.state.configGet('plugins', {}).items():
-            if j.sal.fs.exists(path, followlinks=True):
+        for name, path in self.j.core.state.configGet('plugins', {}).items():
+            if self.j.sal.fs.exists(path, followlinks=True):
                 # link libs to location for hostos
-                j.sal.fs.copyDirTree(path,
+                self.j.sal.fs.copyDirTree(path,
                                      os.path.join(autocompletepath, name),
                                      overwriteFiles=True,
                                      ignoredir=['*.egg-info',
@@ -727,11 +732,11 @@ class JSLoader():
                                      rsyncdelete=True,
                                      createdir=True)
 
-        j.sal.fs.touch(os.path.join(j.dirs.HOSTDIR, 'autocomplete',
+        self.j.sal.fs.touch(os.path.join(self.j.dirs.HOSTDIR, 'autocomplete',
                 "__init__.py"))
 
         # DO NOT AUTOPIP the deps are now installed while installing the libs
-        j.core.state.configSetInDictBool("system", "autopip", False)
+        self.j.core.state.configSetInDictBool("system", "autopip", False)
         # j.application.config["system"]["debug"] = True
 
     def generate(self, autocompletepath=None):

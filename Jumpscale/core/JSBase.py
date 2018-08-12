@@ -262,3 +262,4 @@ class JSBase(BaseGetter):
 # don't touch this directly - go through any instance of JSBase, assign self.j
 # and it will get globally set.
 global_j = JSBase()
+global_j.j = global_j
