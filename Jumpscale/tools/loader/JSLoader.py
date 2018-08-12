@@ -414,17 +414,24 @@ class JSLoader():
         return moduleList, baseList
 
     def _dynamic_generate(self, basej):
-        """ dynamically generates a jumpscale instance
+        """ dynamically generates a jumpscale instance.
+
+            uses gather_modules (which strips out non-Jumpscale modules for us)
+            to get a list of root (base) modules that are in __init__.py
+            files (and have a __jslocation__), and submodules that need
+            to be added to them.
+
+            base (root) instance constructors are **REQUIRED** to not
+            have side-effects: they get instantiated straight away
+            (see use of m.getter() below).
+
+            anything else gets created as a lazy-property
+            (see BaseGetter __getattribute__ override, they
+             end up in BaseGetter.__subgetters__)
         """
 
         # gather list of modules (also initialises environment)
         moduleList, baseList = self.gather_modules()
-
-        #def initfn(self):
-        #    JSBase.__init__(self)
-        #    BaseGetter.__init__(self)
-
-        #print ("baselist", baseList)
 
         _j = basej._create_jsbase_instance('Jumpscale')
 
@@ -623,15 +630,14 @@ class JSLoader():
     # import json
 
     def findModules(self, path, moduleList=None, baseList=None):
-        """
-        walk over code files & find locations for jumpscale modules
+        """ walk over code files & find locations for jumpscale modules
+            return as two dicts.
 
-        return as dict
+            format of moduleList:
+            [$rootlocationname][$locsubname]=(classfile,classname,importItems)
 
-        format
-
-        [$rootlocationname][$locsubname]=(classfile,classname,importItems)
-
+            format of baseList:
+            [$rootlocationname]=(classname,jlocation)
         """
         # self.logger.debug("modulelist:%s"%moduleList)
         if moduleList is None:
