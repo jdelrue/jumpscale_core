@@ -1,4 +1,3 @@
-from Jumpscale import j
 try:
     import ujson as json
 except ImportError:
@@ -8,8 +7,6 @@ import pytoml
 import pystache
 import hashlib
 import base64
-
-JSBASE = j.application.jsbase_get_class()
 
 
 class ExecutorBase(object):
@@ -44,7 +41,7 @@ class ExecutorBase(object):
     @property
     def logger(self):
         if self._logger is None:
-            self._logger = j.logging.get("executor")
+            self._logger = self.j.logging.get("executor")
         return self._logger
 
     @property
@@ -130,14 +127,14 @@ class ExecutorBase(object):
     @property
     def prefab(self):
         if self._prefab is None:
-            if not getattr(j.tools, "prefab", None):
+            if not getattr(self.j.tools, "prefab", None):
                 # XXX TEMPORARY INCREDIBLY BAD HACK, see issue #50
                 from JumpscalePrefab.PrefabFactory \
                     import PrefabRootClassFactory \
                     as _PrefabRootClassFactory
-                j.tools.prefab = _PrefabRootClassFactory()
+                self.j.tools.prefab = _PrefabRootClassFactory()
 
-            self._prefab = j.tools.prefab.get(self)
+            self._prefab = self.j.tools.prefab.get(self)
         return self._prefab
 
     def exists(self, path):
@@ -148,7 +145,7 @@ class ExecutorBase(object):
         Config Save
         """
         if self.type == "local":
-            j.core.state = self._state
+            self.j.core.state = self._state
         self.state.configSave()
 
     # interface to implement by child classes
@@ -236,7 +233,7 @@ echo "ENV = --TEXT--"
 export
 echo --TEXT--
             """
-            C = j.data.text.strip(C)
+            C = self.j.data.text.strip(C)
             rc, out, err = self.execute(C, showout=True, sudo=False)
             res = {}
             state = ""
@@ -359,7 +356,7 @@ echo --TEXT--
         BINDIR="{{BASEDIR}}/bin"
         '''
 
-        TXT = j.data.text.strip(BASE) + "\n" + j.data.text.strip(T)
+        TXT = self.j.data.text.strip(BASE) + "\n" + self.j.data.text.strip(T)
 
         return self._replaceInToml(TXT)
 
@@ -419,7 +416,7 @@ echo --TEXT--
 
         '''
 
-        TSYSTEM = j.data.text.strip(TSYSTEM)
+        TSYSTEM = self.j.data.text.strip(TSYSTEM)
         TT = pytoml.loads(TSYSTEM)
 
         TT["dirs"] = DIRPATHS
@@ -455,7 +452,7 @@ echo --TEXT--
                     TT["plugins"]["JumpscalePrefab"] = "%s/github/threefoldtech/jumpscale_prefab/JumpscalePrefab/" % DIRPATHS["CODEDIR"]
                 if self.type == "local":
                     src = "%s/github/threefoldtech/jumpscale_core/cmds/" % DIRPATHS["CODEDIR"]
-                    j.sal.fs.symlinkFilesInDir(
+                    self.j.sal.fs.symlinkFilesInDir(
                         src,
                         "/usr/local/bin",
                         delete=True,
@@ -468,7 +465,7 @@ echo --TEXT--
             self.state.configUpdate(TT, False)  # will not overwrite
 
         if self.type == "local":
-            j.core.state = self.state
+            self.j.core.state = self.state
 
         self.cache.reset()
 
@@ -494,7 +491,7 @@ echo --TEXT--
 
     @property
     def platformtype(self):
-        return j.core.platformtype.get(self)
+        return self.j.core.platformtype.get(self)
 
     def file_read(self, path):
         self.logger.debug("file read:%s" % path)
@@ -546,14 +543,14 @@ echo --TEXT--
 
         if len(content) > 100000:
             # when contents are too big, bash will crash
-            temp = j.sal.fs.getTempFileName()
-            j.sal.fs.writeFile(filename=temp, contents=content, append=False)
+            temp = self.j.sal.fs.getTempFileName()
+            self.j.sal.fs.writeFile(filename=temp, contents=content, append=False)
             self.upload(temp, path)
-            j.sal.fs.remove(temp)
+            self.j.sal.fs.remove(temp)
         else:
             content2 = content.encode('utf-8')
             # sig = hashlib.md5(content2).hexdigest()
-            parent = j.sal.fs.getParent(path)
+            parent = self.j.sal.fs.getParent(path)
             cmd = "set -e;mkdir -p %s\n" % parent
 
             content_base64 = base64.b64encode(content2).decode()
