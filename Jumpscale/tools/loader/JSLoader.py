@@ -25,6 +25,73 @@ patchers = [
     {'from': 'core.state', 'to': 'tools.executorLocal.state'},
 ]
 
+bootstrap = [
+        ('', 'core', 'core', 'Core'),
+        ('', 'tools', 'tools', 'Tools'),
+        ('', 'sal', 'sal', 'Sal'),
+        ('', 'data', 'data', 'Data'),
+        ('data', 'types', 'data.types.Types', 'Types'),
+        ('data', 'text', 'data.text.Text', 'Text'),
+        ('sal', 'fs', 'fs.SystemFS', 'SystemFS'),
+        ('core', 'application', 'core.Application', 'Application'),
+        ('data', 'datacache', 'data.cache.Cache', 'Cache'),
+        ('tools', 'executorLocal', 'tools.executor.ExecutorLocal',
+                                    'ExecutorLocal'),
+        ('', 'dirs', 'core.Dirs', 'Dirs'),
+        ('core', 'platformtype', 'core.PlatformTypes', 'PlatformTypes'),
+        ('sal', 'process', 'sal.process.SystemProcess', 'SystemProcess'),
+        ('', 'application', 'core.application', None),
+        ('', 'cache', 'data.cache', None),
+        ('core', 'state', 'tools.executorLocal.state', None),
+        ('core', 'dirs', 'dirs', None),
+    ]
+
+def add_dynamic_instance(j, parent, child, module, kls):
+    """ very similar to dynamic_generate, needs work
+        to morph into using same code
+    """
+    #print ("adding", parent, child, module, kls)
+    if not parent:
+        parent = j
+    else:
+        parent = getattr(j, parent)
+    if kls:
+        parent._add_instance(child, "Jumpscale." + module, kls, basej=j)
+        #print ("added", parent, child)
+    else:
+        walkfrom = j
+        for subname in module.split('.'):
+            walkfrom = getattr(walkfrom, subname)
+        setattr(parent, child, walkfrom)
+
+def bootstrap_j(j, logging_enabled=False, filter=None):
+    from ...logging.LoggerFactory import LoggerFactory
+
+    # LoggerFactory isn't instantiated from JSBase so there has to
+    # be a little bit of a dance to get it established and pointing
+    # to the right global j.  JSBase now contains a property "j"
+    # which is actually a singleton (global)
+
+    j.j = j # sets up the global singleton
+
+    DLoggerFactory = j._jsbase(j, 'LoggerFactory', [LoggerFactory])
+    l = DLoggerFactory()
+    l.enabled = logging_enabled
+    l.filter = filter or []  # default filter which captures all is *
+    j.logging = l
+
+    for (parent, child, module, kls) in bootstrap:
+        add_dynamic_instance(j, parent, child, module, kls)
+
+    DJSLoader = j._jsbase(j, 'JSLoader', [JSLoader])
+    dl = DJSLoader()
+    #j = dl._dynamic_generate(j, modules, bases, aliases) 
+    j = dl.dynamic_generate(basej=j)
+    j.logging.init()  # will reconfigure the logging to use the config file
+    j.tools.executorLocal.env_check_init()
+
+    return j
+
 def lazyprop(fn):
     attr_name = '_lazy_' + fn.__name__
 
