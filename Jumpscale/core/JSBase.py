@@ -35,8 +35,30 @@ class BaseGetter(object):
 
     def _add_instance(self, subname, modulepath, objectname,
                       fullpath=None, basej=None):
-        """ adds an instance to the dictionary, for when
-            __getattribute__ is called, the instance will be loaded
+        """ adds an instance to the __subgetters__ dictionary. When
+            __getattribute__ is called, the instance will be created
+            ON DEMAND based on the information passed in, and for the
+            instance created to AUTOMATICALLY include a derivation
+            from JSBase if it isn't already a base class
+            (see ModuleSetup.getter)
+
+            the "registration" process passes in the module path,
+            object name, basej instance to be used, everything
+            needed to DEFER the creation of a class instance
+            until it's actually needed.  example:
+
+            j._add_instance("application",
+                            "Jumpscale.core.Application",
+                            "Application", j)
+
+            this REGISTERS the DESIRE to have an application instance
+            be created "on demand", should it ever be referred to:
+
+            In [3]: j.application
+            Out[3]: <Jumpscale.core.JSBase.JSBasedApplication at 0x7f67ed5b8da0>
+
+            note the inclusion of the automatic "JSBased" prefix on the
+            original class named "Application".
         """
         #print ("add instance", self, subname, modulepath, objectname, basej)
         ms = ModuleSetup(subname, modulepath, objectname, fullpath, basej)
@@ -174,7 +196,12 @@ class JSBase(BaseGetter):
     def add_late_init(self, fn, *args, **kwargs):
         """ use this for when lazy-load needs to do some work
             after the constructor has been initialised.
-            gets rid of potential side-effects
+            gets rid of potential side-effects.
+
+            basically, if an __init__ is referencing j (or, now, self.j)
+            then it should NOT be doing so (without a very good reason),
+            as that creates a critical dependency.  use add_late_init
+            instead.
         """
         assert self._late_init_called == False, "late init already called!"
         self._late_init_fns.append((fn, args, kwargs))
@@ -292,6 +319,7 @@ class JSBase(BaseGetter):
 
 
 # don't touch this directly - go through any instance of JSBase, assign self.j
-# and it will get globally set.
+# and it will get globally set.  generally not too good an idea to do that,
+# though, as pretty much everything could break.
 global_j = JSBase()
 global_j.j = global_j
