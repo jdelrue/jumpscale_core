@@ -5,6 +5,7 @@ import pytoml
 import socket
 import sys
 
+
 class ExecutorLocal(ExecutorBase):
 
     def __init__(self, debug=False, checkok=False):

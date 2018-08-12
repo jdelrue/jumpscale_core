@@ -4,6 +4,7 @@ from .ExecutorAsyncSSH import ExecutorAsyncSSH
 from .ExecutorSerial import ExecutorSerial
 import threading
 
+
 class ExecutorFactory(object):
     _lock = threading.Lock()
 
@@ -106,7 +107,8 @@ class ExecutorFactory(object):
                 sshclient.config.data['port'],
                 sshclient.config.data['login'])
         else:
-            raise self.j.exceptions.Input(message='executor type not recognize.')
+            raise self.j.exceptions.Input(
+                message='executor type not recognize.')
         with self._lock:
             if key in self._executors:
                 exe = self._executors[key]
