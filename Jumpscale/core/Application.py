@@ -34,15 +34,9 @@ class Application(object):
         self._logger = newlogger
 
     def jsbase_get_class(self):
-        """
-
-        JSBASE = j.application.jsbase_get_class()
-
-        class myclass(JSBASE):
-
-            def __init__(self):
-                JSBASE.__init__(self)
-
+        """ DEEPRECATED.  dynamic loader now auto-creates a multiple
+            inherited (dynamic) class which *includes* JSBase
+            automatically.
         """
         return JSBase
 
