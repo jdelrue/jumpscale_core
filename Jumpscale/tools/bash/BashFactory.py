@@ -1,17 +1,14 @@
-from jumpscale import j
 import re
 from io import StringIO
 import os
 import locale
 
-JSBASE = j.application.jsbase_get_class()
 
-
-class Profile(JSBASE):
+class Profile(object):
     env_pattern = re.compile(r'^([^=\n]+)="([^"\n]+)"$', re.MULTILINE)
     include_pattern = re.compile(r'^source (.*)$', re.MULTILINE)
 
-    def __init__(self, bash, profilePath=""):
+    def __init__(self, bash, profilePath=None):
         """
         X="value"
         Y="value"
@@ -20,16 +17,21 @@ class Profile(JSBASE):
         export X
         export Y
         """
-        JSBASE.__init__(self)
         self.bash = bash
         self.executor = bash.executor
-
-        if profilePath == "":
-            self.pathProfile = j.sal.fs.joinPaths(self.home, ".profile_js")
-        else:
-            self.pathProfile = profilePath
+        self._pathProfile = profilePath or ""
 
         self.load()
+
+    @property
+    def pathProfile(self):
+        if not self._pathProfile:
+            self._pathProfile = self.j.sal.fs.joinPaths(self.home, ".profile_js")
+        return self._pathProfile
+
+    @pathProfile.setter
+    def pathProfile(self, newpath):
+        self._pathProfile = newpath
 
     def load(self):
         self.home = self.bash.home
@@ -203,7 +205,7 @@ class Profile(JSBASE):
         '''
         return true of locale is properly set
         '''
-        if j.core.platformtype.myplatform.isMac:
+        if self.j.core.platformtype.myplatform.isMac:
             a = self.bash.env.get('LC_ALL') == 'en_US.UTF-8'
             b = self.bash.env.get('LANG') == 'en_US.UTF-8'
         else:
@@ -225,40 +227,46 @@ class Profile(JSBASE):
             self.envSet("LC_ALL", "C.UTF-8")
             self.envSet("LANG", "C.UTF-8")
             return
-        raise j.exceptions.Input("Cannot find C.UTF-8, cannot fix locale's")
+        raise self.j.exceptions.Input("Cannot find C.UTF-8, cannot fix locale's")
 
 
-class BashFactory(JSBASE):
+class BashFactory(object):
 
     def __init__(self):
         self.__jslocation__ = "j.tools.bash"
-        JSBASE.__init__(self)
         self._local = None
 
     @property
     def local(self):
         if not self._local:
-            self._local = Bash()
+            DBash = self.j._jsbase(self.j, 'Bash', [Bash])
+            self._local = DBash()
         return self._local
 
     def get(self, executor=None):
         """
         if executor==None then will be local
         """
-        b = Bash(executor=executor)
+        DBash = self.j._jsbase(self.j, 'Bash', [Bash])
+        b = DBash(executor=executor)
         return b
 
 
-class Bash(JSBASE):
+class Bash(object):
 
     def __init__(self, executor=None):
-        JSBASE.__init__(self)
-        if executor is not None:
-            self.executor = executor
-        else:
-            self.executor = j.tools.executorLocal
+        self._executor = executor
+        self.add_late_init(self.reset)
 
-        self.reset()
+    @property
+    def executor(self):
+        if self._executor is None:
+            self.executor = self.j.tools.executorLocal
+        return self._executor
+
+    @executor.setter
+    def executor(self, newexecutor):
+        self._executor = newexecutor
 
     def reset(self):
         self._profile = None
@@ -283,7 +291,7 @@ class Bash(JSBASE):
             "source ~/.bash_profile;which %s" % cmd, die=False, showout=False)
         if rc > 0:
             if die:
-                raise j.exceptions.RuntimeError("Did not find command: %s" % cmd)
+                raise self.j.exceptions.RuntimeError("Did not find command: %s" % cmd)
             else:
                 return False
 
@@ -297,7 +305,8 @@ class Bash(JSBASE):
         path = path.replace("~", self.home)
         if not self.executor.exists(path):
             self.executor.file_write(path, "")
-        return Profile(self, path)
+        DProfile = self.j._jsbase(self.j, 'Profile', [Profile])
+        return DProfile(self, path)
 
     @property
     def profileJS(self):
