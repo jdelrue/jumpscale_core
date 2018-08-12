@@ -13,9 +13,9 @@ except:
 import os
 import time
 # import sys
-from Jumpscale import tcpPortConnectionTest
+from ...core import tcpPortConnectionTest
 
-from Jumpscale.core.JSBase import JSBase as JSBASE
+from ...core.JSBase import JSBase as JSBASE
 
 class RedisFactory(JSBASE):
 
