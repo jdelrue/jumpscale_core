@@ -42,7 +42,8 @@ class ExecutorFactory(JSBASE):
                 sshclient.config.data['login'])
             if key not in self._executors or \
                     self._executors[key].sshclient is None:
-                self._executors[key] = ExecutorSSH(sshclient=sshclient)
+                DS = self._jsbase(self.j, "ExecutorSSH", [ExecutorSSH])
+                self._executors[key] = DS(sshclient=sshclient)
             return self._executors[key]
 
     def serial_get(
