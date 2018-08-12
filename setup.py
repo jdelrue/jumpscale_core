@@ -13,9 +13,6 @@ def _post_install(libname, libpath):
     for item in j.sal.fs.find("/usr/local/bin/", fileregex="js_*"):
         j.sal.fs.remove("/usr/local/bin/%s" % item)
 
-    j.tools.executorLocal.initEnv()
-    j.tools.jsloader.generate()
-
 
 class install(_install):
 
@@ -79,6 +76,7 @@ setup(
     author_email='info@threefold.tech',
     license='Apache',
     packages=packages,
+    py_modules=['jumpscale'],
 
     # IF YOU CHANGE ANYTHING HERE, LET DESPIEGK NOW (DO NOT INSTALL ANYTHING
     # WHICH NEEDS TO COMPILE)

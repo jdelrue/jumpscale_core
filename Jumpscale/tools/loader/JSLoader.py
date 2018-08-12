@@ -898,6 +898,9 @@ class JSLoader():
         """
         """
 
+        print ("GENERATE NOW DEPRECATED. DO NOT USE. IT IS CRITICAL TO")
+        print ("DELETE /usr/lib/python3/dist-packages/jumpscale.py")
+        return
         self.prepare_config(autocompletepath)
         self._generate()
 
