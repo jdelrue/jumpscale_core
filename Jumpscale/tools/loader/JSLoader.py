@@ -483,7 +483,7 @@ class JSLoader():
 
         return _j
 
-    def _generate(self):
+    def _old_generate(self):
         """ generates the jumpscale init file: jumpscale
             as well as the one required for code generation
 
@@ -556,6 +556,39 @@ class JSLoader():
 
         self.logger.info("wrote jumpscale autocompletion file in %s" % outCC)
         self.j.sal.fs.writeFile(outCC, contentCC)
+
+        self.logger.info("installing jumpscale.py file using setuptools")
+        autodir = os.path.join(self.j.dirs.HOSTDIR, "autocomplete")
+        jumpscale_py_setup(autodir)
+
+    def _generate(self):
+        """ now a stub that is no longer needed.  still generate
+            the jumpscale.json (for now)
+        """
+
+        # gather list of modules (also initialises environment)
+        moduleList, baseList = self.gather_modules()
+
+        # outCC = outpath for code completion
+        # out = path for core of jumpscale
+
+        outCC = os.path.join(self.j.dirs.HOSTDIR, "autocomplete", "jumpscale.py")
+        outJSON = os.path.join(
+            self.j.dirs.HOSTDIR,
+            "autocomplete",
+            "jumpscale.json")
+        self.j.sal.fs.createDir(os.path.join(self.j.dirs.HOSTDIR, "autocomplete"))
+
+        out = self.initPath
+        self.logger.info("* jumpscale path:%s" % out)
+        self.logger.info("* jumpscale codecompletion path:%s" % outCC)
+        self.initPath  # to make sure empty one is created
+
+        modlistout_json = json.dumps(moduleList, sort_keys=True, indent=4)
+        self.j.sal.fs.writeFile(outJSON, modlistout_json)
+
+        self.logger.info("wrote jumpscale autocompletion file in %s" % outCC)
+        self.j.sal.fs.writeFile(outCC, "from Jumpscale import j\n")
 
         self.logger.info("installing jumpscale.py file using setuptools")
         autodir = os.path.join(self.j.dirs.HOSTDIR, "autocomplete")
