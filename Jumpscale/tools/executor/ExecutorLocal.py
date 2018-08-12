@@ -1,4 +1,3 @@
-from Jumpscale import j
 from .ExecutorBase import ExecutorBase
 import subprocess
 import os
@@ -20,7 +19,7 @@ class ExecutorLocal(ExecutorBase):
         #               self.id,expiration=3600)
 
     def exists(self, path):
-        return j.sal.fs.exists(path)
+        return self.j.sal.fs.exists(path)
 
     @property
     def stateOnSystem(self):
@@ -50,7 +49,7 @@ class ExecutorLocal(ExecutorBase):
             def load(name):
                 path = "%s/%s.toml" % (cfgdir, name)
                 if os.path.exists(path):
-                    return pytoml.loads(j.sal.fs.fileGetContents(path))
+                    return pytoml.loads(self.j.sal.fs.fileGetContents(path))
                 else:
                     return {}
 
@@ -79,7 +78,7 @@ class ExecutorLocal(ExecutorBase):
 
             path = "%s/.profile_js" % (homedir)
             if os.path.exists(path):
-                res["bashprofile"] = j.sal.fs.fileGetContents(path)
+                res["bashprofile"] = self.j.sal.fs.fileGetContents(path)
             else:
                 res["bashprofile"] = ""
 
@@ -123,7 +122,7 @@ class ExecutorLocal(ExecutorBase):
         cmds2 = self.commands_transform(
             cmds, die=die, checkok=checkok, env=env, sudo=sudo)
 
-        rc, out, err = j.sal.process.execute(
+        rc, out, err = self.j.sal.process.execute(
             cmds2, die=die, showout=showout, timeout=timeout)
 
         if checkok:
@@ -133,13 +132,13 @@ class ExecutorLocal(ExecutorBase):
 
     def executeInteractive(self, cmds, die=True, checkok=None):
         cmds = self.commands_transform(cmds, die, checkok=checkok)
-        return j.sal.process.executeWithoutPipe(cmds)
+        return self.j.sal.process.executeWithoutPipe(cmds)
 
     def upload(self, source, dest, dest_prefix="", recursive=True):
         if dest_prefix != "":
-            dest = j.sal.fs.joinPaths(dest_prefix, dest)
-        if j.sal.fs.isDir(source):
-            j.sal.fs.copyDirTree(
+            dest = self.j.sal.fs.joinPaths(dest_prefix, dest)
+        if self.j.sal.fs.isDir(source):
+            self.j.sal.fs.copyDirTree(
                 source,
                 dest,
                 keepsymlinks=True,
@@ -153,17 +152,17 @@ class ExecutorLocal(ExecutorBase):
                 ssh=False,
                 recursive=recursive)
         else:
-            j.sal.fs.copyFile(source, dest, overwriteFile=True)
+            self.j.sal.fs.copyFile(source, dest, overwriteFile=True)
         self.cache.reset()
 
     def download(self, source, dest, source_prefix=""):
         if source_prefix != "":
-            source = j.sal.fs.joinPaths(source_prefix, source)
+            source = self.j.sal.fs.joinPaths(source_prefix, source)
 
-        if j.sal.fs.isFile(source):
-            j.sal.fs.copyFile(source, dest)
+        if self.j.sal.fs.isFile(source):
+            self.j.sal.fs.copyFile(source, dest)
         else:
-            j.sal.fs.copyDirTree(
+            self.j.sal.fs.copyDirTree(
                 source,
                 dest,
                 keepsymlinks=True,
@@ -177,7 +176,7 @@ class ExecutorLocal(ExecutorBase):
                 ssh=False)
 
     def file_read(self, path):
-        return j.sal.fs.readFile(path)
+        return self.j.sal.fs.readFile(path)
 
     def file_write(
             self,
@@ -188,9 +187,9 @@ class ExecutorLocal(ExecutorBase):
             group=None,
             append=False,
             sudo=False):
-        j.sal.fs.createDir(j.sal.fs.getDirName(path))
-        j.sal.fs.writeFile(path, content, append=append)
+        self.j.sal.fs.createDir(self.j.sal.fs.getDirName(path))
+        self.j.sal.fs.writeFile(path, content, append=append)
         if owner is not None or group is not None:
-            j.sal.fs.chown(path, owner, group)
+            self.j.sal.fs.chown(path, owner, group)
         if mode is not None:
-            j.sal.fs.chmod(path, mode)
+            self.j.sal.fs.chmod(path, mode)
