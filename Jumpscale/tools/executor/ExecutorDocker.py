@@ -17,14 +17,16 @@ class ExecutorDocker(ExecutorBase):
 
         if not isinstance(container, Container):
             raise ValueError(
-                "Expected container variable as instance of running docker container")
+                "Expected container variable as instance of "
+                "running docker container")
 
         # Check if docker container is running and if the base image has bash
         # installed
         result = container.exec_run('bash -c "echo test"')
         if result.exit_code != 0:
             raise ValueError(
-                "Container does not have bash installed! Need bash for using prefab")
+                "Container does not have bash installed! "
+                "Need bash for using prefab")
         self.container = container
         self.type = "docker"
 
@@ -191,8 +193,10 @@ class ExecutorDocker(ExecutorBase):
                 'bash -c "rm %s; rm %s.stderr"' %
                 (cmd_file, cmd_file))
 
-    def execute(self, cmds, die=True, checkok=False, showout=True, timeout=0, env=None,  # pylint: disable=R0913
-                asScript=False, hide=False, sudo=False):  # pylint: disable=W0613
+    def execute(self, cmds, die=True, checkok=False, showout=True, "
+                "timeout=0, env=None,  # pylint: disable=R0913
+                asScript=False, hide=False, "
+                "sudo=False):  # pylint: disable=W0613
         """
         Executes command in container
 
@@ -259,7 +263,8 @@ class ExecutorDocker(ExecutorBase):
         if dest_prefix != "":
             dest = self.j.sal.fs.joinPaths(dest_prefix, dest)
         if dest[0] != "/":
-            raise self.j.exceptions.RuntimeError("need / in beginning of dest path")
+            raise self.j.exceptions.RuntimeError(
+                "need / in beginning of dest path")
         tmpdir = self.j.sal.fs.joinPaths("/tmp", str(uuid.uuid4()))
         try:
             self.j.sal.fs.copyDirTree(
@@ -279,8 +284,10 @@ class ExecutorDocker(ExecutorBase):
             self.j.sal.process.execute(
                 "tar -cvf %s.tar *" %
                 archiveid, showout=False, cwd=tmpdir)
-            with open(self.j.sal.fs.joinPaths(tmpdir, "%s.tar" % archiveid), 'rb') as fileh:
-                data = fileh.read()
+            with open(self.j.sal.fs.joinPaths(tmpdir, "
+                                              "" % s.tar" % archiveid), "
+                                            "'rb') as fileh:
+                data=fileh.read()
             if createdir:
                 self.executeRaw("mkdir -p %s" % dest)
                 self.container.put_archive(dest, data)
@@ -298,14 +305,14 @@ class ExecutorDocker(ExecutorBase):
         """
 
         if source_prefix != "":
-            source = self.j.sal.fs.joinPaths(source_prefix, source)
+            source=self.j.sal.fs.joinPaths(source_prefix, source)
         if source[0] != "/":
             raise self.j.exceptions.RuntimeError(
                 "need / in beginning of source path")
-        tmptar = self.j.sal.fs.joinPaths("/tmp", "%s.tar" % str(uuid.uuid4()))
-        tmpdir = self.j.sal.fs.joinPaths("/tmp", str(uuid.uuid4()))
+        tmptar=self.j.sal.fs.joinPaths("/tmp", "%s.tar" % str(uuid.uuid4()))
+        tmpdir=self.j.sal.fs.joinPaths("/tmp", str(uuid.uuid4()))
         try:
-            data, _ = self.container.get_archive(source)
+            data, _=self.container.get_archive(source)
             with open(tmptar, 'wb') as fileh:
                 for chunk in data:
                     fileh.write(chunk)
@@ -331,4 +338,4 @@ class ExecutorDocker(ExecutorBase):
     def __repr__(self):
         return "Executor docker: %s" % self.id
 
-    __str__ = __repr__
+    __str__=__repr__

@@ -544,7 +544,8 @@ echo --TEXT--
         if len(content) > 100000:
             # when contents are too big, bash will crash
             temp = self.j.sal.fs.getTempFileName()
-            self.j.sal.fs.writeFile(filename=temp, contents=content, append=False)
+            self.j.sal.fs.writeFile(
+                filename=temp, contents=content, append=False)
             self.upload(temp, path)
             self.j.sal.fs.remove(temp)
         else:

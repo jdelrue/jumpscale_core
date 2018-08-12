@@ -76,7 +76,10 @@ class ExecutorFactory(object):
         with self._lock:
             key = '%s:%s:%s' % (addr, port, login)
             if key not in self._executors_async or usecache is False:
-                D = self._jsbase(self.j, "ExecutorAsyncSSH", [ExecutorAsyncSSH])
+                D = self._jsbase(
+                    self.j,
+                    "ExecutorAsyncSSH",
+                    [ExecutorAsyncSSH])
                 self._executors_async[key] = D(
                     addr=addr, port=port, login=login, passwd=passwd,
                     debug=debug, allow_agent=allow_agent,
