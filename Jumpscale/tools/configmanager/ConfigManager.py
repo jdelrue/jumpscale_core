@@ -184,7 +184,7 @@ class ConfigFactory(object):
             return path, None
         paths = []
         for key, path in self.j.clients.git.getGitReposListLocal().items():
-            if self.j.sal.fs.exists(j.sal.fs.joinPaths(path, ".jsconfig")):
+            if self.j.sal.fs.exists(self.j.sal.fs.joinPaths(path, ".jsconfig")):
                 paths.append(path)
         if len(paths) == 0:
             if die:
@@ -417,7 +417,7 @@ class ConfigFactory(object):
             self.logger.debug("ssh init (no keypath specified)")
 
             keys = self.j.clients.sshkey.list()  # LOADS FROM AGENT NOT FROM CONFIG
-            keys0 = [j.sal.fs.getBaseName(item) for item in keys]
+            keys0 = [self.j.sal.fs.getBaseName(item) for item in keys]
 
             if not keys:
                 # if no keys try to load a key from home directory/.ssh and
