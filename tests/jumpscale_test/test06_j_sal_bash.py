@@ -2,7 +2,7 @@ from jumpscale import j
 import os
 import random
 import unittest
-from .testcases_base import TestcasesBase
+from .testcases_base import TestcasesBase, squash_dictionaries
 
 
 class TestBASH(TestcasesBase):
@@ -19,9 +19,9 @@ class TestBASH(TestcasesBase):
         #. Get all environment variables using bash.env.
         #. Check that all environment variables exsits.
         """
-        self.assertDictEqual(
-            self.bash.env.__dict__['_data'],
-            os.environ.__dict__['_data'])
+
+        v1, v2 = squash_dictionaries(self.bash.env, os.environ._data)
+        self.assertEqual(v1, v2)
 
     @unittest.skip(
         'https://github.com/threefoldtech/jumpscale_core/issues/175')

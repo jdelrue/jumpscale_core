@@ -3,7 +3,7 @@ import unittest
 import random
 import platform
 import sys
-from .testcases_base import TestcasesBase
+from .testcases_base import TestcasesBase, squash_dictionaries
 from jumpscale import j
 from parameterized import parameterized
 
@@ -110,19 +110,6 @@ class EXECUTER(TestcasesBase):
            the other creates strings, so convert them before
            comparing
         """
-        from io import StringIO
-        def writedict(f, d):
-            keys = list(d.keys())
-            keys.sort()
-            for k in keys:
-                if isinstance(k, bytes):
-                    f.write("%s: %s\n" % (k.decode('utf-8'),
-                                         d[k].decode('utf-8')))
-                else:
-                    f.write("%s: %s\n" % (str(k), str(d[k])))
-        envd = StringIO()
-        writedict(envd, os.environ._data)
-        exd = StringIO()
-        writedict(exd, self.executer.env)
+        v1, v2 = squash_dictionaries(os.environ._data, self.executer.env)
 
-        self.assertEqual(envd.getvalue(), exd.getvalue())
+        self.assertEqual(v1, v2)

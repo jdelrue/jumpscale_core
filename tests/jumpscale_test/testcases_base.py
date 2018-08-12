@@ -8,6 +8,24 @@ from unittest import TestCase
 from nose.tools import TimeExpired
 import uuid
 
+def squash_dictionaries(d1, d2):
+    from io import StringIO
+    def writedict(f, d):
+        keys = list(d.keys())
+        keys.sort()
+        for k in keys:
+            if isinstance(k, bytes):
+                f.write("%s: %s\n" % (k.decode('utf-8'),
+                                     d[k].decode('utf-8')))
+            else:
+                f.write("%s: %s\n" % (str(k), str(d[k])))
+    envd = StringIO()
+    writedict(envd, d1)
+    exd = StringIO()
+    writedict(exd, d2)
+
+    return envd.getvalue(), exd.getvalue()
+
 
 class TestcasesBase(TestCase):
     def __init__(self, *args, **kwargs):
