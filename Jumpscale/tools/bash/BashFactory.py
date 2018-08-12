@@ -26,7 +26,8 @@ class Profile(object):
     @property
     def pathProfile(self):
         if not self._pathProfile:
-            self._pathProfile = self.j.sal.fs.joinPaths(self.home, ".profile_js")
+            self._pathProfile = self.j.sal.fs.joinPaths(
+                self.home, ".profile_js")
         return self._pathProfile
 
     @pathProfile.setter
@@ -40,7 +41,7 @@ class Profile(object):
         self._includes = []
 
         content = self.executor.file_read(self.pathProfile)
-        # content = self.executor.stateOnSystem["bashprofile"].strip()  ##WHY???????
+        # content = self.executor.stateOnSystem["bashprofile"].strip()  ##WHY??
 
         for match in Profile.env_pattern.finditer(content):
             self._env[match.group(1)] = match.group(2)
@@ -102,7 +103,8 @@ class Profile(object):
 
     def envDeleteAll(self, key):
         """
-        dangerous function will look for env argument which has been set in the profile
+        dangerous function will look for env argument 
+        which has been set in the profile
         if found will delete
         and will do this multiple times to make sure all instances are found
         """
@@ -126,7 +128,8 @@ class Profile(object):
 
     # def deletePathFromEnv(self, key):
     #     """
-    #     dangerous function will look for env argument which has been set in the profile
+    #     dangerous function will look for env argument 
+    #       which has been set in the profile
     #     if found will delete
     #     and will do this multiple times to make sure all instances are found
     #     """
@@ -169,7 +172,8 @@ class Profile(object):
     def save(self, includeInDefaultProfile=True):
         """
         save to disk
-        @param includeInDefaultProfile, if True then will include in the default profile
+        @param includeInDefaultProfile, if True then will
+                include in the default profile
         """
 
         self.executor.file_write(self.pathProfile, str(self))
@@ -177,7 +181,9 @@ class Profile(object):
         # make sure we include our custom profile in the default
         if includeInDefaultProfile is True:
             if self.pathProfile != self.bash.profileDefault.pathProfile:
-                self.logger.debug("INCLUDE IN DEFAULT PROFILE:%s" % self.pathProfile)
+                self.logger.debug(
+                    "INCLUDE IN DEFAULT PROFILE:%s" %
+                    self.pathProfile)
                 out = ""
                 inProfile = self.executor.file_read(
                     self.bash.profileDefault.pathProfile)
@@ -195,8 +201,8 @@ class Profile(object):
         self.bash.reset()  # do not remove !
 
     def getLocaleItems(self, force=False, showout=False):
-        if  self.executor.type=="local":
-            return [item for key,item in locale.locale_alias.items()]
+        if self.executor.type == "local":
+            return [item for key, item in locale.locale_alias.items()]
         else:
             out = self.executor.execute("locale -a")[1]
             return out.split("\n")
@@ -212,7 +218,9 @@ class Profile(object):
             a = self.bash.env.get('LC_ALL') == 'C.UTF-8'
             b = self.bash.env.get('LANG') == 'C.UTF-8'
         if (a and b) != True:
-            self.logger.debug("WARNING: locale has been fixed, please do: `source ~/.profile_js`")
+            self.logger.debug(
+                "WARNING: locale has been fixed, please do: "
+                "`source ~/.profile_js`")
             self.locale_fix()
             self.save(True)
 
@@ -227,7 +235,8 @@ class Profile(object):
             self.envSet("LC_ALL", "C.UTF-8")
             self.envSet("LANG", "C.UTF-8")
             return
-        raise self.j.exceptions.Input("Cannot find C.UTF-8, cannot fix locale's")
+        raise self.j.exceptions.Input(
+            "Cannot find C.UTF-8, cannot fix locale's")
 
 
 class BashFactory(object):
@@ -281,7 +290,8 @@ class Bash(object):
 
     @property
     def home(self):
-        return self.executor.env.get("HOME") or self.executor.dir_paths["HOMEDIR"]
+        return self.executor.env.get(
+            "HOME") or self.executor.dir_paths["HOMEDIR"]
 
     def cmdGetPath(self, cmd, die=True):
         """
@@ -291,7 +301,8 @@ class Bash(object):
             "source ~/.bash_profile;which %s" % cmd, die=False, showout=False)
         if rc > 0:
             if die:
-                raise self.j.exceptions.RuntimeError("Did not find command: %s" % cmd)
+                raise self.j.exceptions.RuntimeError(
+                    "Did not find command: %s" % cmd)
             else:
                 return False
 
