@@ -91,7 +91,7 @@ class LoggerFactory():
                 # print("JSLOGGER:%s" % name)
                 # logger = logging.getLogger(name)
                 logger = JSLogger(name, self)
-                logger.level = self.j.core.state.configGetFromDict("logging", "level", 'DEBUG')
+                logger.level = self.j.core.state.configGetFromDict("logging", "level", logging.DEBUG)
 
                 for handler in self.handlers._all:
                     logger.handlers = []
