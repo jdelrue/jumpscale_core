@@ -145,16 +145,7 @@ else:
         ('core', 'platformtype', 'core.PlatformTypes', 'PlatformTypes'),
         ('core', 'state', 'tools.executorLocal.state', None),
         ('', 'dirs', 'core.Dirs', 'Dirs'),
-        ('core', 'dirs', 'dirs', None)
-        ]:
-        add_dynamic_instance(parent, child, module, kls)
-
-    j.cache = j.data.cache
-
-    # check that locally init has been done
-    j.tools.executorLocal.env_check_init()
-
-    for (parent, child, module, kls) in [
+        ('core', 'dirs', 'dirs', None),
         ('data', 'idgenerator', 'data.idgenerator.IDGenerator', 'IDGenerator'),
         ('', 'errorhandler', 'errorhandling.ErrorHandler', 'ErrorHandler'),
         ('core', 'errorhandler', 'errorhandler', None),
@@ -163,16 +154,6 @@ else:
         ('tools', 'tmux', 'tools.tmux.Tmux', 'Tmux'),
         ('tools', 'path', 'tools.path.PathFactory', 'PathFactory'),
         ('tools', 'console', 'tools.console.Console', 'Console'),
-        ]:
-        add_dynamic_instance(parent, child, module, kls)
-
-    from Jumpscale.errorhandling import JSExceptions
-
-    j.exceptions = JSExceptions
-
-    j.logging.init()  # will reconfigure the logging to use the config file
-
-    for (parent, child, module, kls) in [
         ('data', 'serializers', 'data.serializers.SerializersFactory',
                                 'SerializersFactory'),
         ('clients', 'git ', 'clients.git.GitFactory', 'GitFactory'),
@@ -186,4 +167,12 @@ else:
         ('tools', 'myconfig', 'tools.myconfig.MyConfig', 'MyConfig'),
         ]:
         add_dynamic_instance(parent, child, module, kls)
+
+    # check that locally init has been done
+    j.tools.executorLocal.env_check_init()
+
+    from Jumpscale.errorhandling import JSExceptions
+    j.exceptions = JSExceptions
+
+    j.logging.init()  # will reconfigure the logging to use the config file
 
