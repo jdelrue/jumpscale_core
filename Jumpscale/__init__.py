@@ -10,6 +10,9 @@ else:
     from .core.JSBase import JSBase
     from .tools.loader.JSLoader import bootstrap_j
 
+    # TODO.  trying to establish how to pass these in to JSLoader,
+    # as the code in bootstrap_j is near-identical to that used
+    # in dynamic_generate.
     bases = {'j.core': 'Core',
              'j.tools': 'Tools',
              'j.sal': 'Sal',
