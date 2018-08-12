@@ -42,7 +42,7 @@ class ExecutorDocker(ExecutorBase):
         return self._logger
 
     @logger.setter
-    def logger(self, newlogger)
+    def logger(self, newlogger):
         self._logger = newlogger
 
     @classmethod
