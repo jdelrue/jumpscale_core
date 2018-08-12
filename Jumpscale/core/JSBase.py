@@ -38,7 +38,7 @@ class BaseGetter(object):
         """ adds an instance to the dictionary, for when
             __getattribute__ is called, the instance will be loaded
         """
-        #print ("add instance", self, subname, modulepath, objectname)
+        #print ("add instance", self, subname, modulepath, objectname, basej)
         ms = ModuleSetup(subname, modulepath, objectname, fullpath, basej)
         #print (dir(self))
         d = object.__getattribute__(self, '__subgetters__')
@@ -163,6 +163,7 @@ class JSBase(BaseGetter):
 
     @j.setter
     def j(self, j_global_override):
+        assert j_global_override is not None
         global global_j
         global_j = j_global_override
 
@@ -229,7 +230,7 @@ class JSBase(BaseGetter):
         def initfn(self, *args, **kwargs):
             JSBase.__init__(self, _logger=basej and basej.logger or None)
             mro = type(self).mro()
-            #print ("baseinit", basej, args, kwargs)
+            #print ("baseinit", basej, self.__name__, args, kwargs)
             #print ("mro", type(self), inspect.getmro(self.__class__))
             #print ("mrolist", mro, mro.index(self.__class__))
             for next_class in mro[1:]: # slice to end

@@ -168,7 +168,7 @@ if os.environ.get('JUMPSCALEMODE') == 'STATICLOADER':
 else:
     from Jumpscale.tools.loader.JSLoader import JSLoader
     jl = JSLoader()
-    j = jl.dynamic_generate()
+    j = jl.dynamic_generate(basej=j)
 j.j = j # patch the (new) global j instance to know itself (zennnn.....)
 
 def attrchecker(j, pth):
@@ -428,7 +428,8 @@ class JSLoader():
                     modulename)[:-3].replace("//", "/").replace("/", ".")
                 #print (importlocation)
                 member._add_instance(subname, importlocation, classname,
-                                     fullpath=modulename)
+                                     fullpath=modulename,
+                                     basej=basej)
 
         _j = type("Jumpscale", (JSBASE, ), instances)
 

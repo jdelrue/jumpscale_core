@@ -16,7 +16,7 @@ class ExecutorLocal(ExecutorBase):
         self.type = "local"
         self._id = 'localhost'
 
-        # self.cache = j.data.cache.get(id="executor:%s" %
+        # self.cache = self.j.data.cache.get(id="executor:%s" %
         #               self.id,expiration=3600)
 
     def exists(self, path):

@@ -19,7 +19,8 @@ class LoggerFactory():
             because LoggerFactory is not derived from JSBase, it can't
             get the global j singleton.
         """
-        self.j = j # must patch this after instantiation to break loop
+        if j is not None:
+            self.j = j # must patch this after instantiation to break loop
         self.__jslocation__ = "j.core.logging"
         self.logger_name = 'j'
         self.handlers = Handlers()

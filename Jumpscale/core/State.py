@@ -46,7 +46,6 @@ class State(object):
     def __init__(self, executor):
         self.readonly = False
         self.executor = executor
-        self.load()
 
     def load(self, reset=False):
         if reset:
