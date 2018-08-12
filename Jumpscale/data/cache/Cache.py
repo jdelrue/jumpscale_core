@@ -1,20 +1,14 @@
-
-from Jumpscale import j
 import pickle
 import time
 
-JSBASE = j.application.jsbase_get_class()
-
-
-class Cache(JSBASE):
+class Cache(object):
 
     def __init__(self):
         self.__jslocation__ = "j.data.datacache"
-        JSBASE.__init__(self)
         self._cache = {}
 
     def serialize(self, val):
-        tt = j.data.types.type_detect(val)
+        tt = self.j.data.types.type_detect(val)
 
     def get(self, id="main", reset=False, expiration=30):
         """
@@ -22,8 +16,8 @@ class Cache(JSBASE):
         db = when none then will be in memory
         """
         if id not in self._cache:
-            self._cache[id] = CacheCategory(
-                id=id, expiration=expiration, reset=reset)
+            DC = self._jsbase(self.j, 'CacheCategory', [CacheCategory])
+            self._cache[id] = DC( id=id, expiration=expiration, reset=reset)
         return self._cache[id]
 
     def resetAll(self):
@@ -100,26 +94,25 @@ class Cache(JSBASE):
 
         self.logger.debug("REDIS CACHE TEST")
         # make sure its redis
-        j.clients.redis.core_get()
-        j.core.db_reset()
+        self.j.clients.redis.core_get()
+        self.j.core.db_reset()
         c = self.get("test", expiration=1)
         testAll(c)
 
         # now stop redis
-        j.clients.redis.kill()
-        j.core.db_reset()
+        self.j.clients.redis.kill()
+        self.j.core.db_reset()
         self.logger.debug("MEM CACHE TEST")
         c = self.get("test", expiration=1)
         testAll(c)
         self.logger.debug("TESTOK")
 
 
-class CacheCategory(JSBASE):
+class CacheCategory(object):
 
     def __init__(self, id, expiration=10, reset=False):
-        JSBASE.__init__(self)
         self.id = id
-        self.db = j.core.db
+        self.db = self.j.core.db
         self.hkey = "cache:%s" % self.id
         self.expiration = expiration
         if reset:
@@ -152,19 +145,19 @@ class CacheCategory(JSBASE):
         # print("res:%s"%res)
         if refresh or res is None:
             if method is None:
-                raise j.exceptions.RuntimeError(
+                raise self.j.exceptions.RuntimeError(
                     "Cannot get '%s' from cache,not found & method None" % key)
             # print("cache miss")
             val = method(**kwargs)
             # print(val)
             if val is None or val == "":
-                raise j.exceptions.RuntimeError(
+                raise self.j.exceptions.RuntimeError(
                     "cache method cannot return None or empty string.")
             self.set(key, val, expire=expire)
             return val
         else:
             if res is None:
-                raise j.exceptions.RuntimeError(
+                raise self.j.exceptions.RuntimeError(
                     "Cannot get '%s' from cache" % key)
             return res
 
@@ -179,15 +172,15 @@ class CacheCategory(JSBASE):
                 for item in self.db.keys("cache:%s:*" % self.id)]
 
     # XXX issue #35 - commenting these out for now as they can't work.
-    # j.data does not have a serializer instance
+    # self.j.data does not have a serializer instance
     def __BUG35str__(self):
         res = {}
         for key in self.db.keys():
             val = self.db.get(key)
             res[key] = val
-        # out = j.data.serializers.yaml.dumps(res, default_flow_style=False)
-        print (dir(j.data))
-        out = j.data.serializers.yaml.dumps(res)
+        # out = self.j.data.serializers.yaml.dumps(res, default_flow_style=False)
+        print (dir(self.j.data))
+        out = self.j.data.serializers.yaml.dumps(res)
         return out
 
     __BUG35repr__ = __BUG35str__
