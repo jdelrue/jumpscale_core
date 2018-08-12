@@ -18,14 +18,14 @@ class TestJCONFIG(TestcasesBase):
     @classmethod
     def reset_config(cls):
         with open(cls.config_path, 'w') as f:
-            pytoml.dump(cls.config_file_content, f)
+            f.write(pytoml.dumps(cls.config_file_content))
 
     @classmethod
     def update_config(cls, data):
         content = dict(cls.config_file_content)
         content.update(data)
         with open(cls.config_path, 'w') as f:
-            pytoml.dump(content, f)
+            f.write(pytoml.dumps(content))
         return content
 
     @classmethod
