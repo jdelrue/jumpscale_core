@@ -1,4 +1,7 @@
+from Jumpscale import j
 import pssh.exceptions
+
+JSBASE = j.application.jsbase_get_class()
 
 class ExceptionsFactory(object):
     """ create a series of dynamic JSBase-patched Exceptions
