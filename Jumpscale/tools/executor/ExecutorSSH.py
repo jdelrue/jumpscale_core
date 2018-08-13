@@ -80,7 +80,7 @@ class ExecutorSSH(ExecutorBase):
         if sudo:
             cmds2 = self.sudo_cmd(cmds2)
         rc, out, err = self.sshclient.execute(
-            cmds2, die=die, showout=showout)
+            cmds2, die=die, showout=showout, timeout=timeout)
 
         if showout:
             self.logger.debug("EXECUTE OK")
