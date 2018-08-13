@@ -1,13 +1,35 @@
-from Jumpscale import j
 import pssh.exceptions
 
-JSBASE = j.application.jsbase_get_class()
+class ExceptionsFactory(object):
+    """ create a series of dynamic JSBase-patched Exceptions
+        that are then added to both the module (via globals())
+        and also to the ExceptionsFactory (using setattr),
+        which in turn allows them to be accessed via
+        j.errorhandling.exceptions.
+
+        TODO: work out how to drop them into the j.exceptions namespace,
+        without having to move this module
+    """
+    def __init__(self):
+        self.__jslocation__ = 'j.errorhandling.exceptions'
+        self.add_late_init(self.register_exceptions)
+
+    def register_exceptions(self):
+        exceptions = [_HaltException, _RuntimeError, _Input,
+            _NotImplemented, _BUG, _JSBUG, _OPERATIONS,
+            _IOError, _AYSNotFound, _NotFound, _Timeout,
+            _SSHTimeout,
+            ]
+        for e in exceptions:
+            ename = e.__name__[1:]
+            ekls = self._jsbase(self.j, ename, [e])
+            globals()[ename] = ekls
+            setattr(self, ename, ekls)
 
 
-class BaseJSException(Exception, JSBASE):
+class BaseJSException(Exception):
 
     def __init__(self, message="", level=1, source="", actionkey="", eco=None, tags="", msgpub=""):
-        JSBASE.__init__(self)
         if self.j.data.types.string.check(level):
             level = 1
             tags = "cat:%s" % level
@@ -48,13 +70,13 @@ class BaseJSException(Exception, JSBASE):
     __repr__ = __str__
 
 
-class HaltException(BaseJSException):
+class _HaltException(BaseJSException):
     def __init__(self, message="", level=1, source="", actionkey="", eco=None, tags="", msgpub=""):
         super().__init__(message, level, source, actionkey, eco, tags, msgpub)
         self.type = "halt.error"
 
 
-class RuntimeError(BaseJSException):
+class _RuntimeError(BaseJSException):
 
     def __init__(self, message="", level=1, source="", actionkey="", eco=None, tags="", msgpub=""):
         super().__init__(message, level, source, actionkey, eco, tags, msgpub)
@@ -62,7 +84,7 @@ class RuntimeError(BaseJSException):
         self.codetrace = True
 
 
-class Input(BaseJSException):
+class _Input(BaseJSException):
 
     def __init__(self, message="", level=1, source="", actionkey="", eco=None, tags="", msgpub=""):
         super().__init__(message, level, source, actionkey, eco, tags, msgpub)
@@ -70,7 +92,7 @@ class Input(BaseJSException):
         self.codetrace = True
 
 
-class NotImplemented(BaseJSException):
+class _NotImplemented(BaseJSException):
 
     def __init__(self, message="", level=1, source="", actionkey="", eco=None, tags="", msgpub=""):
         super().__init__(message, level, source, actionkey, eco, tags, msgpub)
@@ -78,7 +100,7 @@ class NotImplemented(BaseJSException):
         self.codetrace = True
 
 
-class BUG(BaseJSException):
+class _BUG(BaseJSException):
 
     def __init__(self, message="", level=1, source="", actionkey="", eco=None, tags="", msgpub=""):
         super().__init__(message, level, source, actionkey, eco, tags, msgpub)
@@ -86,7 +108,7 @@ class BUG(BaseJSException):
         self.codetrace = True
 
 
-class JSBUG(BaseJSException):
+class _JSBUG(BaseJSException):
 
     def __init__(self, message="", level=1, source="", actionkey="", eco=None, tags="", msgpub=""):
         super().__init__(message, level, source, actionkey, eco, tags, msgpub)
@@ -94,7 +116,7 @@ class JSBUG(BaseJSException):
         self.codetrace = True
 
 
-class OPERATIONS(BaseJSException):
+class _OPERATIONS(BaseJSException):
 
     def __init__(self, message="", level=1, source="", actionkey="", eco=None, tags="", msgpub=""):
         super().__init__(message, level, source, actionkey, eco, tags, msgpub)
@@ -102,7 +124,7 @@ class OPERATIONS(BaseJSException):
         self.codetrace = True
 
 
-class IOError(BaseJSException):
+class _IOError(BaseJSException):
 
     def __init__(self, message="", level=1, source="", actionkey="", eco=None, tags="", msgpub=""):
         super().__init__(message, level, source, actionkey, eco, tags, msgpub)
@@ -110,7 +132,7 @@ class IOError(BaseJSException):
         self.codetrace = False
 
 
-class AYSNotFound(BaseJSException):
+class _AYSNotFound(BaseJSException):
 
     def __init__(self, message="", level=1, source="", actionkey="", eco=None, tags="", msgpub=""):
         super().__init__(message, level, source, actionkey, eco, tags, msgpub)
@@ -118,7 +140,7 @@ class AYSNotFound(BaseJSException):
         self.codetrace = False
 
 
-class NotFound(BaseJSException):
+class _NotFound(BaseJSException):
 
     def __init__(self, message="", level=1, source="", actionkey="", eco=None, tags="", msgpub=""):
         super().__init__(message, level, source, actionkey, eco, tags, msgpub)
@@ -126,11 +148,11 @@ class NotFound(BaseJSException):
         self.codetrace = False
 
 
-class Timeout(BaseJSException):
+class _Timeout(BaseJSException):
 
     def __init__(self, message="", level=1, source="", actionkey="", eco=None, tags="", msgpub=""):
         super().__init__(message, level, source, actionkey, eco, tags, msgpub)
         self.type = "timeout"
         self.codetrace = False
 
-SSHTimeout = pssh.exceptions.Timeout
+_SSHTimeout = pssh.exceptions.Timeout
