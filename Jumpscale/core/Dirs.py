@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 
 # def pathToUnicode(path):
@@ -25,10 +26,48 @@ class Dirs(object):
         self.reload()
 
     def reload(self):
-        for key, val in self.j.core.state.configGet("dirs").items():
+        """ loads the environment (NOTE: does not clear out the old environment)
+            from the config file [dirs] section.  if that does not exist
+            then a set of (three) defaults are created, which can be
+            over-ridden with envvars:
+
+            * VARDIR
+            * BASEDIRJS
+            * HOSTDIR
+
+            these three appear sufficient to get bootstrapped, even without
+            a config file.
+        """
+        # when bootstrapping there *is* no config entry [dirs], consequently
+        # an exception is attempted to be raised... but exceptions aren't
+        # set up either!  this is called very very early.
+        if self.j.core.state.configHas("dirs"):
+            dirs = self.j.core.state.configGet("dirs")
+        else:
+            dirs = {}
+        # issue #71, these are for bootstrapping when there is no
+        # config file.  they can be over-ridden (particularly on an install)
+        # by setting environment variables.
+        if 'VARDIR' not in dirs:
+            d = os.environ.get('VARDIR', '/opt/var') # TODO issue #71
+            dirs['VARDIR'] = d
+            self.logger.info("No Config [dirs] VARDIR, using %s" % d)
+        if 'BASEDIRJS' not in dirs:
+            d = os.environ.get('BASEDIRJS', '/opt/jumpscale') # TODO issue #71
+            dirs['BASEDIRJS'] = d
+            self.logger.info("No Config [dirs] BASEDIRJS, using %s" % d)
+        if 'HOSTDIR' not in dirs:
+            home = str(Path.home())
+            pth = os.path.join(home, 'jumpscale')
+            d = os.environ.get('HOSTDIR', pth) # TODO issue #71
+            dirs['HOSTDIR'] = d
+            self.logger.info("No Config [dirs] HOSTDIR, using %s" % d)
+
+        for key, val in dirs.items():
             self.__dict__[key] = val
             os.environ[key] = val
 
+        # set up some more automatic defaults: templates and apps
         self.TEMPLATEDIR = self.VARDIR + "/templates/"
         self.JSAPPSDIR = self.BASEDIRJS + "/apps/"
 
