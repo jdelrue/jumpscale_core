@@ -27,9 +27,10 @@ class ExceptionsFactory(object):
             setattr(self, ename, ekls)
 
 
-class BaseJSException(Exception):
+class BaseJSException(Exception, JSBase):
 
     def __init__(self, message="", level=1, source="", actionkey="", eco=None, tags="", msgpub=""):
+        JSBase.__init__(self)
         if self.j.data.types.string.check(level):
             level = 1
             tags = "cat:%s" % level
@@ -70,13 +71,13 @@ class BaseJSException(Exception):
     __repr__ = __str__
 
 
-class _HaltException(BaseJSException):
+class HaltException(BaseJSException):
     def __init__(self, message="", level=1, source="", actionkey="", eco=None, tags="", msgpub=""):
         super().__init__(message, level, source, actionkey, eco, tags, msgpub)
         self.type = "halt.error"
 
 
-class _RuntimeError(BaseJSException):
+class RuntimeError(BaseJSException):
 
     def __init__(self, message="", level=1, source="", actionkey="", eco=None, tags="", msgpub=""):
         super().__init__(message, level, source, actionkey, eco, tags, msgpub)
@@ -84,7 +85,7 @@ class _RuntimeError(BaseJSException):
         self.codetrace = True
 
 
-class _Input(BaseJSException):
+class Input(BaseJSException):
 
     def __init__(self, message="", level=1, source="", actionkey="", eco=None, tags="", msgpub=""):
         super().__init__(message, level, source, actionkey, eco, tags, msgpub)
@@ -92,7 +93,7 @@ class _Input(BaseJSException):
         self.codetrace = True
 
 
-class _NotImplemented(BaseJSException):
+class NotImplemented(BaseJSException):
 
     def __init__(self, message="", level=1, source="", actionkey="", eco=None, tags="", msgpub=""):
         super().__init__(message, level, source, actionkey, eco, tags, msgpub)
@@ -100,7 +101,7 @@ class _NotImplemented(BaseJSException):
         self.codetrace = True
 
 
-class _BUG(BaseJSException):
+class BUG(BaseJSException):
 
     def __init__(self, message="", level=1, source="", actionkey="", eco=None, tags="", msgpub=""):
         super().__init__(message, level, source, actionkey, eco, tags, msgpub)
@@ -108,7 +109,7 @@ class _BUG(BaseJSException):
         self.codetrace = True
 
 
-class _JSBUG(BaseJSException):
+class JSBUG(BaseJSException):
 
     def __init__(self, message="", level=1, source="", actionkey="", eco=None, tags="", msgpub=""):
         super().__init__(message, level, source, actionkey, eco, tags, msgpub)
@@ -116,7 +117,7 @@ class _JSBUG(BaseJSException):
         self.codetrace = True
 
 
-class _OPERATIONS(BaseJSException):
+class OPERATIONS(BaseJSException):
 
     def __init__(self, message="", level=1, source="", actionkey="", eco=None, tags="", msgpub=""):
         super().__init__(message, level, source, actionkey, eco, tags, msgpub)
@@ -124,7 +125,7 @@ class _OPERATIONS(BaseJSException):
         self.codetrace = True
 
 
-class _IOError(BaseJSException):
+class IOError(BaseJSException):
 
     def __init__(self, message="", level=1, source="", actionkey="", eco=None, tags="", msgpub=""):
         super().__init__(message, level, source, actionkey, eco, tags, msgpub)
@@ -132,7 +133,7 @@ class _IOError(BaseJSException):
         self.codetrace = False
 
 
-class _AYSNotFound(BaseJSException):
+class AYSNotFound(BaseJSException):
 
     def __init__(self, message="", level=1, source="", actionkey="", eco=None, tags="", msgpub=""):
         super().__init__(message, level, source, actionkey, eco, tags, msgpub)
@@ -140,7 +141,7 @@ class _AYSNotFound(BaseJSException):
         self.codetrace = False
 
 
-class _NotFound(BaseJSException):
+class NotFound(BaseJSException):
 
     def __init__(self, message="", level=1, source="", actionkey="", eco=None, tags="", msgpub=""):
         super().__init__(message, level, source, actionkey, eco, tags, msgpub)
@@ -148,11 +149,11 @@ class _NotFound(BaseJSException):
         self.codetrace = False
 
 
-class _Timeout(BaseJSException):
+class Timeout(BaseJSException):
 
     def __init__(self, message="", level=1, source="", actionkey="", eco=None, tags="", msgpub=""):
         super().__init__(message, level, source, actionkey, eco, tags, msgpub)
         self.type = "timeout"
         self.codetrace = False
 
-_SSHTimeout = pssh.exceptions.Timeout
+SSHTimeout = pssh.exceptions.Timeout
