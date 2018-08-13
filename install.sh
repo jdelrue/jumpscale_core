@@ -62,7 +62,7 @@ ZCodeGetJSUsage() {
    cat <<EOF
 Usage: ZCodeGet [-r reponame] [-g giturl] [-a account] [-b branch]
    -r reponame: name or repo which is being downloaded
-   -b branchname: defaults to development
+   -b branchname: defaults to development_dynamic
    -h: help
 
 check's out jumpscale repo to $CODEDIR/github/threefoldtech/$reponame
@@ -84,7 +84,9 @@ ZCodeGetJS() {
     local OPTIND
     local account='threefoldtech'
     local reponame=''
-    local branch=${JUMPSCALEBRANCH:-development}
+    # local branch=${JUMPSCALEBRANCH:-development_dynamic}
+    [ -e $JUMPSCALEBRANCH ] && exit 1
+    
     while getopts "r:b:h" opt; do
         case $opt in
            r )  reponame=$OPTARG ;;
@@ -98,14 +100,17 @@ ZCodeGetJS() {
         ZCodeGetJS -r jumpscale_core  -b $branch || return 1
         ZCodeGetJS -r jumpscale_lib -b $branch || return 1
         ZCodeGetJS -r jumpscale_prefab -b $branch || return 1
+        ZCodeGetJS -r digital_me -b $branch || return 1
+        ZCodeGetJS -r digital_me_recipes -b $branch || return 1
         return 0
     fi
 
     # local giturl="git@github.com:Jumpscale/$reponame.git"
     local githttpsurl="https://github.com/threefoldtech/$reponame.git"
 
-    # check if specificed branch or $JUMPSCALEBRANCH exist, if not then fallback to development
-    JUMPSCALEBRANCHExists ${githttpsurl} ${branch} || branch=development
+    # check if specificed branch or $JUMPSCALEBRANCH exist, if not then fallback to development_dynamic
+
+    JUMPSCALEBRANCHExists ${githttpsurl} ${branch} || branch=development_dynamic
 
     # ZCodeGet -r $reponame -a $account -u $giturl -b $branch  || ZCodeGet -r $reponame -a $account -u $githttpsurl -b $branch || return 1
     ZCodeGet -r $reponame -a $account -u $githttpsurl -b $branch || return 1
@@ -119,7 +124,7 @@ Usage: ZCodeGet [-r reponame] [-g giturl] [-a account] [-b branch]
    -a account: will default to 'varia', but can be account name
    -r reponame: name or repo which is being downloaded
    -u giturl: e.g. git@github.com:mathieuancelin/duplicates.git
-   -b branchname: defaults to development
+   -b branchname: defaults to development_dynamic
    -k sshkey: path to sshkey to use for authorization when connecting to the repository.
    -h: help
 
@@ -138,7 +143,7 @@ ZCodeGet() {
     local account='varia'
     local reponame=''
     local giturl=''
-    local branch=${JUMPSCALEBRANCH:-development}
+    local branch=${JUMPSCALEBRANCH:-development_dynamic}
     local sshkey=''
     while getopts "a:r:u:b:t:k:h" opt; do
         case $opt in
@@ -347,7 +352,7 @@ ZInstall_host_base(){
 #########################################################
 
 #check if branch given, if not set do development
-export JUMPSCALEBRANCH=${JUMPSCALEBRANCH:-development}
+export JUMPSCALEBRANCH=${JUMPSCALEBRANCH:-development_dynamic}
 # export JSFULL=1 #if set will install in developer mode
 
 export LogFile='/tmp/jumpscale_install.log'
@@ -392,11 +397,11 @@ rm -rf ~/jumpscale_host* > /dev/null 2>&1
 rm -rf ~/jumpscale* > /dev/null 2>&1
 sudo rm -rf $TMPDIR/zutils_done > /dev/null 2>&1
 sudo rm -rf /tmp/zutils_done > /dev/null 2>&1
-
-
+find /usr/local/lib -iname jumpscale.py -exec rm {} \;
+find /usr/lib -iname jumpscale.py -exec rm {} \;
 
 echo "INSTALL Jumpscale on branch $JUMPSCALEBRANCH"
 
-ZInstall_host_base || die "Could not prepare the base system" || exit 1
+# ZInstall_host_base || die "Could not prepare the base system" || exit 1
 ZCodeGetJS || die "Could not download jumpscale code" || exit 1
 ZInstall_jumpscale || die "Could not install core of jumpscale" || exit 1
