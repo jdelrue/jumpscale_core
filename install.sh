@@ -84,7 +84,7 @@ ZCodeGetJS() {
     local OPTIND
     local account='threefoldtech'
     local reponame=''
-    # local branch=${JUMPSCALEBRANCH:-development_dynamic}
+    # local branch=${JUMPSCALEBRANCH:-development_dynamic} #this is being set elsewhere too
     [ -e $JUMPSCALEBRANCH ] && exit 1
     
     while getopts "r:b:h" opt; do
@@ -379,7 +379,7 @@ fi
 
 cd /tmp
 #remove old stuff
-rm -rf /usr/local/bin/js9*
+rm -rf /usr/local/bin/js9_*
 rm -rf /usr/local/bin/js_*
 rm -f ~/jsenv.sh
 rm -f ~/jsinit.sh
