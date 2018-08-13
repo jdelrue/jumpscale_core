@@ -112,6 +112,16 @@ class State(object):
             config=self._configState,
             path=self.configStatePath)
 
+    def configHas(self, key):
+        """ checks if a section in jumpscale.toml exists
+
+        :param key: section name
+        :type key: str
+        :return: true if the section exists
+        :rtype: bool
+        """
+        return key in self._configJS
+
     def configGet(self, key, defval=None, set=False):
         """gets a section from jumpscale.toml
 
