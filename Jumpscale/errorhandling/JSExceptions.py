@@ -11,7 +11,7 @@ class ExceptionsFactory(object):
         without having to move this module
     """
     def __init__(self):
-        self.__jslocation__ = 'j.errorhandling.exceptions'
+        #self.__nojslocation__ = 'j.errorhandling.exceptions'
         self.add_late_init(self.register_exceptions)
 
     def register_exceptions(self):
