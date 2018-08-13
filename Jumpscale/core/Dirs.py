@@ -41,7 +41,7 @@ class Dirs(object):
         # when bootstrapping there *is* no config entry [dirs], consequently
         # an exception is attempted to be raised... but exceptions aren't
         # set up either!  this is called very very early.
-        if self.j.core.state.configHas("dirs"):
+        if self.j.core.state.configExists("dirs"):
             dirs = self.j.core.state.configGet("dirs")
         else:
             dirs = {}

@@ -112,7 +112,7 @@ class State(object):
             config=self._configState,
             path=self.configStatePath)
 
-    def configHas(self, key):
+    def configExists(self, key):
         """ checks if a section in jumpscale.toml exists
 
         :param key: section name
