@@ -193,7 +193,7 @@ class JSBase(BaseGetter):
         self._late_init_called = False
         self._late_init_fns = []
 
-    def add_late_init(self, fn, *args, **kwargs):
+    def _add_late_init(self, fn, *args, **kwargs):
         """ use this for when lazy-load needs to do some work
             after the constructor has been initialised.
             gets rid of potential side-effects.

@@ -15,7 +15,7 @@ class ExceptionsFactory(object):
     """
     def __init__(self):
         #self.__nojslocation__ = 'j.errorhandling.exceptions'
-        self.add_late_init(self.register_exceptions)
+        self._add_late_init(self.register_exceptions)
 
     def register_exceptions(self):
         exceptions = [_HaltException, _RuntimeError, _Input,

@@ -265,7 +265,7 @@ class Bash(object):
 
     def __init__(self, executor=None):
         self._executor = executor
-        self.add_late_init(self.reset)
+        self._add_late_init(self.reset)
 
     @property
     def executor(self):
