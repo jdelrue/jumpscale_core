@@ -446,8 +446,25 @@ class JSLoader():
         moduleList = {}
         baseList = {}
 
-        for name, path in self.j.tools.executorLocal.state.configGet(
-                'plugins', {}).items():
+        # ok, set up a default based on the current location of THIS
+        # file.  it's a hack however it will at least get started.
+        # this will get the plugins recognised from Jumpscale
+        # when there is absolutely no config file set up.
+        #
+        # related to issue #71
+        #
+        currentpath = os.path.dirname(os.path.abspath(__file__))
+        currentpath = os.path.split(currentpath)[0]
+        currentpath = os.path.split(currentpath)[0]
+        #print("current path", currentpath)
+        defaultplugins = {'Jumpscale': currentpath}
+
+        plugins = self.j.tools.executorLocal.state.configGet('plugins',
+                        defaultplugins)
+        if 'Jumpscale' not in plugins:
+            plugins['Jumpscale'] = defaultplugins['Jumpscale']
+        #print ("plugins", plugins)
+        for name, path in plugins.items():
             self.logger.info("find modules in jumpscale for : '%s'" % path)
             if self.j.sal.fs.exists(path, followlinks=True):
                 if False: # XXX hmmm.... nasty hack... disable....
