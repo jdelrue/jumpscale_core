@@ -239,7 +239,10 @@ class NetTools(JSBASE):
             raise j.exceptions.RuntimeError("Not supported on this platform!")
 
     def checkIpAddressIsLocal(self, ipaddr):
-        if ipaddr.strip() in self.getIpAddresses():
+        ips = self.getIpAddresses()
+        if ipaddr.strip() in ips['ip']:
+            return True
+        elif ipaddr.strip() in ips['ip6']:
             return True
         else:
             return False
