@@ -297,7 +297,7 @@ class SSHClientParamiko(SSHClientBase):
             raise j.exceptions.RuntimeError(
                 'Impossible to create SSH connection to %s:%s' % (self.addr, self.port))
 
-    def execute(self, cmd, showout=True, die=True):
+    def execute(self, cmd, showout=True, die=True, timeout=None):
         """
         run cmd & return
         return: (retcode,out_err)
