@@ -445,12 +445,11 @@ class Numeric(String):
                 value = int(fv)
                 ttype = 0
             else:
-                value = float(value)
-                if value > 10000:
-                    value = int(value)
+                value = fv
+                if fv > 10000:
+                    value = int(value) # doesn't look safe.  issue #72
                     ttype = 3
                 else:
-                    value = float(value)
                     ttype = 1
         curcat = j.clients.currencylayer.cur2id[cur2]
 
