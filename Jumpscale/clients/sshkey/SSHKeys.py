@@ -109,7 +109,7 @@ class SSHKeys(JSConfigBase):
         js_shell 'j.clients.sshkey.sshagent_init()'
         '''
 
-        bashprofile_path = os.path.expanduser("~/.bash_profile")
+        bashprofile_path = os.path.expanduser("~/.profile_js")
         if not j.sal.fs.exists(bashprofile_path):
             j.sal.process.execute('touch %s' % bashprofile_path)
 
