@@ -28,7 +28,7 @@ def sed_delete(path,toremove=[]):
         print(cmd)
         e(cmd)
 
-sed_delete("%s/.bash_profile"%HOME,["sshkeyname","profile_js","zlibs.sh","includes","environment variables","serial"])
+sed_delete("%s/.profile_js"%HOME,["sshkeyname","profile_js","zlibs.sh","includes","environment variables","serial"])
 
 
 def pip(items):

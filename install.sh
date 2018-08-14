@@ -386,9 +386,9 @@ rm -f ~/jsinit.sh
 sed -i.bak '/jsenv.sh/d' $HOMEDIR/.profile
 sed -i.bak '/export SSHKEYNAME/d' $HOMEDIR/.bashrc
 sed -i.bak '/jsenv.sh/d' $HOMEDIR/.bashrc
-sed -i.bak '/jsenv.sh/d' $HOMEDIR/.bash_profile
+sed -i.bak '/jsenv.sh/d' $HOMEDIR/.profile_js
 sed -i.bak '/.*zlibs.sh/d' $HOMEDIR/.bashrc
-sed -i.bak '/.*zlibs.sh/d' $HOMEDIR/.bash_profile
+sed -i.bak '/.*zlibs.sh/d' $HOMEDIR/.profile_js
 rm ~/opt/jumpscale/cfg/me.toml > /dev/null 2>&1
 rm ~/opt/jumpscale/cfg/jumpscale.toml > /dev/null 2>&1
 rm -rf ~/JShost* > /dev/null 2>&1
