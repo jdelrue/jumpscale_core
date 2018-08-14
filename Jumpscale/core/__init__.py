@@ -26,7 +26,8 @@ class Core(object):
     @property
     def db(self):
         if not self._db:
-            if tcpPortConnectionTest("localhost", 6379):
+            if hasattr(self.j.clients, "redis") and \
+                tcpPortConnectionTest("localhost", 6379):
                 # print("CORE_REDIS")
                 self._db = self.j.clients.redis.core_get()
             else:

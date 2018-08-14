@@ -30,6 +30,7 @@ bootstrap = [
         ('', 'tools', 'tools', 'Tools'),
         ('', 'sal', 'sal', 'Sal'),
         ('', 'data', 'data', 'Data'),
+        ('', 'clients', 'clients', 'Clients'),
         #('', 'errorhandling', 'errorhandling', 'Exceptions'),
         ('data', 'types', 'data.types.Types', 'Types'),
         ('data', 'text', 'data.text.Text', 'Text'),
@@ -53,14 +54,14 @@ def add_dynamic_instance(j, parent, child, module, kls):
     """ very similar to dynamic_generate, needs work
         to morph into using same code
     """
-    #print ("adding", parent, child, module, kls)
+    print ("adding", parent, child, module, kls)
     if not parent:
         parent = j
     else:
         parent = getattr(j, parent)
     if kls:
         parent._add_instance(child, "Jumpscale." + module, kls, basej=j)
-        #print ("added", parent, child)
+        print ("added", parent, child)
     else:
         walkfrom = j
         for subname in module.split('.'):
@@ -92,6 +93,7 @@ def bootstrap_j(j, logging_enabled=False, filter=None):
     j = dl.dynamic_generate(basej=j)
     j.logging.init()  # will reconfigure the logging to use the config file
     j.tools.executorLocal.env_check_init()
+    j.core.db_reset() # used fake redis up to now: move to real if it exists
 
     return j
 
