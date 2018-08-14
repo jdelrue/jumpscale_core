@@ -529,6 +529,8 @@ class Numeric(String):
         return self.toString(v)
 
     def toString(self, val):
+        if val == 0:
+            return ""
         if j.data.types.string.check(val):
             return val
         elif j.data.types.bytes.check(val):
