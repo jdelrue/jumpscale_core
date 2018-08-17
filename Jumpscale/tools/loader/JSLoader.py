@@ -38,6 +38,7 @@ bootstrap = [
         ('core', 'application', 'core.Application', 'Application'),
         ('core', 'errorhandler', 'errorhandler.ErrorHandler', 'ErrorHandler'),
         ('data', 'datacache', 'data.cache.Cache', 'Cache'),
+        ('tools', 'loader', 'tools.loader.JSLoader', 'JSLoader'),
         ('tools', 'executorLocal', 'tools.executor.ExecutorLocal',
                                     'ExecutorLocal'),
         #('', 'errorhandling', 'errorhandling.JSExceptions',
@@ -97,7 +98,7 @@ def add_dynamic_instance(j, parent, child, module, kls):
         walkfrom = j
         for subname in module.split('.'):
             walkfrom = getattr(walkfrom, subname)
-        setattr(parent, child, walkfrom)
+        parent.__aliases__[child] = walkfrom
 
 def bootstrap_j(j, logging_enabled=False, filter=None):
     from ...logging.LoggerFactory import LoggerFactory
@@ -108,6 +109,7 @@ def bootstrap_j(j, logging_enabled=False, filter=None):
     # which is actually a singleton (global)
 
     j.j = j # sets up the global singleton
+    j.j.__dynamic_ready__ = False # set global dynamic loading OFF
 
     DLoggerFactory = j._jsbase(j, 'LoggerFactory', [LoggerFactory])
     l = DLoggerFactory()
@@ -115,16 +117,24 @@ def bootstrap_j(j, logging_enabled=False, filter=None):
     l.filter = filter or []  # default filter which captures all is *
     j.logging = l
 
+    rootnames = []
     for (parent, child, module, kls) in bootstrap:
         add_dynamic_instance(j, parent, child, module, kls)
+        if parent == '':
+            rootnames.append(child)
 
-    DJSLoader = j._jsbase(j, 'JSLoader', [JSLoader])
-    dl = DJSLoader()
-    #j = dl._dynamic_generate(j, modules, bases, aliases)
-    j = dl.dynamic_generate(basej=j)
-    j.tools.executorLocal.env_check_init()
+    if False:
+        DJSLoader = j._jsbase(j, 'JSLoader', [JSLoader])
+        dl = DJSLoader()
+        #j = dl._dynamic_generate(j, modules, bases, aliases)
+        j = dl.dynamic_generate(basej=j)
+    j.tools.executorLocal.initEnv() # OUCH! necessary... doubles file-accesses!
     j.logging.init()  # will reconfigure the logging to use the config file
-    j.core.db_reset() # used fake redis up to now: move to real if it exists
+    #j.core.db_reset() # used fake redis up to now: move to real if it exists
+    j.__dynamic_ready__ = True # set global dynamic loading ON
+
+    #for jname in rootnames:
+    #    getattr(j, jname)._child_mod_cache_checked = False
 
     return j
 

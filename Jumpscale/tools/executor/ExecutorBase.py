@@ -315,6 +315,8 @@ echo --TEXT--
 
     def _getDirPathConfig(self):
 
+        print ("_getDirPathConfig")
+
         if self.isContainer:
             T = '''
             BASEDIR = "/opt"
@@ -384,6 +386,7 @@ echo --TEXT--
         """
         init the environment of an executor
         """
+        print ("initEnv")
         self.reset()
         T = self._getDirPathConfig()
         T = T.replace("//", "/")
@@ -480,6 +483,8 @@ echo --TEXT--
 
     @property
     def dir_paths(self):
+        print ("dir_paths", self._dirpaths_init, self.state.configJSPath)
+        print (self.state.configGet('dirs'))
         if not self._dirpaths_init:
             if not self.exists(
                     self.state.configJSPath) or self.state.configGet(

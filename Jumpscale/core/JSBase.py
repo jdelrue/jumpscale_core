@@ -33,6 +33,7 @@ class BaseGetter(object):
     __dynamic_ready__ = False
     def __init__(self):
         self.__subgetters__ = {}
+        self.__aliases__ = {}
 
     def _add_instance(self, subname, modulepath, objectname,
                       fullpath=None, basej=None):
@@ -72,19 +73,13 @@ class BaseGetter(object):
         d = object.__getattribute__(self, '__subgetters__')
         keys = set(object.__dir__(self))
         keys.update(d.keys())
+        d = object.__getattribute__(self, '__aliases__')
+        keys.update(d.keys())
         keys = self._check_child_mod_cache(keys)
         keys = sorted(keys)
         return keys
 
     def __getattribute__(self, name):
-        if name == 'logger':  # special-case for logger property
-            #print ("found name logger", type(self))
-            try:
-                jsl = object.__getattribute__(self, '__jslocation__')
-                #print ("found jsl")
-            except AttributeError:
-                not_found_jsl = True
-                #print ("not found jsl")
         if name == 'JSBASE':
             return JSBase
         found = True
@@ -96,6 +91,9 @@ class BaseGetter(object):
             return object.__getattribute__(self, name)
         if name.startswith('_'):
             return object.__getattribute__(self, name)
+        d = object.__getattribute__(self, '__aliases__')
+        if name in d:
+            return d[name]
         d = object.__getattribute__(self, '__subgetters__')
         if name in d:
             instance = d[name].getter()
@@ -112,8 +110,9 @@ class BaseGetter(object):
         except AttributeError:
             jbk = None
         if jbk:
+            global_ready = object.__getattribute__(self.j, '__dynamic_ready__')
             dynamic_ready = object.__getattribute__(self, '__dynamic_ready__')
-            if dynamic_ready:
+            if dynamic_ready and global_ready:
                 d = object.__getattribute__(self, '__subgetters__')
                 keys = set(d.keys())
                 keys = self._check_child_mod_cache(keys, set([name]))
@@ -135,6 +134,16 @@ class BaseGetter(object):
     def _check_child_mod_cache(self, keys, toadd=None):
         return keys
 
+    def _get_lazy_instance(self, module):
+        res = None
+        d = object.__getattribute__(self, '__aliases__')
+        if name in d:
+            res = d[name]
+        if res is None:
+            d = object.__getattribute__(self, '__subgetters__')
+            if name in d:
+                res = d[name]
+                
 class ModuleSetup(object):
     def __init__(self, subname, modulepath, objectname, fullpath, basej):
         self.subname = subname
@@ -144,6 +153,7 @@ class ModuleSetup(object):
         self.basej = basej
         self._obj = None
         self._kls = None
+        self._child_props = {} # to be added after class is instantiated
 
     def _import_parent_recurse(self, mpathname, parent_name):
         ppath = os.path.join(parent_name, "__init__.py")
@@ -228,6 +238,9 @@ class ModuleSetup(object):
             print ("getter", self.kls)
             self._obj = self.kls()
             self._obj.__dynamic_ready__ = True
+            # post-add child properties
+            for cname, prop in self._child_props.items():
+                setattr(self._obj, cname, prop)
         return self._obj
 
 class JSBase(BaseGetter):
