@@ -8,9 +8,9 @@ from .PrimitiveTypes import *
 
 
 class Types(object):
+    __jslocation__ = "j.data.types"
 
     def __init__(self):
-        self.__jslocation__ = "j.data.types"
         self.dict = Dictionary()
         self.list = List()
         self.guid = Guid()

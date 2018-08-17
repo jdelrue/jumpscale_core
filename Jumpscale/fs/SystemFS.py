@@ -17,9 +17,7 @@ import copy
 
 class SystemFS:
 
-    def __init__(self):
-        if not hasattr(self, '__jslocation__'):
-            self.__jslocation__ = "j.sal.fs"
+    __jslocation__ = "j.sal.fs"
 
     @path_check(fileFrom={"required", "exists", "file"}, to={"required"})
     def copyFile(self, fileFrom, to, createDirIfNeeded=False, overwriteFile=True):
@@ -718,7 +716,7 @@ class SystemFS:
             depth = None
         # if depth is not None:
         #     depth+=1
-        filesreturn, depth = self._listAllInDir(
+        filesreturn, _ = self._listAllInDir(
             path, recursive, filter, minmtime, maxmtime, depth, type=type, followSymlinks=followSymlinks, listSymlinks=listSymlinks)
         return filesreturn
 
@@ -770,9 +768,10 @@ class SystemFS:
                     # if not(listSymlinks==False and self.isLink(fullpath)):
                     filesreturn.append(fullpath)
                 if recursive:
-                    if depth is not None and depth != 0:
-                        depth = depth - 1
-                    if depth is None or depth != 0:
+                    newdepth = depth
+                    if newdepth is not None and newdepth != 0:
+                        newdepth = newdepth - 1
+                    if newdepth is None or newdepth != 0:
                         exclmatch = False
                         if exclude != []:
                             for excludeItem in exclude:
@@ -780,7 +779,7 @@ class SystemFS:
                                     exclmatch = True
                         if exclmatch is False:
                             if not(followSymlinks is False and self.isLink(fullpath)):
-                                r, depth = self._listAllInDir(fullpath, recursive, filter, minmtime, maxmtime, depth=depth, type=type,
+                                r, _ = self._listAllInDir(fullpath, recursive, filter, minmtime, maxmtime, depth=newdepth, type=type,
                                                               exclude=exclude, followSymlinks=followSymlinks, listSymlinks=listSymlinks)
                                 if len(r) > 0:
                                     filesreturn.extend(r)

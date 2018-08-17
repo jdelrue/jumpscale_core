@@ -2,7 +2,7 @@ import sys
 import string
 import inspect
 import imp
-import Jumpscale.errorhandling.JSExceptions as JSExceptions
+from . import JSExceptions
 from .ErrorConditionObject import ErrorConditionObject
 import colored_traceback
 from Jumpscale import j
@@ -38,9 +38,10 @@ class HaltException(Exception, JSBASE):
 
 class ErrorHandler(JSBASE):
 
+    __jslocation__ = "j.core.errorhandler"
+    exceptions = JSExceptions
+
     def __init__(self, storeErrorConditionsLocal=True):
-        if not hasattr(self, '__jslocation__'):
-            self.__jslocation__ = "j.core.errorhandler"
         JSBASE.__init__(self)
         self._blacklist = None
         self.lastAction = ""
@@ -49,8 +50,6 @@ class ErrorHandler(JSBASE):
         self.escalateToRedis = False
         self._escalateToRedisFunction = None
         self._scriptsInRedis = False
-        self.exceptions = JSExceptions
-        self.j.exceptions = JSExceptions
 
     def _registerScrips(self):
         if self._scriptsInRedis is False:

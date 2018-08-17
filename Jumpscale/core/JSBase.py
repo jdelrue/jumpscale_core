@@ -71,6 +71,7 @@ class BaseGetter(object):
         d = object.__getattribute__(self, '__subgetters__')
         keys = set(object.__dir__(self))
         keys.update(d.keys())
+        keys = self._check_child_mod_cache(keys)
         keys = sorted(keys)
         return keys
 
@@ -96,6 +97,8 @@ class BaseGetter(object):
             return instance
         return object.__getattribute__(self, name)
 
+    def _check_child_mod_cache(self, keys):
+        return keys
 
 class ModuleSetup(object):
     def __init__(self, subname, modulepath, objectname, fullpath, basej):
@@ -105,6 +108,7 @@ class ModuleSetup(object):
         self.fullpath = fullpath
         self.basej = basej
         self._obj = None
+        self._kls = None
 
     def _import_parent_recurse(self, mpathname, parent_name):
         ppath = os.path.join(parent_name, "__init__.py")
@@ -125,8 +129,9 @@ class ModuleSetup(object):
         if mpathname:
             self._import_parent_recurse(mpathname, parent_name)
 
-    def getter(self):
-        if self._obj is None:
+    @property
+    def kls(self):
+        if self._kls is None:
             # print ("about to get modulepath %s object %s path %s" % \
             #        (self.modulepath, self.objectname, self.fullpath))
 
@@ -177,9 +182,13 @@ class ModuleSetup(object):
                 #klsname = "%s.%s" % (self.modulepath, self.objectname)
                 kls = JSBase._jsbase(self.basej, self.objectname,
                                      [kls])
-            self._obj = kls()
-        return self._obj
+            self._kls = kls
+        return self._kls
 
+    def getter(self):
+        if self._obj is None:
+            self._obj = self.kls()
+        return self._obj
 
 class JSBase(BaseGetter):
 
@@ -192,6 +201,11 @@ class JSBase(BaseGetter):
         self._logger_force = False
         self._late_init_called = False
         self._late_init_fns = []
+        self._child_mod_cache = {}
+
+    def _check_child_mod_cache(self, keys):
+        print ("JSBase check child cache", self, keys)
+        return keys
 
     def _add_late_init(self, fn, *args, **kwargs):
         """ use this for when lazy-load needs to do some work
@@ -303,6 +317,10 @@ class JSBase(BaseGetter):
             self._call_late_inits()
             #print ("dynamic init fn", self.__name__, self.__class__)
         inits = {'__init__': initfn}
+        if derived_classes:
+            # XXX have to have the first class be the Jumpscale one
+            # e.g. derived_classes = [Jumpscale.core.Application.Application]
+            inits['__jsbasekls__'] = derived_classes[0]
 
         memberkls = type("JSBased" + jname, tuple(classes), inits)
         return memberkls

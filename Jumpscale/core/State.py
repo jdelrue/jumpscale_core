@@ -43,6 +43,8 @@ class State(object):
 
     """
 
+    __jslocation__ = 'j.core.state'
+
     def __init__(self, executor):
         self.readonly = False
         self.executor = executor

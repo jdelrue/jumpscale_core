@@ -10,9 +10,9 @@ class ExecutorFactory(object):
 
     _executors = {}
     _executors_async = {}
+    __jslocation__ = "j.tools.executor"
 
     def __init__(self):
-        self.__jslocation__ = "j.tools.executor"
 
     def local_get(self):
         """

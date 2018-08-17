@@ -9,6 +9,8 @@ import sys
 
 class LoggerFactory():
 
+    __jslocation__ = "j.core.logging"
+
     def __init__(self, j=None):
         """ WARNING: JSBase now contains a singleton (global) j and
             LoggerFactory can't get at it.
@@ -21,7 +23,6 @@ class LoggerFactory():
         """
         if j is not None:
             self.j = j # must patch this after instantiation to break loop
-        self.__jslocation__ = "j.core.logging"
         self.logger_name = 'j'
         self.handlers = Handlers()
         self.loggers = {}
