@@ -122,8 +122,8 @@ def bootstrap_j(j, logging_enabled=False, filter=None):
     dl = DJSLoader()
     #j = dl._dynamic_generate(j, modules, bases, aliases)
     j = dl.dynamic_generate(basej=j)
-    j.logging.init()  # will reconfigure the logging to use the config file
     j.tools.executorLocal.env_check_init()
+    j.logging.init()  # will reconfigure the logging to use the config file
     j.core.db_reset() # used fake redis up to now: move to real if it exists
 
     return j
@@ -740,10 +740,10 @@ class JSLoader():
 
         _j.j = _j
         _j.core.db_reset()
-        _j.data.cache.reset()
+        #_j.data.cache.reset()
         _j.cache = _j.data.cache
         _j.tools.executorLocal.initEnv()
-        _j.tools.loader.__dynamic_ready__ = True # trips lazy property chain
+        #_j.set_all_ready()
 
         return _j
 

@@ -7,4 +7,5 @@ class Data(object):
        'text': ('Jumpscale.data.text.Text', 'Text'),
        'serializers': ('Jumpscale.data.serializers.SerializersFactory',
                                 'SerializersFactory'),
+       'idgenerator': ('Jumpscale.data.idgenerator.IDGenerator', 'IDGenerator'),
                 }

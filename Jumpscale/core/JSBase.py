@@ -87,7 +87,12 @@ class BaseGetter(object):
                 #print ("not found jsl")
         if name == 'JSBASE':
             return JSBase
-        if name in dir(JSBase):
+        found = True
+        try:
+            object.__getattribute__(JSBase, name)
+        except AttributeError:
+            found = False
+        if found:
             return object.__getattribute__(self, name)
         if name.startswith('_'):
             return object.__getattribute__(self, name)
@@ -99,16 +104,35 @@ class BaseGetter(object):
             #del d[name]
             return instance
         try:
+            return object.__getattribute__(self, name)
+        except AttributeError as e:
+            z = e
+        try:
             jbk = object.__getattribute__(self, '__jsbasekls__')
         except AttributeError:
             jbk = None
         if jbk:
             dynamic_ready = object.__getattribute__(self, '__dynamic_ready__')
             if dynamic_ready:
-                keys = self._check_child_mod_cache([name])
+                d = object.__getattribute__(self, '__subgetters__')
+                keys = set(d.keys())
+                keys = self._check_child_mod_cache(keys, set([name]))
+                instance = self._create_instance(name)
+                if instance:
+                    return instance
         return object.__getattribute__(self, name)
 
-    def _check_child_mod_cache(self, keys):
+    def _create_instance(self, name):
+        d = object.__getattribute__(self, '__subgetters__')
+        if name not in d:
+            return None
+        instance = d[name].getter()
+        instance.j = self.j
+        object.__setattr__(self, name, instance)
+        #del d[name]
+        return instance
+
+    def _check_child_mod_cache(self, keys, toadd=None):
         return keys
 
 class ModuleSetup(object):
@@ -201,6 +225,7 @@ class ModuleSetup(object):
 
     def getter(self):
         if self._obj is None:
+            print ("getter", self.kls)
             self._obj = self.kls()
             #self._obj.__dynamic_ready__ = True
         return self._obj
@@ -219,9 +244,10 @@ class JSBase(BaseGetter):
         self._child_mod_cache = {}
         self._child_mod_cache_checked = False
 
-    def _check_child_mod_cache(self, keys):
+    def _check_child_mod_cache(self, keys, toadd=None):
         if self._child_mod_cache_checked:
             return keys
+        self._child_mod_cache_checked = True
         print ("JSBase check child cache", self, keys)
         print (getattr(self, '__jsfullpath__', None))
         print (getattr(self, '__jsmodulepath__', None))
@@ -241,27 +267,37 @@ class JSBase(BaseGetter):
             return keys # too early
 
         # really awkward but absolutely must avoid BaseGetter recursion
-        loader = self.j
-        for attr in ['tools', 'loader']:
-            try:
-                print ("searching", loader, attr)
-                loader = object.__getattribute__(loader, attr)
-                #loader = getattr(loader, attr)
-            except AttributeError:
-                print ("not found")
-                return keys # too early: skip it
+        try:
+            loader = self.j.tools.loader
+        except AttributeError:
+            print ("not found loader")
+            return keys # too early: skip it
+    
+        if False:
+            loader = self.j
+            for attr in ['tools', 'loader']:
+                try:
+                    print ("searching", loader, attr)
+                    loader = object.__getattribute__(loader, attr)
+                    #loader = getattr(loader, attr)
+                except AttributeError:
+                    print ("not found")
+                    return keys # too early: skip it
 
         gatherfn = object.__getattribute__(loader, 'gather_modules')
         mods, base = gatherfn(startchildj, depth=2)
-        print (mods)
-        print (base)
+        print ("check mod cache mods", mods)
+        print ("check mod cache bas", base)
 
         # now check if the child modules found in the filesystem (across all
         # plugins) exist in the dir() listing, and if not, add it.
         # TODO: delay the actual adding until it's referenced?
         childmods = mods.get(startchildj, {})
         for childk in childmods.keys():
-            if childk in keys:
+            if toadd:
+                if childk not in toadd:
+                    continue
+            elif childk in keys:
                 continue
             keys.add(childk)
             fullchildj = "%s.%s" % (startchildj, childk)
