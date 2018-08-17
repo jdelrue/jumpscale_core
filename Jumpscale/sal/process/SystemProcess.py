@@ -20,9 +20,9 @@ from os import O_NONBLOCK, read
 
 class SystemProcess(object):
 
+    __jslocation__ = "j.sal.process"
+
     def __init__(self):
-        if not hasattr(self, '__jslocation__'):
-            self.__jslocation__ = "j.sal.process"
         self._isunix=None
 
     @property

@@ -12,9 +12,10 @@ JSBASE = j.application.jsbase_get_class()
 
 class NACLFactory(JSBASE):
 
+    __jslocation__ = "j.data.nacl"
+
     def __init__(self):
         JSBASE.__init__(self)
-        self.__jslocation__ = "j.data.nacl"
         self._default = None
 
     def get(self, name="key", secret="", sshkeyname=""):

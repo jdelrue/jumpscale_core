@@ -120,7 +120,7 @@ def bootstrap_j(j, logging_enabled=False, filter=None):
 
     DJSLoader = j._jsbase(j, 'JSLoader', [JSLoader])
     dl = DJSLoader()
-    #j = dl._dynamic_generate(j, modules, bases, aliases) 
+    #j = dl._dynamic_generate(j, modules, bases, aliases)
     j = dl.dynamic_generate(basej=j)
     j.logging.init()  # will reconfigure the logging to use the config file
     j.tools.executorLocal.env_check_init()
@@ -388,8 +388,9 @@ def jumpscale_py_setup(location):
 
 class JSLoader():
 
+    __jslocation__ = "j.tools.jsloader"
+
     def __init__(self):
-        self.__jslocation__ = "j.tools.jsloader"
         self.tryimport = False
         self._logger = None
 
@@ -481,6 +482,10 @@ class JSLoader():
         if startpath is None:
             startpath = "j"
 
+        # split the startpath (j format) to create subdirectory
+        # search locations to be appended to plugin path
+        startpath = startpath.split('.')[1:]
+
         # ok, set up a default based on the current location of THIS
         # file.  it's a hack however it will at least get started.
         # this will get the plugins recognised from Jumpscale
@@ -499,27 +504,25 @@ class JSLoader():
         if 'Jumpscale' not in plugins:
             plugins['Jumpscale'] = defaultplugins['Jumpscale']
         print ("plugins", plugins)
-        for name, path in plugins.items():
+        for name, _path in plugins.items():
+            path = [_path] + startpath
+            path = os.path.join(*path)
             self.logger.info("find modules in jumpscale for : '%s'" % path)
             print ("startpath: %s depth: %d" % (startpath, depth))
-            if self.j.sal.fs.exists(path, followlinks=True):
-                if False: # XXX hmmm.... nasty hack... disable....
-                    pth = path
-                    if pth[-1] == '/':
-                        pth = pth[:-1]
-                    pth = os.path.split(pth)[0]
-                    sys.path = [pth] + sys.path
-                moduleList, baseList = self.findModules(path=path,
-                                        moduleList=moduleList,
-                                        baseList=baseList,
-                                        depth=depth)
-            else:
-                raise RuntimeError("Could not find plugin dir:%s" % path)
-                # try:
-                #     mod_path = importlib.import_module(name).__path__[0]
-                #     moduleList = self.findModules(path=mod_path)
-                # except Exception as e:
-                #     pass
+            if not self.j.sal.fs.exists(_path, followlinks=True):
+                raise RuntimeError("Could not find plugin dir:%s" % _path)
+            if not self.j.sal.fs.exists(path, followlinks=True):
+                continue
+            if False: # XXX hmmm.... nasty hack... disable....
+                pth = path
+                if pth[-1] == '/':
+                    pth = pth[:-1]
+                pth = os.path.split(pth)[0]
+                sys.path = [pth] + sys.path
+            moduleList, baseList = self.findModules(path=path,
+                                    moduleList=moduleList,
+                                    baseList=baseList,
+                                    depth=depth)
 
         for jlocationRoot, jlocationRootDict in moduleList.items():
             # is per item under j e.g. self.j.clients
@@ -539,6 +542,21 @@ class JSLoader():
                     del jlocationRootDict[subname]
 
         return moduleList, baseList
+
+    def add_submodules(self, basej, subname, sublist):
+        print (subname, sublist)
+        parent = jwalk(basej, subname, end=-1)
+        jname = subname.split(".")[-1]
+        print ("add_submodule", basej, jname, parent)
+        #print ("dynamic generate root", jname, jlocationRoot)
+        modulename, classname, imports = sublist
+        print ("subs", jname, sublist)
+        importlocation = removeDirPart(
+            modulename)[:-3].replace("//", "/").replace("/", ".")
+        print (importlocation)
+        parent._add_instance(jname, importlocation, classname,
+                             fullpath=modulename,
+                             basej=basej)
 
     def _old_dynamic_generate(self, basej, moduleList=None, baseList=None,
                                        aliases=None, basepath=None, depth=0):
@@ -584,6 +602,7 @@ class JSLoader():
             rootmembers[jname] = member
 
         for jlocationRoot, jlocationRootDict in moduleList:
+            #self.add_submodules( _j, jlocationRoot, jlocationRootDict)
             print ("jlocattion", jlocationRoot, jlocationRootDict)
             jname = jlocationRoot.split(".")[1].strip()
             print ("dynamic generate root", jname, jlocationRoot)
@@ -599,7 +618,7 @@ class JSLoader():
         for jlocationRoot, jlocationRootDict in moduleList:
             #print (jlocationRoot, jlocationRootDict)
             jname = jlocationRoot.split(".")[1].strip()
-            member = rootmembers[jname] 
+            member = rootmembers[jname]
             #print ("dynamic generate root", jname, jlocationRoot)
             for subname, sublist in jlocationRootDict.items():
                 modulename, classname, imports = sublist
@@ -660,6 +679,8 @@ class JSLoader():
         print ("aliases", aliases)
         _j = basej._create_jsbase_instance('Jumpscale')
         _j.__jslocation__ = 'j'
+        _j.__fullpath__ = None # TODO
+        _j.__modulepath__ = 'Jumpscale'
         _j.__jsdeps__ = {}
         rootmembers = {}
 
@@ -673,7 +694,7 @@ class JSLoader():
             member = m.getter()
             if hasattr(m.kls, '__jsdeps__'):
                 print ("jlocation __jsdeps__", jname, m.kls.__jsdeps__,
-                       member.__class__.__name__, member.__module__, 
+                       member.__class__.__name__, member.__module__,
                        m.kls.__jsbasekls__.__module__)
                 for cjname, childspec in m.kls.__jsdeps__.items():
                     if isinstance(childspec, str):
@@ -691,8 +712,7 @@ class JSLoader():
                     else:
                         walkfrom = jwalk(_j, cjname, start=1, end=-1)
                         setattr(walkfrom, cjname, cm.kls)
-                    
-                    
+
             setattr(_j, jname, member)
             print ("baselisted", jname, member)
             rootmembers[jname] = member
@@ -719,6 +739,11 @@ class JSLoader():
             setattr(walkfrom, child, walkto)
 
         _j.j = _j
+        _j.core.db_reset()
+        _j.data.cache.reset()
+        _j.cache = _j.data.cache
+        _j.tools.executorLocal.initEnv()
+        _j.tools.loader.__dynamic_ready__ = True # trips lazy property chain
 
         return _j
 
@@ -860,8 +885,17 @@ class JSLoader():
                     break
             if find_jslocation(line) and locfound == False:
                 if classname is None:
+                    fname = os.path.split(path)[1]
+                    if fname == 'JSLoader.py':
+                        # XXX sigh doing manual parsing of python files
+                        # like this is never a good idea, it is much
+                        # better to do an AST syntax tree walk, that's
+                        # what it's for.  JSLoader.py has some occurrences
+                        # of __jslocation__ that are being detected,
+                        # so we skip them here.
+                        continue
                     raise RuntimeError(
-                        "Could not find class in %s " +
+                        "Could not find class in %s "
                         "while loading jumpscale lib." %
                         path)
                 # XXX not a good way to get value after equals (remove " and ')

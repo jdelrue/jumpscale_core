@@ -142,7 +142,7 @@ class CacheCategory(object):
             res = pickle.loads(res)
         if expire is None:
             expire = self.expiration
-        # print("res:%s"%res)
+        print("key:%s res:%s" % (key, res))
         if refresh or res is None:
             if method is None:
                 raise self.j.exceptions.RuntimeError(

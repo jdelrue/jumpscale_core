@@ -176,9 +176,7 @@ class FormBuilderBaseClass(npyscreen.NPSAppManaged, JSBASE):
 
 class FormBuilderFactory(JSBASE):
 
-    def __init__(self):
-        self.__jslocation__ = "j.tools.formbuilder"
-        JSBASE.__init__(self)
+    __jslocation__ = "j.tools.formbuilder"
 
     def baseclass_get(self):
         """

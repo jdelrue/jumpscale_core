@@ -25,8 +25,9 @@ js_config init
 
 class ConfigFactory(object):
 
+    __jslocation__ = "j.tools.configmanager"
+
     def __init__(self):
-        self.__jslocation__ = "j.tools.configmanager"
         self._path = ""
         self.interactive = True  # std needs to be on True
         self.sandbox = False

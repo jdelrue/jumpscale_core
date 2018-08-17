@@ -12,8 +12,9 @@ class IDGenerator(JSBASE):
     lives at j.data.idgenerator
     """
 
+    __jslocation__ = "j.data.idgenerator"
+
     def __init__(self):
-        self.__jslocation__ = "j.data.idgenerator"
         JSBASE.__init__(self)
         self._cryptogen = ""
 

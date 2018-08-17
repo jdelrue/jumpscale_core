@@ -30,6 +30,7 @@ class BaseGetter(object):
         etc. etc. will do the job for now
         """
 
+    __dynamic_ready__ = False
     def __init__(self):
         self.__subgetters__ = {}
 
@@ -94,7 +95,17 @@ class BaseGetter(object):
         if name in d:
             instance = d[name].getter()
             instance.j = self.j
+            object.__setattr__(self, name, instance)
+            #del d[name]
             return instance
+        try:
+            jbk = object.__getattribute__(self, '__jsbasekls__')
+        except AttributeError:
+            jbk = None
+        if jbk:
+            dynamic_ready = object.__getattribute__(self, '__dynamic_ready__')
+            if dynamic_ready:
+                keys = self._check_child_mod_cache([name])
         return object.__getattribute__(self, name)
 
     def _check_child_mod_cache(self, keys):
@@ -136,6 +147,7 @@ class ModuleSetup(object):
             #        (self.modulepath, self.objectname, self.fullpath))
 
             module = importlib.import_module(self.modulepath)
+            module.__jsfullpath__ = self.modulepath
 
             if False:  # hmmm..... still doesn't want to play ball....
                 parent_name = self.modulepath.rpartition('.')[0]
@@ -167,6 +179,8 @@ class ModuleSetup(object):
             if module not in sys.modules:
                 sys.modules[self.modulepath] = module
             kls = getattr(module, self.objectname)
+            kls.__jsfullpath__ = self.fullpath
+            kls.__jsmodulepath__ = self.modulepath
             # check if kls has JSBase in it: if not, patch it in
             if hasattr(kls, 'mro'):
                 mro = kls.mro()
@@ -188,6 +202,7 @@ class ModuleSetup(object):
     def getter(self):
         if self._obj is None:
             self._obj = self.kls()
+            #self._obj.__dynamic_ready__ = True
         return self._obj
 
 class JSBase(BaseGetter):
@@ -202,9 +217,57 @@ class JSBase(BaseGetter):
         self._late_init_called = False
         self._late_init_fns = []
         self._child_mod_cache = {}
+        self._child_mod_cache_checked = False
 
     def _check_child_mod_cache(self, keys):
+        if self._child_mod_cache_checked:
+            return keys
         print ("JSBase check child cache", self, keys)
+        print (getattr(self, '__jsfullpath__', None))
+        print (getattr(self, '__jsmodulepath__', None))
+        module = self.__jsbasekls__.__module__
+        filename = sys.modules[module].__file__
+        print (module, filename)
+
+        # obtain a list of modules listed across all plugins which match
+        # the child's jslocation. XXX THIS REQUIRES that the plugin
+        # directory naming hierarchy MATCH the jslocation!  it is absolutely
+        # no good having j.something when the directory named "something"
+        # does not match the plugin directory hierarchy!
+        try:
+            startchildj = object.__getattribute__(self, '__jslocation__')
+        except AttributeError:
+            print ("no __jslocation__")
+            return keys # too early
+
+        # really awkward but absolutely must avoid BaseGetter recursion
+        loader = self.j
+        for attr in ['tools', 'loader']:
+            try:
+                print ("searching", loader, attr)
+                loader = object.__getattribute__(loader, attr)
+                #loader = getattr(loader, attr)
+            except AttributeError:
+                print ("not found")
+                return keys # too early: skip it
+
+        gatherfn = object.__getattribute__(loader, 'gather_modules')
+        mods, base = gatherfn(startchildj, depth=2)
+        print (mods)
+        print (base)
+
+        # now check if the child modules found in the filesystem (across all
+        # plugins) exist in the dir() listing, and if not, add it.
+        # TODO: delay the actual adding until it's referenced?
+        childmods = mods.get(startchildj, {})
+        for childk in childmods.keys():
+            if childk in keys:
+                continue
+            keys.add(childk)
+            fullchildj = "%s.%s" % (startchildj, childk)
+            loader.add_submodules(self.j, fullchildj, childmods[childk])
+
+        self._child_mod_cache_checked = True
         return keys
 
     def _add_late_init(self, fn, *args, **kwargs):

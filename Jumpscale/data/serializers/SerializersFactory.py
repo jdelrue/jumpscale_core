@@ -61,8 +61,9 @@ JSBASE = j.application.jsbase_get_class()
 
 class SerializersFactory(JSBASE):
 
+    __jslocation__ = "j.data.serializers"
+
     def __init__(self):
-        self.__jslocation__ = "j.data.serializers"
         JSBASE.__init__(self)
         self.types = {}
         self._cache = {}
