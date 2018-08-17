@@ -743,7 +743,9 @@ class JSLoader():
         #_j.data.cache.reset()
         _j.cache = _j.data.cache
         _j.tools.executorLocal.initEnv()
-        #_j.set_all_ready()
+
+        for jname in rootmembers:
+            rootmembers[jname]._child_mod_cache_checked = False
 
         return _j
 

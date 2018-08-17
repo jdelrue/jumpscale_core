@@ -227,7 +227,7 @@ class ModuleSetup(object):
         if self._obj is None:
             print ("getter", self.kls)
             self._obj = self.kls()
-            #self._obj.__dynamic_ready__ = True
+            self._obj.__dynamic_ready__ = True
         return self._obj
 
 class JSBase(BaseGetter):
@@ -243,17 +243,28 @@ class JSBase(BaseGetter):
         self._late_init_fns = []
         self._child_mod_cache = {}
         self._child_mod_cache_checked = False
+        self._child_toadd_cache_checked = set()
 
     def _check_child_mod_cache(self, keys, toadd=None):
-        if self._child_mod_cache_checked:
-            return keys
-        self._child_mod_cache_checked = True
-        print ("JSBase check child cache", self, keys)
-        print (getattr(self, '__jsfullpath__', None))
-        print (getattr(self, '__jsmodulepath__', None))
+        if toadd is None:
+            if self._child_mod_cache_checked:
+                return keys
+            self._child_mod_cache_checked = True # clear straight away
+        else:
+            tocheck = toadd.copy()
+            for k in toadd:
+                if k in self._child_toadd_cache_checked:
+                    tocheck.remove(k)
+                self._child_toadd_cache_checked.add(k)
+            if not tocheck: # nothing to check
+                return keys
+            toadd = tocheck
+        print ("JSBase check child cache", self, keys, toadd)
+        print ("fullpath", getattr(self, '__jsfullpath__', None))
+        print ("modpath", getattr(self, '__jsmodulepath__', None))
         module = self.__jsbasekls__.__module__
         filename = sys.modules[module].__file__
-        print (module, filename)
+        print ("mod,fname", module, filename)
 
         # obtain a list of modules listed across all plugins which match
         # the child's jslocation. XXX THIS REQUIRES that the plugin
@@ -266,6 +277,7 @@ class JSBase(BaseGetter):
             print ("no __jslocation__")
             return keys # too early
 
+        print ("__jslocation__", startchildj)
         # really awkward but absolutely must avoid BaseGetter recursion
         try:
             loader = self.j.tools.loader
@@ -303,7 +315,8 @@ class JSBase(BaseGetter):
             fullchildj = "%s.%s" % (startchildj, childk)
             loader.add_submodules(self.j, fullchildj, childmods[childk])
 
-        self._child_mod_cache_checked = True
+        if not toadd:
+            self._child_mod_cache_checked = True
         return keys
 
     def _add_late_init(self, fn, *args, **kwargs):
