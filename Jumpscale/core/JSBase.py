@@ -161,6 +161,8 @@ class ModuleSetup(object):
         self._child_props = {} # to be added after class is instantiated
 
     def _import_parent_recurse(self, mpathname, parent_name):
+        if mpathname in sys.modules:
+            return
         ppath = os.path.join(parent_name, "__init__.py")
         print ("import recurse", mpathname, ppath, parent_name)
         spec = importlib.util._find_spec_from_path(ppath, None)
@@ -185,11 +187,12 @@ class ModuleSetup(object):
             print ("about to get modulepath %s object %s path %s" % \
                    (self.modulepath, self.objectname, self.fullpath))
 
-            if True:
+            if False:
                 module = importlib.import_module(self.modulepath)
                 module.__jsfullpath__ = self.modulepath
 
-            if False:  # hmmm..... still doesn't want to play ball....
+            module = sys.modules.get(self.modulepath, None)
+            if not module:
                 parent_name = self.modulepath.rpartition('.')[0]
                 print ("parentname", self.modulepath, parent_name)
                 if parent_name:
@@ -211,9 +214,11 @@ class ModuleSetup(object):
                     spec = importlib.util.spec_from_file_location(
                         self.modulepath,
                         self.fullpath)
+
                 print ("spec", spec, dir(spec))
                 module = importlib.util.module_from_spec(spec)
                 spec.loader.exec_module(module)
+
             # print ("about to set fullpath %s modulepath %s object %s" % \
             #        (self.fullpath, self.modulepath, self.objectname))
             if module not in sys.modules:
