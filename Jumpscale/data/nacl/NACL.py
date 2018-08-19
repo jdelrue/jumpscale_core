@@ -1,4 +1,3 @@
-from Jumpscale import j  # J due to recursive import issue with ConfigFactory
 from nacl.public import PrivateKey, SealedBox
 import nacl.signing
 import nacl.secret
@@ -10,26 +9,23 @@ import hashlib
 import binascii
 from nacl.exceptions import BadSignatureError
 
-JSBASE = j.application.jsbase_get_class()
 
-
-class NACL(JSBASE):
+class NACL:
 
     def __init__(self, name, secret="", sshkeyname=""):
         """
         is secret == "" then will use the ssh-agent to generate a secret
         """
-        JSBASE.__init__(self)
         if sshkeyname:
             self.logger.debug("sshkeyname for nacl:%s" % sshkeyname)
             pass
-        elif j.tools.configmanager.keyname:
+        elif self.j.tools.configmanager.keyname:
             self.logger.debug(
                 "get config from git repo, keyname='%s'" %
-                j.tools.configmanager.keyname)
-            sshkeyname = j.tools.configmanager.keyname
+                self.j.tools.configmanager.keyname)
+            sshkeyname = self.j.tools.configmanager.keyname
         else:
-            sshkeyname = j.core.state.configGetFromDict(
+            sshkeyname = self.j.core.state.configGetFromDict(
                 "myconfig", "sshkeyname")
             self.logger.debug(
                 "get config from system, keyname:'%s'" %
@@ -43,13 +39,13 @@ class NACL(JSBASE):
 
         self.name = name
 
-        self.path = j.tools.configmanager.path
+        self.path = self.j.tools.configmanager.path
         self.logger.debug("NACL uses path:'%s'" % self.path)
 
         # get/create the secret seed
         self.path_secretseed = "%s/%s.seed" % (self.path, self.name)
 
-        if not j.sal.fs.exists(self.path_secretseed):
+        if not self.j.sal.fs.exists(self.path_secretseed):
             secretseed = self.hash32(nacl.utils.random(
                 nacl.secret.SecretBox.KEY_SIZE))
             self.file_write_hex(self.path_secretseed, secretseed)
@@ -73,7 +69,7 @@ class NACL(JSBASE):
         secretseed = ""
 
         self.path_privatekey = "%s/%s.priv" % (self.path, self.name)
-        if not j.sal.fs.exists(self.path_privatekey):
+        if not self.j.sal.fs.exists(self.path_privatekey):
             self._keys_generate()
         self._privkey = ""
         self._pubkey = ""
@@ -83,32 +79,32 @@ class NACL(JSBASE):
         # self.path_words = "%s/%s.words" % (self.path, self.name)
 
         # self.path_privatekey_sign = "%s/%s_sign.priv" % (self.path, self.name)
-        # if not j.sal.fs.exists(self.path_privatekey_sign):
+        # if not self.j.sal.fs.exists(self.path_privatekey_sign):
         #     self._keys_generate_sign()
 
     @property
     def agent(self):
 
         def getagent(name):
-            for item in j.clients.sshkey.sshagent.get_keys():
-                if j.sal.fs.getBaseName(item.keyname) == name:
+            for item in self.j.clients.sshkey.sshagent.get_keys():
+                if self.j.sal.fs.getBaseName(item.keyname) == name:
                     return item
             raise RuntimeError(
                 "Could not find agent for key with name:%s" %
                 name)
 
         if self._agent is None:
-            if not j.clients.sshkey.exists(self.sshkeyname):
-                keypath = "%s/.ssh/%s" % (j.dirs.HOMEDIR, self.sshkeyname)
-                if j.sal.fs.exists(keypath):
-                    j.clients.sshkey.key_load(
+            if not self.j.clients.sshkey.exists(self.sshkeyname):
+                keypath = "%s/.ssh/%s" % (self.j.dirs.HOMEDIR, self.sshkeyname)
+                if self.j.sal.fs.exists(keypath):
+                    self.j.clients.sshkey.key_load(
                         "%s/.ssh/%s" %
-                        (j.dirs.HOMEDIR, self.sshkeyname))
+                        (self.j.dirs.HOMEDIR, self.sshkeyname))
                 else:
                     # if sshkeyname from state is not reachable delete it and
                     # re-init config manager
-                    j.core.state.configSetInDict("myconfig", "sshkeyname", "")
-                    j.tools.configmanager.init()
+                    self.j.core.state.configSetInDict("myconfig", "sshkeyname", "")
+                    self.j.tools.configmanager.init()
             self._agent = getagent(self.sshkeyname)
         return self._agent
 
@@ -126,10 +122,10 @@ class NACL(JSBASE):
         """
         js_shell 'print(j.data.nacl.default.words)'
         """
-        return j.data.encryption.mnemonic.to_mnemonic(self.privkey.encode())
-        # if not j.sal.fs.exists(self.path_words):
+        return self.j.data.encryption.mnemonic.to_mnemonic(self.privkey.encode())
+        # if not self.j.sal.fs.exists(self.path_words):
         #     self.logger.info("GENERATED words")
-        #     words = j.data.encryption.mnemonic_generate()
+        #     words = self.j.data.encryption.mnemonic_generate()
         #     words = self.encryptSymmetric(words)
         #     self.file_write_hex(self.path_words,words)
         # words = self.file_read_hex(self.path_words)
@@ -162,7 +158,7 @@ class NACL(JSBASE):
         return res
 
     def tobytes(self, data):
-        if not j.data.types.bytes.check(data):
+        if not self.j.data.types.bytes.check(data):
             data = data.encode()  # will encode utf8
         return data
 
@@ -185,7 +181,7 @@ class NACL(JSBASE):
         if salt == "":
             salt = nacl.utils.random(nacl.secret.SecretBox.NONCE_SIZE)
         else:
-            salt = j.data.hash.md5_string(salt)[0:24].encode()
+            salt = self.j.data.hash.md5_string(salt)[0:24].encode()
         res = box.encrypt(self.tobytes(data), salt)
         box = None
         if hex:
@@ -282,10 +278,10 @@ class NACL(JSBASE):
 
     def file_write_hex(self, path, content):
         content = binascii.hexlify(content)
-        j.sal.fs.writeFile(path, content)
+        self.j.sal.fs.writeFile(path, content)
 
     def file_read_hex(self, path):
-        content = j.sal.fs.readFile(path)
+        content = self.j.sal.fs.readFile(path)
         content = binascii.unhexlify(content)
         return content
 
