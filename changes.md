@@ -129,3 +129,79 @@ technique is needed, it can be handled easily through modifying
 of places.
 
 
+## 19aug2018 Dynamic self-bootstrap continued
+
+A large number of details are in commit message 0852c1430, they are
+partially documented here.  strace is being used to check progress:
+
+$ strace -o log.txt -ff js_shell
+$ grep -E "^stat|^open" log.txt.* | grep -i jumpscale | wc
+
+* A circular dependency between j.core.dirs (Jumpscale/core/Dirs.py)
+  and j.tools.executorLocal.state (Jumpscale/tools/executor/ExecutorBase.py)
+  was identified in the Dirs.reload() function, which in turn was being
+  called specifically from the Dirs __init__ constructor.
+  Dirs.JSAPPDIR and Dirs.TEMPLATEDIR were therefore HOPELESSLY out-of-date
+  and would have required the application to EXIT COMPLETELY should these
+  two variables (which were also stored in the os ENVIRON) ever be changed.
+  They have been changed to properties that **DYNAMICALLY**, on access,
+  return values that are relative to VARDIR.  They can be over-ridden.
+  The removal of the dependence on VARDIR helps break the circular
+  dependency between Dirs.py and ExecutorBase.py
+* An additional dependency on HOSTDIR was also successfully removed
+  by no longer calling JSLoader.prepare_config, JSLoader._generate
+  or anything else that was being used to write into the HOSTDIR
+  (except locations as specified by ExecutorBase.py)
+* When there is no config file (at all), it is assumed that because the
+  JSLoader is currently being executed, it is okay to put in a not-exactly-fake
+  single plugin entry based on the current working directory.
+  In this way, starting up from a completely empty non-existent config file
+  will successfully allow access to Jumpscale core files in a reasonable
+  and consistent fashion.  (Note: not having the plugin directory be EXACTLY
+  that from which the file WITHIN that plugin directory is located is neither
+  reasonable nor sane, and a sanity check needs to be added to that effect)
+* Overloading of __dir__ (called when dir(j.core) is done, which includes
+  in IPython) has been accompanied by an overload of __getattribute__
+  that will now carry out a specific search for only that j.[insertnamehere].
+  This is carried out through the combined use of BaseGetter, JSBase and
+  JSLoader.
+* Overloading __dir__ means that "fake" (lazy) properties can *appear* to
+  be listed in a j.[insertobjname] and even a j.[parent].[insertchildname].
+  This is done in BaseGetter.__dir__ by storing a "fake" (lazy) property
+  loader (ModuleSetup) as described above (12aug2018).
+* The new capability involves a global j.__dynamic_ready__ boolean
+  as well as a per-object __dynamic_ready__ which, if both are set,
+  sets off a chain of (near-dangerously-recursive) searches for the
+  property that has been requested (and doesn't actually exist... yet).
+  The dangerous recursion is broken by setting __dynamic_ready__
+  (see JSBase._check_child_mod_cache).
+* Accessing a (non-existent) property results in (AT PRESENT) a
+  walk of each of the plugins directories, specifically looking for objects
+  that match that name. THIS REQUIRES THAT THE DIRECTORY HIERARCHY MATCH
+  THE NAME.  For example, accessing of j.tools.dns will result in a
+  search for the following:
+    /opt/code/github/threefoldtech/core9/Jumpscale/tools/dns/DNSTools.py
+    /opt/code/github/threefoldtech/lib9/JumpscaleLib/tools/dns/DNSTools.py
+    ...
+  where DNSTools.py has a class DNSTools in which "j.tools.dnstools"
+  exists.  HOWEVER... this is a classic example: j.tools.dnstools
+  (prior to commit 2a27cbe7) was in a subdirectory that mis-matched with
+  its j object name.
+
+So now, where requesting a listing "dir (j.tools)" results in a
+filesystem walk of plugin directories looking for anything *inside*
+a directory called "tools", a __getattribute__ will result in a very
+specific search for a very specific (single) module in each of the
+plugin locations.
+
+This will subsequently be modified to no longer even need to walk
+the filesystem (at all), by storing the dependency information actually inside
+the parent (JSClassName.__jsdeps__), merging those across multiple
+plugins, and issuing a very very specific importlib.util.module_from_spec()
+call that *SPECIFICALLY* and *EXCLUSIVELY* loads *SPECIFICALLY* that
+python module *DIRECTLY* and *NOTHING* else.  This in complete contrast to
+the current system which relies on asking the standard python import system to
+locate the module, which results in a massive hit on absolutely every
+plugin directory of six to seven stat operations per module (that's
+excluding searches for parent modules), ".pyc", ".pyo", ".so"...
+... "__pycache__/*.pyo" and so on.
