@@ -18,25 +18,23 @@ from pathlib import Path
 #     return path.decode(sys.getfilesystemencoding())
 
 class Dirs(object):
-    """Utility class to configure and store all relevant directory paths"""
+    """ Utility class to configure and store all relevant directory paths
+    """
+
+    __jslocation__ = "j.core.dirs"
 
     def __init__(self):
-        '''jumpscale sandbox base folder'''
-        self.__jslocation__ = "j.core.dirs"
+        ''' jumpscale sandbox base folder
+        '''
         self.reload()
+        self._TEMPLATEDIR = None
+        self._JSAPPSDIR = None
+        self._templatedir_set = False
+        self._jsappsdir_set = False
 
     def reload(self):
         """ loads the environment (NOTE: does not clear out the old environment)
-            from the config file [dirs] section.  if that does not exist
-            then a set of (three) defaults are created, which can be
-            over-ridden with envvars:
-
-            * VARDIR
-            * BASEDIRJS
-            * HOSTDIR
-
-            these three appear sufficient to get bootstrapped, even without
-            a config file.
+            from the config file [dirs] section.
         """
         # when bootstrapping there *is* no config entry [dirs], consequently
         # an exception is attempted to be raised... but exceptions aren't
@@ -45,32 +43,33 @@ class Dirs(object):
             dirs = self.j.core.state.configGet("dirs")
         else:
             dirs = {}
-        # issue #71, these are for bootstrapping when there is no
-        # config file.  they can be over-ridden (particularly on an install)
-        # by setting environment variables.
-        if 'VARDIR' not in dirs:
-            d = os.environ.get('VARDIR', '/opt/var') # TODO issue #71
-            dirs['VARDIR'] = d
-            self.logger.info("No Config [dirs] VARDIR, using %s" % d)
-        if 'BASEDIRJS' not in dirs:
-            d = os.environ.get('BASEDIRJS', '/opt/jumpscale') # TODO issue #71
-            dirs['BASEDIRJS'] = d
-            self.logger.info("No Config [dirs] BASEDIRJS, using %s" % d)
-        if 'HOSTDIR' not in dirs:
-            home = str(Path.home())
-            pth = os.path.join(home, 'jumpscale')
-            d = os.environ.get('HOSTDIR', pth) # TODO issue #71
-            dirs['HOSTDIR'] = d
-            self.logger.info("No Config [dirs] HOSTDIR, using %s" % d)
 
         for key, val in dirs.items():
             self.__dict__[key] = val
             os.environ[key] = val
 
-        # set up some more automatic defaults: templates and apps
-        self.TEMPLATEDIR = self.VARDIR + "/templates/"
-        self.JSAPPSDIR = self.BASEDIRJS + "/apps/"
+    @property
+    def JSAPPSDIR(self):
+        if self._jsappsdir_set:
+            return self._JSAPPSDIR
+        return self.VARDIR + "/apps/"
 
+    @JSAPPSDIR.setter
+    def JSAPPSDIR(self, d):
+        self._JSAPPSDIR = d
+        self._jsappsdir_set = True
+    
+    @property
+    def TEMPLATEDIR(self):
+        if self._templatedir_set:
+            return self._TEMPLATEDIR
+        return self.VARDIR + "/templates/"
+
+    @TEMPLATEDIR.setter
+    def TEMPLATEDIR(self, d):
+        self._TEMPLATEDIR = d
+        self._templatedir_set = True
+    
     def replace_txt_dir_vars(self, txt, additional_args={}):
         """
         replace $BASEDIR,$VARDIR,$JSCFGDIR,$bindir,

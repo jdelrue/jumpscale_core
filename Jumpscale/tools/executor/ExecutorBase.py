@@ -467,31 +467,38 @@ echo --TEXT--
         else:
             self.state.configUpdate(TT, False)  # will not overwrite
 
-        if self.type == "local":
-            self.j.core.state = self.state
+        # XXX state occurs in two places, this code results in them
+        # getting out-of-sync as j.core.state can be **DIFFERENT**
+        # from j.tools.executorLocal.state, resulting in unpredictable
+        # behaviour.  a property in j.core has been put in its place
+        # which REFERENCES tools.executorLocal.state, which MAY
+        # be over-ridden if desired
+        #if self.type == "local":
+        #    self.j.core.state = self.state
 
         self.cache.reset()
+        #print (self.state._configJS)
+        #print (self.state.configJSPath)
 
         self.logger.debug("initenv done on executor base")
 
     def env_check_init(self):
+        """ check that system has been initialise, if not, do so
         """
-        check that system has been inited, if not do
-        """
-        # has already been implemented below
-        self.dir_paths
+        #print ("env_check_init", self._dirpaths_init)
+        if self._dirpaths_init:
+            return
+        if not self.exists(self.state.configJSPath) or \
+           not self.state.configExists('dirs') or \
+           self.state.configGet('dirs', {}) == {}:
+            self.initEnv()
+        #print ("env_check_init", self.state.configJSPath)
+        #print ("dirs exists", self.state.configExists('dirs'))
+        self._dirpaths_init = True
 
     @property
     def dir_paths(self):
-        print ("dir_paths", self._dirpaths_init, self.state.configJSPath)
-        print (self.state.configGet('dirs'))
-        if not self._dirpaths_init:
-            if not self.exists(
-                    self.state.configJSPath) or self.state.configGet(
-                    'dirs',
-                    {}) == {}:
-                self.initEnv()
-            self._dirpaths_init = True
+        self.env_check_init()
         return self.state.configGet('dirs')
 
     @property

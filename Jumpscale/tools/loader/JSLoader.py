@@ -48,8 +48,10 @@ bootstrap = [
         ('sal', 'process', 'sal.process.SystemProcess', 'SystemProcess'),
         ('', 'application', 'core.application', None),
         ('', 'cache', 'data.cache', None),
-        ('core', 'state', 'tools.executorLocal.state', None),
+        #('core', 'state', 'tools.executorLocal.state', None),
         ('core', 'dirs', 'dirs', None),
+        ('', 'errorhandler', 'core.errorhandler', None),
+        ('', 'exceptions', 'core.errorhandler.exceptions', None),
     ]
 
 def jwalk(instance, name, start=None, end=None):
@@ -128,7 +130,9 @@ def bootstrap_j(j, logging_enabled=False, filter=None):
         dl = DJSLoader()
         #j = dl._dynamic_generate(j, modules, bases, aliases)
         j = dl.dynamic_generate(basej=j)
-    j.tools.executorLocal.initEnv() # OUCH! necessary... doubles file-accesses!
+
+    # initialise
+    j.tools.executorLocal.env_check_init() # OUCH! doubles file-accesses!
     j.logging.init()  # will reconfigure the logging to use the config file
     #j.core.db_reset() # used fake redis up to now: move to real if it exists
     j.__dynamic_ready__ = True # set global dynamic loading ON

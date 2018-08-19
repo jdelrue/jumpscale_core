@@ -32,6 +32,7 @@ class Core(object):
 
     def __init__(self):
         self._db = None
+        self._state = None
 
     @property
     def db(self):
@@ -54,3 +55,14 @@ class Core(object):
     def db_reset(self):
         self.j.data.datacache._cache = {}
         self._db = None
+
+    @property
+    def state(self):
+        if self._state is None:
+            return self.j.tools.executorLocal.state
+        return self._state
+
+    @state.setter
+    def state(self, newstate):
+        slf._state = state
+
