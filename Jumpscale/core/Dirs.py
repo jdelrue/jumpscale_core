@@ -58,7 +58,7 @@ class Dirs(object):
     def JSAPPSDIR(self, d):
         self._JSAPPSDIR = d
         self._jsappsdir_set = True
-    
+
     @property
     def TEMPLATEDIR(self):
         if self._templatedir_set:
@@ -69,7 +69,7 @@ class Dirs(object):
     def TEMPLATEDIR(self, d):
         self._TEMPLATEDIR = d
         self._templatedir_set = True
-    
+
     def replace_txt_dir_vars(self, txt, additional_args={}):
         """
         replace $BASEDIR,$VARDIR,$JSCFGDIR,$bindir,
@@ -77,7 +77,7 @@ class Dirs(object):
         this class also the Dir... get replaces e.g. varDir
         @param   txt:             Text to be replaced
         @type    txt:             string
-        @param   additional_args: Specify more variables and their 
+        @param   additional_args: Specify more variables and their
                 values to be replaced in the path
         @type    additional_args: dict
         @return: string with replaced values
@@ -124,12 +124,12 @@ class Dirs(object):
 
             @param path:            Could be either path to file or directory
             @type  path:            string
-            @param recursive:       If True will search recursively 
+            @param recursive:       If True will search recursively
                                     in all subdirectories
             @type  recursive:       boolean
             @param filter:          unix-style wildcard (e.g. *.py) -                                               this is not a regular expression
             @type  filter:          string
-            @param additional_args: Specify more variables and their 
+            @param additional_args: Specify more variables and their
                                     values to be replaced in the path
             @type  additional_args: dict
         """
