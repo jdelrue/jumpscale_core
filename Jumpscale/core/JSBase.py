@@ -196,13 +196,15 @@ class ModuleSetup(object):
                 parent_name = self.modulepath.rpartition('.')[0]
                 print ("parentname", self.modulepath, parent_name)
                 if parent_name:
-                    parentpath = os.path.split(self.fullpath)[0]
-                    mpathname = self.modulepath.rpartition('.')[0]
-                    self._import_parent_recurse(mpathname, parentpath)
-                    parent = __import__(parent_name, fromlist=['__path__'])
-                    print ("parent", parent_name, parent)
-                    spec = importlib.util._find_spec(self.modulepath,
-                                                     parent.__path__)
+                    spec = None
+                    if False:
+                        parentpath = os.path.split(self.fullpath)[0]
+                        mpathname = self.modulepath.rpartition('.')[0]
+                        self._import_parent_recurse(mpathname, parentpath)
+                        parent = __import__(parent_name, fromlist=['__path__'])
+                        print ("parent", parent_name, parent)
+                        spec = importlib.util._find_spec(self.modulepath,
+                                                         parent.__path__)
                     if spec is None:
                         spec = importlib.util.spec_from_file_location(
                             self.modulepath,
