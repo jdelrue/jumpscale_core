@@ -62,7 +62,7 @@ class BaseGetter(object):
             note the inclusion of the automatic "JSBased" prefix on the
             original class named "Application".
         """
-        #print ("add instance", self, subname, modulepath, objectname, basej)
+        print ("add instance", self, subname, modulepath, objectname, basej)
         ms = ModuleSetup(subname, modulepath, objectname, fullpath, basej)
         #print (dir(self))
         d = object.__getattribute__(self, '__subgetters__')
@@ -75,7 +75,12 @@ class BaseGetter(object):
         keys.update(d.keys())
         d = object.__getattribute__(self, '__aliases__')
         keys.update(d.keys())
-        keys = self._check_child_mod_cache(keys)
+        try:
+            jbk = object.__getattribute__(self, '__jsbasekls__')
+        except AttributeError:
+            jbk = None
+        if jbk is not None:
+            keys = self._check_child_mod_cache(keys)
         keys = sorted(keys)
         return keys
 
