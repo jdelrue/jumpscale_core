@@ -489,7 +489,7 @@ class JSLoader():
 
         # make sure the jumpscale toml file is set / will also link cmd files
         # to system
-        self.j.tools.executorLocal.initEnv()
+        self.j.tools.executorLocal.env_check_init()
 
         moduleList = {}
         baseList = {}
