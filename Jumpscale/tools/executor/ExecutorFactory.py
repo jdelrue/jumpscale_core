@@ -12,8 +12,6 @@ class ExecutorFactory(object):
     _executors_async = {}
     __jslocation__ = "j.tools.executor"
 
-    def __init__(self):
-
     def local_get(self):
         """
         @param executor is localhost or $hostname:$port or
