@@ -481,7 +481,7 @@ class JSLoader():
 
         return rc, generationParamsSub
 
-    def gather_modules(self, startpath=None, depth=0):
+    def gather_modules(self, startpath=None, depth=0, recursive=True):
         """ identifies and gathers information about (only) jumpscale modules
         """
         # outCC = outpath for code completion
@@ -536,7 +536,8 @@ class JSLoader():
             moduleList, baseList = self.findModules(path=path,
                                     moduleList=moduleList,
                                     baseList=baseList,
-                                    depth=depth)
+                                    depth=depth,
+                                    recursive=recursive)
 
         for jlocationRoot, jlocationRootDict in moduleList.items():
             # is per item under j e.g. self.j.clients
@@ -949,7 +950,8 @@ class JSLoader():
 
     # import json
 
-    def findModules(self, path, moduleList=None, baseList=None, depth=None):
+    def findModules(self, path, moduleList=None, baseList=None, depth=None,
+                          recursive=True):
         """ walk over code files & find locations for jumpscale modules
             return as two dicts.
 
@@ -970,9 +972,10 @@ class JSLoader():
         # ok search for files up to the requested depth, BUT, __init__ files
         # are treated differently: they are depth+1 because searching e.g.
         # "j.core" we want to look for Jumpscale/core/__init__.py
-        initfiles = self.j.sal.fs.listFilesInDir(path, True, "__init__.py",
+        initfiles = self.j.sal.fs.listFilesInDir(path, recursive, "__init__.py",
                                                depth=depth+1)
-        pyfiles = self.j.sal.fs.listFilesInDir(path, True, "*.py", depth=depth)
+        pyfiles = self.j.sal.fs.listFilesInDir(path, recursive, "*.py",
+                                               depth=depth)
         pyfiles = initfiles + pyfiles
         for classfile in pyfiles:
             print("found", classfile)

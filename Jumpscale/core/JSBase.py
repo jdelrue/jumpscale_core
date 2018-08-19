@@ -309,27 +309,42 @@ class JSBase(BaseGetter):
                     print ("not found")
                     return keys # too early: skip it
 
-        gatherfn = object.__getattribute__(loader, 'gather_modules')
-        mods, base = gatherfn(startchildj, depth=2)
+        if toadd:
+            # this is specifically seeking modules by name (child name)
+            # rather than walking the entire directory.  depth is set to 1
+            # for this task.
+            for childk in toadd:
+                fullchildj = "%s.%s" % (startchildj, childk)
+                mods, base = loader.gather_modules(fullchildj, depth=1,
+                                                   recursive=False)
+                cmods = mods.get(startchildj, {})
+                for childk in cmods.keys():
+                    if childk in keys:
+                        continue
+                    keys.add(childk)
+                    loader.add_submodules(self.j, fullchildj, cmods[childk])
+            return keys
+
+        # global variant (no "toadd") - equivalent to dir-walking
+        # starts at the parent, looking for everything.  it's quite
+        # expensive, it basically has to do a depth=2 search.
+
+        mods, base = loader.gather_modules(startchildj, depth=2)
         print ("check mod cache mods", mods)
         print ("check mod cache bas", base)
 
         # now check if the child modules found in the filesystem (across all
         # plugins) exist in the dir() listing, and if not, add it.
         # TODO: delay the actual adding until it's referenced?
-        childmods = mods.get(startchildj, {})
-        for childk in childmods.keys():
-            if toadd:
-                if childk not in toadd:
-                    continue
-            elif childk in keys:
+        cmods = mods.get(startchildj, {})
+        for childk in cmods.keys():
+            if childk in keys:
                 continue
             keys.add(childk)
             fullchildj = "%s.%s" % (startchildj, childk)
-            loader.add_submodules(self.j, fullchildj, childmods[childk])
+            loader.add_submodules(self.j, fullchildj, cmods[childk])
 
-        if not toadd:
-            self._child_mod_cache_checked = True
+        self._child_mod_cache_checked = True
         return keys
 
     def _add_late_init(self, fn, *args, **kwargs):
