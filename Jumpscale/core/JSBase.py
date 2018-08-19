@@ -439,7 +439,7 @@ class JSBase(BaseGetter):
         self._cache = cache
 
     @staticmethod
-    def _jsbase(basej, jname, derived_classes=None, dynamicname=True):
+    def _jsbase(basej, jname, derived_classes=None, dynamicname=None):
         """ dynamically creates a class which is derived from JSBase,
             that has the name "jname".  sets up a "super" caller
             (a dynamic __init__) that calls __init__ on the derived classes
@@ -475,10 +475,10 @@ class JSBase(BaseGetter):
             # e.g. derived_classes = [Jumpscale.core.Application.Application]
             inits['__jsbasekls__'] = derived_classes[0]
 
-        if dynamicname:
+        if dynamicname is None:
             newname = "JSBased" + jname
         else:
-            newname = jname
+            newname = dynamicname
         memberkls = type(newname,  tuple(classes), inits)
         return memberkls
 

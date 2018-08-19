@@ -5,7 +5,6 @@ import imp
 from . import JSExceptions
 from .ErrorConditionObject import ErrorConditionObject
 import colored_traceback
-from Jumpscale import j
 
 
 # def embed():
@@ -28,21 +27,17 @@ colored_traceback.add_hook(always=True)
 
 #     __repr__ = __str__
 
-JSBASE = j.application.jsbase_get_class()
+
+class _HaltException(Exception):
+    pass
 
 
-class HaltException(Exception, JSBASE):
-    def __init__(self):
-        JSBASE.__init__(self)
-
-
-class ErrorHandler(JSBASE):
+class ErrorHandler:
 
     __jslocation__ = "j.core.errorhandler"
     exceptions = JSExceptions
 
     def __init__(self, storeErrorConditionsLocal=True):
-        JSBASE.__init__(self)
         self._blacklist = None
         self.lastAction = ""
         self.setExceptHook()
@@ -53,7 +48,7 @@ class ErrorHandler(JSBASE):
 
     def _registerScrips(self):
         if self._scriptsInRedis is False:
-            luapath = "%s/errorhandling/eco.lua" % j.dirs.JSLIBDIR
+            luapath = "%s/errorhandling/eco.lua" % self.j.dirs.JSLIBDIR
             lua = self.j.sal.fs.fileGetContents(luapath)
             self._escalateToRedisFunction = self.j.core.db.register_script(lua)
             self._scriptsInRedis = True
@@ -133,7 +128,7 @@ class ErrorHandler(JSBASE):
         try:
             ##do something
         except Exception,e:
-            eco=j.errorhandler.parsePythonExceptionObject(e)
+            eco=self.j.errorhandler.parsePythonExceptionObject(e)
 
         eco is jumpscale internal format for an error
         next step could be to process the error objecect (eco) e.g. by eco.process()
@@ -351,7 +346,7 @@ class ErrorHandler(JSBASE):
             apps = ["sublime_text", "geany", "gedit", "kate"]
             for app in apps:
                 try:
-                    if j.system.unix.checkApplicationInstalled(app):
+                    if self.j.system.unix.checkApplicationInstalled(app):
                         editor = app
                         return editor
                 except BaseException:
@@ -362,11 +357,11 @@ class ErrorHandler(JSBASE):
 
             editor = None
             if self.j.core.platformtype.myplatform.isLinux:
-                #j.tools.console.echo("THIS ONLY WORKS WHEN GEDIT IS INSTALLED")
+                #self.j.tools.console.echo("THIS ONLY WORKS WHEN GEDIT IS INSTALLED")
                 editor = findEditorLinux()
             elif self.j.core.platformtype.myplatform.isWindows:
                 editorPath = self.j.sal.fs.joinPaths(
-                    j.dirs.JSBASEDIR, "apps", "wscite", "scite.exe")
+                    self.j.dirs.JSBASEDIR, "apps", "wscite", "scite.exe")
                 if self.j.sal.fs.exists(editorPath):
                     editor = editorPath
             tracefile = errorConditionObject.log2filesystem()
@@ -427,13 +422,15 @@ class ErrorHandler(JSBASE):
             # print "ERROR"
             # tracefile=eobject.log2filesystem()
             # print errorConditionObject
-            #j.tools.console.echo( "Tracefile in %s" % tracefile)
+            #self.j.tools.console.echo( "Tracefile in %s" % tracefile)
             self.j.application.stop(1)
 
     def halt(self, msg, eco):
         if eco is not None:
             eco = eco.__dict__
-        raise HaltException(msg, eco)
+        DH = self._jsbase(self.j, 'HaltException', [_HaltException,],
+                                  'HaltException')
+        raise DH(msg, eco)
 
     def raiseWarning(self, message, msgpub="", tags="", level=4):
         """
