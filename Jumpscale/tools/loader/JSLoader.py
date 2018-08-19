@@ -1,17 +1,13 @@
 import os
 import sys
-import importlib
 import json
 import fcntl
 import pystache
 from subprocess import Popen, PIPE
 from ...core.JSBase import JSBase
 
-import importlib
 import functools
 import types
-
-import importlib.util
 
 # for monkey-patching the j instance to add namespace... "things"
 patchers = [
@@ -83,6 +79,11 @@ def find_jslocation(line):
     prefix = line[:idx]
     return prefix.isspace()
 
+# gets down to the Jumpscale core9 subdirectory from here
+# (.../Jumpscale/tools/loader/JSLoader.py)
+top_level_path = os.path.dirname(os.path.abspath(__file__))
+top_level_path = os.path.dirname(top_level_path)
+top_level_path = os.path.dirname(top_level_path)
 
 def add_dynamic_instance(j, parent, child, module, kls):
     """ very similar to dynamic_generate, needs work
@@ -94,7 +95,19 @@ def add_dynamic_instance(j, parent, child, module, kls):
     else:
         parent = getattr(j, parent)
     if kls:
-        parent._add_instance(child, "Jumpscale." + module, kls, basej=j)
+        # assume here that modules are imported from Jumpscale *only*
+        # (*we're in boostrap mode so it's ok), and hand-create
+        # a full module path.
+        print (top_level_path)
+        if "." in module:
+            mname = "%s.py" % module.replace(".", "/")
+            fullpath = os.path.join(top_level_path, mname)
+        else:
+            mname = "%s/__init__.py" % module.replace(".", "/")
+            fullpath = os.path.join(top_level_path, mname)
+        print ("fullpath", fullpath)
+        parent._add_instance(child, "Jumpscale." + module, kls,
+                             fullpath, basej=j)
         print ("added", parent, child)
     else:
         walkfrom = j
@@ -399,7 +412,6 @@ def jumpscale_py_setup(location):
     # os.unlink(setup_script)
     os.chdir(cwd)
 
-
 class JSLoader():
 
     __jslocation__ = "j.tools.jsloader"
@@ -507,11 +519,7 @@ class JSLoader():
         #
         # related to issue #71
         #
-        currentpath = os.path.dirname(os.path.abspath(__file__))
-        currentpath = os.path.split(currentpath)[0]
-        currentpath = os.path.split(currentpath)[0]
-        #print("current path", currentpath)
-        defaultplugins = {'Jumpscale': currentpath}
+        defaultplugins = {'Jumpscale': top_level_path}
 
         plugins = self.j.tools.executorLocal.state.configGet('plugins',
                         defaultplugins)
@@ -568,7 +576,7 @@ class JSLoader():
         print ("subs", jname, sublist)
         importlocation = removeDirPart(
             modulename)[:-3].replace("//", "/").replace("/", ".")
-        print (importlocation)
+        print ("importlocation", importlocation)
         parent._add_instance(jname, importlocation, classname,
                              fullpath=modulename,
                              basej=basej)

@@ -177,11 +177,12 @@ class ModuleSetup(object):
     @property
     def kls(self):
         if self._kls is None:
-            # print ("about to get modulepath %s object %s path %s" % \
-            #        (self.modulepath, self.objectname, self.fullpath))
+            print ("about to get modulepath %s object %s path %s" % \
+                   (self.modulepath, self.objectname, self.fullpath))
 
-            module = importlib.import_module(self.modulepath)
-            module.__jsfullpath__ = self.modulepath
+            if True:
+                module = importlib.import_module(self.modulepath)
+                module.__jsfullpath__ = self.modulepath
 
             if False:  # hmmm..... still doesn't want to play ball....
                 parent_name = self.modulepath.rpartition('.')[0]
