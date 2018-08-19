@@ -1,26 +1,23 @@
-
-from Jumpscale import j # required due to recursive import loop
-
 import hashlib
 import binascii
+import zlib
 try:
     from pyblake2 import blake2b
 except:
     pass
 
-JSBASE = j.application.jsbase_get_class()
-class HashTool(JSBASE):
+class HashTool:
+
+    __jslocation__ = "j.data.hash"
 
     def __init__(self):
-        self.__jslocation__ = "j.data.hash"
-        JSBASE.__init__(self)
         self.__imports__ = "pyblake2"
 
     def hashDir(self, rootpath):
         """
         walk over all files, calculate md5 and of sorted list also calc md5 this is the resulting hash for the dir independant from time and other metadata (appart from path)
         """
-        paths = j.sal.fs.listFilesInDir(
+        paths = self.j.sal.fs.listFilesInDir(
             rootpath, recursive=True, followSymlinks=False)
         if paths == []:
             return "", ""
@@ -33,10 +30,10 @@ class HashTool(JSBASE):
         paths2.sort()
         out = ""
         for path2 in paths2:
-            realpath = j.sal.fs.joinPaths(rootpath, path2)
-            if not j.core.platformtype.myplatform.isWindows or not j.sal.windows.checkFileToIgnore(realpath):
+            realpath = self.j.sal.fs.joinPaths(rootpath, path2)
+            if not self.j.core.platformtype.myplatform.isWindows or not self.j.sal.windows.checkFileToIgnore(realpath):
                 #                print "realpath %s %s" % (rootpath,path2)
-                hhash = j.data.hash.md5(realpath)
+                hhash = self.j.data.hash.md5(realpath)
                 out += "%s|%s\n" % (hhash, path2)
                 import hashlib
         if isinstance(out, str):
@@ -56,8 +53,6 @@ class HashTool(JSBASE):
         """
         return binascii.hexlify(bin)
 
-
-import zlib
 
 
 def _hash_funcs(alg):
@@ -203,7 +198,7 @@ def blake2(s,digest_size=32):
     @returns: blake2 hash of the input value
     @rtype: number
     '''
-    if j.data.types.string.check(s):
+    if self.j.data.types.string.check(s):
         s = s.encode()
     h = blake2b(s,digest_size=digest_size)
     return h.hexdigest()
