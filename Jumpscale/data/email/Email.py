@@ -1,7 +1,7 @@
 import json
 from jumpscale import j
 from .Message import Message
-import Jumpscale.data.email.Sender as Sender
+from .Sender import Sender
 from .utils import get_msg_path, get_json_msg
 
 JSBASE = j.application.jsbase_get_class()
