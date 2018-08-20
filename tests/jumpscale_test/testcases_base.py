@@ -7,6 +7,25 @@ from datetime import timedelta
 from unittest import TestCase
 from nose.tools import TimeExpired
 import uuid
+import os
+import tempfile
+import shutil
+import atexit
+
+# XXX bit of a problem with jumpscale, some of the tests are
+# destructive (issue #33).  to avoid that, a temporary directory is created
+# here, and the HOSTCFGDIR environment variable set.  it's done here
+# GLOBALLY because jumpscale is, annoyingly, a global variable and a global
+# import *sigh*...
+
+tempdirpth = tempfile.mkdtemp()
+os.environ['HOSTDIR'] = tempdirpth
+os.environ['HOSTCFGDIR'] = os.path.join(tempdirpth, "cfg")
+
+def cleanup():
+    shutil.rmtree(tempdirpth)
+
+atexit.register(cleanup)
 
 def squash_dictionaries(d1, d2):
     from io import StringIO
