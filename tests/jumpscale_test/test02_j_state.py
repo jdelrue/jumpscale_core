@@ -236,6 +236,8 @@ class TestJSTATE(TestcasesBase):
         self.lg.info('check that new key, value were added to the state file')
         self.assertEqual(self.get_state().get(key), value)
 
+    @unittest.skip(
+        'https://github.com/threefoldtech/jumpscale_core/issues/33')
     def test008_state_reset(self):
         """ JS-015
         **Test Scenario:**
