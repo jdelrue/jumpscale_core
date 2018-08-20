@@ -2,7 +2,6 @@ import os
 import copy
 from .JSBaseClassConfig import JSBaseClassConfig
 from .JSBaseClassConfigs import JSBaseClassConfigs
-from .Config import Config
 import sys
 
 
@@ -34,7 +33,8 @@ class ConfigFactory(object):
         self._keyname = ""  # if set will overrule from the main js config file
         self._init = False
 
-        self.Config = self._jsbase("Config", [Config]) # dynamic config class
+        self.Config = self._jsbase("Config",
+            ['Jumpscale.tools.configmanager.Config.Config'])
 
     def reset(self, location=None, instance=None, force=False):
         """
@@ -264,8 +264,7 @@ class ConfigFactory(object):
 
         if ui is not None:
             jsobj.ui = ui
-        sc = self.Config(
-            instance=instance,
+        sc = self.Config( instance=instance,
             location=location,
             template=template,
             data=data)
