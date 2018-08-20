@@ -3,8 +3,9 @@ import time
 
 class Cache(object):
 
+    __jslocation__ = "j.data.datacache"
+
     def __init__(self):
-        self.__jslocation__ = "j.data.datacache"
         self._cache = {}
 
     def serialize(self, val):
@@ -16,7 +17,8 @@ class Cache(object):
         db = when none then will be in memory
         """
         if id not in self._cache:
-            DC = self._jsbase('CacheCategory', [CacheCategory])
+            DC = self._jsbase('CacheCategory',
+                ['Jumpscale.data.cache.Cache.CacheCategory'])
             self._cache[id] = DC( id=id, expiration=expiration, reset=reset)
         return self._cache[id]
 
