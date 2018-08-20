@@ -1,9 +1,9 @@
-from jumpscale import j
 import os
 import random
 import unittest
 from .testcases_base import TestcasesBase, squash_dictionaries
 
+from jumpscale import j
 
 class TestBASH(TestcasesBase):
 

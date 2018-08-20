@@ -19,8 +19,11 @@ import atexit
 # import *sigh*...
 
 tempdirpth = tempfile.mkdtemp()
+tempcfg = os.path.join(tempdirpth, "cfg")
 os.environ['HOSTDIR'] = tempdirpth
 os.environ['HOSTCFGDIR'] = os.path.join(tempdirpth, "cfg")
+os.environ['HOSTCFGDIR'] = tempcfg
+os.mkdir(tempcfg)
 
 def cleanup():
     shutil.rmtree(tempdirpth)
