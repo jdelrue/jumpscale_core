@@ -198,7 +198,7 @@ def blake2(s,digest_size=32):
     @returns: blake2 hash of the input value
     @rtype: number
     '''
-    if self.j.data.types.string.check(s):
+    if isinstance(s, str): # check string direct otherwise have to pass in j
         s = s.encode()
     h = blake2b(s,digest_size=digest_size)
     return h.hexdigest()
