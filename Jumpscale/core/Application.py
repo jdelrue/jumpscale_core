@@ -4,7 +4,6 @@ import atexit
 import struct
 from collections import namedtuple
 import psutil
-from .JSBase import JSBase
 
 
 class Application(object):
@@ -33,6 +32,17 @@ class Application(object):
     def logger(self, newlogger):
         self._logger = newlogger
 
+    @property
+    def JSBase(self):
+        """ gets JSBase without importing it (as we already have it,
+            right in this class instance)
+
+            mro returns the "method resolution order".  JSBase._jsbase
+            dynamically creates the JSBasedApplication class,
+            so we want the SECOND one
+        """
+        return type(self).mro()[1]
+
     def jsbase_get_class(self):
         """ DEEPRECATED.  dynamic loader now auto-creates a multiple
             inherited (dynamic) class which *includes* JSBase
@@ -41,11 +51,11 @@ class Application(object):
             # import class from somewhere, do NOT inherit from JSBase
             from .core import SomeClass
 
-            DSomeClass = self.j._jsbase('SomeClass', [SomeClass])
+            DSomeClass = self._jsbase('SomeClass', [SomeClass])
             instance = DSomeClass(self, path, otherargs)
 
         """
-        return JSBase
+        return self.JSBase
 
     def reset(self):
         """
