@@ -62,7 +62,7 @@ class Config(object):
         self.logger.debug("init getpath:%s" % self._path)
         if not self._path:
             self._path = self.j.sal.fs.joinPaths(
-                self.j.data.text.toStr(j.tools.configmanager.path),
+                self.j.data.text.toStr(self.j.tools.configmanager.path),
                 self.location, self.instance + '.toml')
             self.logger.debug("getpath:%s" % self._path)
         print("getpath:%s" % self._path)

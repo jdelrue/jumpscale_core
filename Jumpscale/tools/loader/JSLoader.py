@@ -151,6 +151,7 @@ def bootstrap_j(j, logging_enabled=False, filter=None, config_dir=None):
 
     # initialise
     j.tools.executorLocal.env_check_init() # OUCH! doubles file-accesses!
+    j.dirs.reload()
     j.logging.init()  # will reconfigure the logging to use the config file
     #j.core.db_reset() # used fake redis up to now: move to real if it exists
     j.__dynamic_ready__ = True # set global dynamic loading ON
