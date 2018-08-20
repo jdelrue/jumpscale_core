@@ -257,7 +257,8 @@ class BashFactory(object):
         """
         if executor==None then will be local
         """
-        DBash = self.j._jsbase('Bash', [Bash])
+        DBash = self._jsbase('Bash',
+                    ['Jumpscale.tools.bash.BashFactory.Bash'])
         b = DBash(executor=executor)
         return b
 
@@ -317,7 +318,8 @@ class Bash(object):
         path = path.replace("~", self.home)
         if not self.executor.exists(path):
             self.executor.file_write(path, "")
-        DProfile = self.j._jsbase('Profile', [Profile])
+        DProfile = self._jsbase('Profile',
+                    ['Jumpscale.tools.bash.BashFactory.Profile'])
         return DProfile(self, path)
 
     @property

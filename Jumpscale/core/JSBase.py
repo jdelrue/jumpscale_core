@@ -30,7 +30,7 @@ def _import_parent_recurse(mpathname, parent_name):
     if mpathname:
         _import_parent_recurse(mpathname, parent_name)
 
-def jspath_imoprt(modulepath, fullpath):
+def jspath_import(modulepath, fullpath):
 
     if False:
         module = importlib.import_module(modulepath)
@@ -237,7 +237,7 @@ class ModuleSetup(object):
             print ("about to get modulepath %s object %s path %s basej %s" % \
                    (self.modulepath, self.objectname, self.fullpath, self.basej))
 
-            module = jspath_imoprt(self.modulepath, self.fullpath)
+            module = jspath_import(self.modulepath, self.fullpath)
             kls = getattr(module, self.objectname)
             kls.__jsfullpath__ = self.fullpath
             kls.__jsmodulepath__ = self.modulepath
@@ -497,8 +497,10 @@ class JSBase(BaseGetter):
                 #plugins = basej.tools.executorLocal.state.configGet('plugins')
 
                 # ok finally get the module (and the class)
-                module = jspath_imoprt(mpathname, fullpath)
+                module = jspath_import(mpathname, fullpath)
                 kls = getattr(module, objectname)
+                kls.__jsfullpath__ = fullpath
+                kls.__jsmodulepath__ = mpathname
 
                 # aaaand replace the string with the actual class. wheww.
                 derived_classes[idx] = kls
