@@ -1,6 +1,3 @@
-from Jumpscale import j # required because jumpscale.py doesn't exist at setup
-
-
 class Config(object):
 
     def __init__(self, instance="main", location=None, template=None,
