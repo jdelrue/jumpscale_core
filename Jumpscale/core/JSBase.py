@@ -3,6 +3,69 @@ import os
 import sys
 import importlib.util
 
+def _import_parent_recurse(mpathname, parent_name):
+    if mpathname in sys.modules:
+        return
+    ppath = os.path.join(parent_name, "__init__.py")
+    print ("import recurse", mpathname, ppath, parent_name)
+    spec = importlib.util._find_spec_from_path(ppath, None)
+    print ("spec", spec)
+    if spec:
+        module = importlib.util.module_from_spec(spec)
+        print (
+            "adding module",
+            mpathname,
+            module,
+            mpathname not in sys.modules)
+        if mpathname not in sys.modules:
+            sys.modules[mpathname] = module
+    mpathname = mpathname.rpartition('.')[0]
+    parent_name = os.path.split(parent_name)[0]
+    if mpathname:
+        _import_parent_recurse(mpathname, parent_name)
+
+def jspath_imoprt(modulepath, fullpath):
+
+    if False:
+        module = importlib.import_module(modulepath)
+        module.__jsfullpath__ = modulepath
+
+    module = sys.modules.get(modulepath, None)
+    if not module:
+        parent_name = modulepath.rpartition('.')[0]
+        print ("parentname", modulepath, parent_name)
+        if parent_name:
+            spec = None
+            if False:
+                parentpath = os.path.split(fullpath)[0]
+                mpathname = modulepath.rpartition('.')[0]
+                _import_parent_recurse(mpathname, parentpath)
+                parent = __import__(parent_name, fromlist=['__path__'])
+                print ("parent", parent_name, parent)
+                spec = importlib.util._find_spec(modulepath,
+                                                 parent.__path__)
+            if spec is None:
+                spec = importlib.util.spec_from_file_location(
+                    modulepath,
+                    fullpath)
+        else:
+            print ("no parent")
+            # spec = importlib.util._find_spec_from_path(modulepath,
+            #                                        fullpath)
+            spec = importlib.util.spec_from_file_location(
+                modulepath,
+                fullpath)
+
+        print ("spec", spec, dir(spec))
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+
+    # print ("about to set fullpath %s modulepath %s object %s" % \
+    #        (fullpath, modulepath, objectname))
+    if module not in sys.modules:
+        sys.modules[modulepath] = module
+
+    return module
 
 class BaseGetter(object):
     """ this is a rather.. um... ugly class that has a list of module names
@@ -160,71 +223,13 @@ class ModuleSetup(object):
         self._kls = None
         self._child_props = {} # to be added after class is instantiated
 
-    def _import_parent_recurse(self, mpathname, parent_name):
-        if mpathname in sys.modules:
-            return
-        ppath = os.path.join(parent_name, "__init__.py")
-        print ("import recurse", mpathname, ppath, parent_name)
-        spec = importlib.util._find_spec_from_path(ppath, None)
-        print ("spec", spec)
-        if spec:
-            module = importlib.util.module_from_spec(spec)
-            print (
-                "adding module",
-                mpathname,
-                module,
-                mpathname not in sys.modules)
-            if mpathname not in sys.modules:
-                sys.modules[mpathname] = module
-        mpathname = mpathname.rpartition('.')[0]
-        parent_name = os.path.split(parent_name)[0]
-        if mpathname:
-            self._import_parent_recurse(mpathname, parent_name)
-
     @property
     def kls(self):
         if self._kls is None:
-            print ("about to get modulepath %s object %s path %s" % \
-                   (self.modulepath, self.objectname, self.fullpath))
+            print ("about to get modulepath %s object %s path %s basej %s" % \
+                   (self.modulepath, self.objectname, self.fullpath, self.basej))
 
-            if False:
-                module = importlib.import_module(self.modulepath)
-                module.__jsfullpath__ = self.modulepath
-
-            module = sys.modules.get(self.modulepath, None)
-            if not module:
-                parent_name = self.modulepath.rpartition('.')[0]
-                print ("parentname", self.modulepath, parent_name)
-                if parent_name:
-                    spec = None
-                    if False:
-                        parentpath = os.path.split(self.fullpath)[0]
-                        mpathname = self.modulepath.rpartition('.')[0]
-                        self._import_parent_recurse(mpathname, parentpath)
-                        parent = __import__(parent_name, fromlist=['__path__'])
-                        print ("parent", parent_name, parent)
-                        spec = importlib.util._find_spec(self.modulepath,
-                                                         parent.__path__)
-                    if spec is None:
-                        spec = importlib.util.spec_from_file_location(
-                            self.modulepath,
-                            self.fullpath)
-                else:
-                    print ("no parent")
-                    # spec = importlib.util._find_spec_from_path(self.modulepath,
-                    #                                        self.fullpath)
-                    spec = importlib.util.spec_from_file_location(
-                        self.modulepath,
-                        self.fullpath)
-
-                print ("spec", spec, dir(spec))
-                module = importlib.util.module_from_spec(spec)
-                spec.loader.exec_module(module)
-
-            # print ("about to set fullpath %s modulepath %s object %s" % \
-            #        (self.fullpath, self.modulepath, self.objectname))
-            if module not in sys.modules:
-                sys.modules[self.modulepath] = module
+            module = jspath_imoprt(self.modulepath, self.fullpath)
             kls = getattr(module, self.objectname)
             kls.__jsfullpath__ = self.fullpath
             kls.__jsmodulepath__ = self.modulepath
@@ -241,7 +246,7 @@ class ModuleSetup(object):
                 break
             if not jsbased:
                 #klsname = "%s.%s" % (self.modulepath, self.objectname)
-                kls = JSBase._jsbase(self.objectname, [kls], self.basej)
+                kls = JSBase._jsbase(self.objectname, [kls], basej=self.basej)
             self._kls = kls
         return self._kls
 
@@ -437,14 +442,15 @@ class JSBase(BaseGetter):
     def cache(self, cache):
         self._cache = cache
 
-    def _jsbase(self, jname, derived_classes=None, dynamicname=None,
+    @staticmethod
+    def _jsbase(jname, derived_classes=None, dynamicname=None,
                       basej=None):
         """ dynamically creates a class which is derived from JSBase,
             that has the name "jname".  sets up a "super" caller
             (a dynamic __init__) that calls __init__ on the derived classes
         """
         if basej is None:
-            basej = self.j
+            basej = global_j
         #print ("_jsbase", basej, jname, derived_classes)
         if derived_classes is None:
             derived_classes = []
@@ -487,7 +493,7 @@ class JSBase(BaseGetter):
     def _create_jsbase_instance(jname, basej=None, derived_classes=None):
         """ dynamically creates a class instance derived from JSBase,
         """
-        memberkls = basej._jsbase(jname, derived_classes, basej=basej)
+        memberkls = JSBase._jsbase(jname, derived_classes, basej=basej)
         instance = memberkls()
         if basej:
             instance.j = basej
