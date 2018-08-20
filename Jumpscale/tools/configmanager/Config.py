@@ -22,7 +22,7 @@ class Config(object):
 
         self.reset()
         if not self.j.sal.fs.exists(self.path):
-            self.j.sal.fs.createDir(j.sal.fs.getDirName(self.path))
+            self.j.sal.fs.createDir(self.j.sal.fs.getDirName(self.path))
             self.new = True
             dataOnFS = {}
         else:
