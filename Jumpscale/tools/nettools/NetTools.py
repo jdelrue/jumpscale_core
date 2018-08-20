@@ -5,15 +5,11 @@ import socket
 import netaddr
 import re
 
-from jumpscale import j
+class NetTools:
 
-
-
-JSBASE = j.application.jsbase_get_class()
-class NetTools(JSBASE):
+    __jslocation__ = "j.sal.nettools"
 
     def __init__(self):
-        self.__jslocation__ = "j.sal.nettools"
         self.__imports__ = "netaddr"
         JSBASE.__init__(self)
         self._windowsNetworkInfo = None
@@ -49,11 +45,11 @@ class NetTools(JSBASE):
         if ipaddr.strip() == "localhost":
             ipaddr = "127.0.0.1"
         port = int(port)
-        end = j.data.time.getTimeEpoch() + timeoutTotal
+        end = self.j.data.time.getTimeEpoch() + timeoutTotal
         while True:
-            if j.data.time.getTimeEpoch() > end:
+            if self.j.data.time.getTimeEpoch() > end:
                 return False
-            if j.sal.nettools.tcpPortConnectionTest(ipaddr, port, timeout=2):
+            if self.j.sal.nettools.tcpPortConnectionTest(ipaddr, port, timeout=2):
                 return True
 
     def waitConnectionTestStopped(self, ipaddr, port, timeout):
@@ -66,12 +62,12 @@ class NetTools(JSBASE):
         if ipaddr.strip() == "localhost":
             ipaddr = "127.0.0.1"
         port = int(port)
-        start = j.data.time.getTimeEpoch()
+        start = self.j.data.time.getTimeEpoch()
         now = start
         while now < start + timeout:
-            if j.sal.nettools.tcpPortConnectionTest(ipaddr, port, 1) is False:
+            if self.j.sal.nettools.tcpPortConnectionTest(ipaddr, port, 1) is False:
                 return True
-            now = j.data.time.getTimeEpoch()
+            now = self.j.data.time.getTimeEpoch()
         return False
 
     def checkUrlReachable(self, url, timeout=5):
@@ -90,11 +86,11 @@ class NetTools(JSBASE):
         try:
             code = urllib.request.urlopen(url, timeout=timeout).getcode()
         except Exception:
-            j.errorhandler.raiseOperationalCritical(
+            self.j.errorhandler.raiseOperationalCritical(
                 "Url %s is unreachable" % url)
 
         if code != 200:
-            j.errorhandler.raiseOperationalCritical(
+            self.j.errorhandler.raiseOperationalCritical(
                 "Url %s is unreachable" % url)
         return True
 
@@ -112,16 +108,16 @@ class NetTools(JSBASE):
         self.logger.debug(
             'Checking whether a service is running on port %d' % port)
 
-        if j.core.platformtype.myplatform.isLinux or j.core.platformtype.myplatform.isMac:
+        if self.j.core.platformtype.myplatform.isLinux or self.j.core.platformtype.myplatform.isMac:
             # netstat: n == numeric, -t == tcp, -u = udp, l= only listening, p = program
             command = "netstat -ntulp | grep ':%s '" % port
-            # raise j.exceptions.RuntimeError("stop")
-            exitcode, output, err = j.sal.process.execute(
+            # raise self.j.exceptions.RuntimeError("stop")
+            exitcode, output, err = self.j.sal.process.execute(
                 command, die=True, showout=False)
             return exitcode == 0
-        elif j.core.platformtype.myplatform.isMac():
+        elif self.j.core.platformtype.myplatform.isMac():
             command = "netstat -an -f inet"
-            exitcode, output, err = j.sal.process.execute(
+            exitcode, output, err = self.j.sal.process.execute(
                 command, die=True, showout=False)
             for line in output.splitlines():
                 match = re.match(".*\.%s .*\..*LISTEN" % port, line)
@@ -129,14 +125,14 @@ class NetTools(JSBASE):
                     return True
             # No ipv4? Then check ipv6
             command = "netstat -an -f inet6"
-            exitcode, output, err = j.sal.process.execute(
+            exitcode, output, err = self.j.sal.process.execute(
                 command, die=True, showout=False)
             for line in output.splitlines():
                 match = re.match(".*\.%s .*\..*LISTEN" % port, line)
                 if match:
                     return True
             return False
-        elif j.core.platformtype.myplatform.isWindows:
+        elif self.j.core.platformtype.myplatform.isWindows:
             # We use the GetTcpTable function of the Windows IP Helper API (iphlpapi.dll)
             #
             # Parameters of GetTcpTable:
@@ -178,8 +174,8 @@ class NetTools(JSBASE):
             retVal = ctypes.windll.iphlpapi.GetTcpTable(
                 ctypes.byref(tcpTable), ctypes.byref(dwSize), 0)
             if not retVal == 0:
-                raise j.exceptions.RuntimeError(
-                    "j.sal.nettools.checkListenPort: The function iphlpapi.GetTcpTable returned error number %s" %
+                raise self.j.exceptions.RuntimeError(
+                    "self.j.sal.nettools.checkListenPort: The function iphlpapi.GetTcpTable returned error number %s" %
                     retVal)
 
             # We can't iterate over the table the usual way as tcpTable.table isn't a Python table structure.
@@ -192,8 +188,8 @@ class NetTools(JSBASE):
             return False  # The port is not in a listening state.
 
         else:
-            raise j.exceptions.RuntimeError(
-                "This platform is not supported in j.sal.nettools.checkListenPort()")
+            raise self.j.exceptions.RuntimeError(
+                "This platform is not supported in self.j.sal.nettools.checkListenPort()")
 
     def getNameServer(self):
         """Returns the first nameserver IP found in /etc/resolv.conf
@@ -206,18 +202,18 @@ class NetTools(JSBASE):
         @raise NotImplementedError: Non-Unix systems
         @raise RuntimeError: No nameserver could be found in /etc/resolv.conf
         """
-        if j.core.platformtype.myplatform.isMac or j.core.platformtype.myplatform.isLinux:
-            nameserverlines = j.data.regex.findAll(
+        if self.j.core.platformtype.myplatform.isMac or self.j.core.platformtype.myplatform.isLinux:
+            nameserverlines = self.j.data.regex.findAll(
                 "^\s*nameserver\s+(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\s*$",
-                j.sal.fs.fileGetContents('/etc/resolv.conf'))
+                self.j.sal.fs.fileGetContents('/etc/resolv.conf'))
 
             if not nameserverlines:
-                raise j.exceptions.RuntimeError(
+                raise self.j.exceptions.RuntimeError(
                     'No nameserver found in /etc/resolv.conf')
 
             nameserverline = nameserverlines[0]
             return nameserverline.strip().split(' ')[-1]
-        elif j.core.platformtype.myplatform.isWindows:
+        elif self.j.core.platformtype.myplatform.isWindows:
             import wmi
             w = wmi.WMI()
             for nicCfg in w.Win32_NetworkAdapterConfiguration():
@@ -228,7 +224,7 @@ class NetTools(JSBASE):
                 'This function is only supported on Mac/unix/Windows systems')
 
     def getIpAddresses(self, up=False):
-        if j.core.platformtype.myplatform.isLinux or j.core.platformtype.myplatform.isMac:
+        if self.j.core.platformtype.myplatform.isLinux or self.j.core.platformtype.myplatform.isMac:
             result = {'ip': [],'ip6': []}
             for ipinfo in self.getNetworkInfo():
                 if ipinfo!=[] : # if empty array skip
@@ -236,7 +232,7 @@ class NetTools(JSBASE):
                     result['ip6'].extend(ipinfo['ip6'])
             return result
         else:
-            raise j.exceptions.RuntimeError("Not supported on this platform!")
+            raise self.j.exceptions.RuntimeError("Not supported on this platform!")
 
     def checkIpAddressIsLocal(self, ipaddr):
         ips = self.getIpAddresses()
@@ -254,17 +250,17 @@ class NetTools(JSBASE):
         """
         regex = ''
         output = ''
-        if j.core.platformtype.myplatform.isLinux or j.core.platformtype.myplatform.isMac:
+        if self.j.core.platformtype.myplatform.isLinux or self.j.core.platformtype.myplatform.isMac:
             return [nic['name'] for nic in self.getNetworkInfo()]
-        # elif j.core.platformtype.myplatform.isSolaris():
-        #     exitcode, output, err = j.sal.process.execute(
+        # elif self.j.core.platformtype.myplatform.isSolaris():
+        #     exitcode, output, err = self.j.sal.process.execute(
         #         "ifconfig -a", showout=False)
         #     if up:
         #         regex = "^([\w:]+):\sflag.*<.*UP.*>.*$"
         #     else:
         #         regex = "^([\w:]+):\sflag.*$"
         #     nics = set(re.findall(regex, output, re.MULTILINE))
-        #     exitcode, output, err = j.sal.process.execute(
+        #     exitcode, output, err = self.j.sal.process.execute(
         #         "dladm show-phys", showout=False)
         #     lines = output.splitlines()
         #     for line in lines[1:]:
@@ -275,35 +271,35 @@ class NetTools(JSBASE):
         #         else:
         #             nics.add(nic[0])
         #     return list(nics)
-        elif j.core.platformtype.myplatform.isWindows:
+        elif self.j.core.platformtype.myplatform.isWindows:
             import wmi
             w = wmi.WMI()
             return ["%s:%s" % (ad.index, str(ad.NetConnectionID))
                     for ad in w.Win32_NetworkAdapter() if ad.PhysicalAdapter and ad.NetEnabled]
         else:
-            raise j.exceptions.RuntimeError("Not supported on this platform!")
+            raise self.j.exceptions.RuntimeError("Not supported on this platform!")
 
     def getNicType(self, interface):
         """ Get Nic Type on a certain interface
         @param interface: Interface to determine Nic type on
         @raise RuntimeError: On linux if ethtool is not present on the system
         """
-        if j.core.platformtype.myplatform.isLinux :
+        if self.j.core.platformtype.myplatform.isLinux :
             output = ''
-            if j.sal.fs.exists("/sys/class/net/%s" % interface):
-                output = j.sal.fs.fileGetContents(
+            if self.j.sal.fs.exists("/sys/class/net/%s" % interface):
+                output = self.j.sal.fs.fileGetContents(
                     "/sys/class/net/%s/type" % interface)
             if output.strip() == "32":
                 return "INFINIBAND"
             else:
-                if j.sal.fs.exists('/proc/net/vlan/%s' % (interface)):
+                if self.j.sal.fs.exists('/proc/net/vlan/%s' % (interface)):
                     return 'VLAN'
-                exitcode, output, err = j.sal.process.execute(
+                exitcode, output, err = self.j.sal.process.execute(
                     "which ethtool",showout=False)
                 if exitcode != 0:
-                    raise j.exceptions.RuntimeError(
+                    raise self.j.exceptions.RuntimeError(
                         "Ethtool is not installed on this system!")
-                exitcode, output, err = j.sal.process.execute(
+                exitcode, output, err = self.j.sal.process.execute(
                     "ethtool -i %s" % (interface),showout=False)
                 if exitcode != 0:
                     return 'VIRTUAL'
@@ -314,18 +310,18 @@ class NetTools(JSBASE):
                 if match and match.group("driver") == "bridge":
                     return "VLAN"
                 return "ETHERNET_GB"
-        elif j.core.platformtype.myplatform.isMac:
+        elif self.j.core.platformtype.myplatform.isMac:
             command = "ifconfig %s" % interface
-            exitcode, output, err = j.sal.process.execute(
+            exitcode, output, err = self.j.sal.process.execute(
                 command, showout=False, die=False)
             if exitcode != 0:
                 # temporary plumb the interface to lookup its mac
                 self.logger.warning(
                     "Interface %s is down. Temporarily plumbing it to be able to lookup its nic type" % interface)
-                j.sal.process.execute('%s plumb' % command, showout=False)
-                exitcode, output, err = j.sal.process.execute(
+                self.j.sal.process.execute('%s plumb' % command, showout=False)
+                exitcode, output, err = self.j.sal.process.execute(
                     command, showout=False)
-                j.sal.process.execute('%s unplumb' % command, showout=False)
+                self.j.sal.process.execute('%s unplumb' % command, showout=False)
             if output.find("ipib") >= 0:
                 return "INFINIBAND"
             else:
@@ -343,8 +339,8 @@ class NetTools(JSBASE):
                         return "VIRTUAL"
                     else:
                         return "ETHERNET_GB"
-        elif j.core.platformtype.myplatform.isWindows:
-            if j.sal.nettools.getVlanTagFromInterface(interface) > 0:
+        elif self.j.core.platformtype.myplatform.isWindows:
+            if self.j.sal.nettools.getVlanTagFromInterface(interface) > 0:
                 return "VLAN"
             else:
                 import wmi
@@ -361,40 +357,40 @@ class NetTools(JSBASE):
                 else:
                     return "UNKNOWN"
         else:
-            raise j.exceptions.RuntimeError("Not supported on this platform!")
+            raise self.j.exceptions.RuntimeError("Not supported on this platform!")
 
     def getVlanTag(self, interface, nicType=None):
         """Get VLan tag on the specified interface and vlan type"""
         if nicType is None:
-            nicType = j.sal.nettools.getNicType(interface)
+            nicType = self.j.sal.nettools.getNicType(interface)
         if nicType == "INFINIBAND" or nicType == "ETHERNET_GB" or nicType == "VIRTUAL":
             return "0"
-        if j.core.platformtype.myplatform.isLinux:
+        if self.j.core.platformtype.myplatform.isLinux:
             # check if its a vlan
             vlanfile = '/proc/net/vlan/%s' % (interface)
-            if j.sal.fs.exists(vlanfile):
-                return j.sal.nettools.getVlanTagFromInterface(interface)
+            if self.j.sal.fs.exists(vlanfile):
+                return self.j.sal.nettools.getVlanTagFromInterface(interface)
             bridgefile = '/sys/class/net/%s/brif/' % (interface)
-            for brif in j.sal.fs.listDirsInDir(bridgefile):
-                brif = j.sal.fs.getBaseName(brif)
+            for brif in self.j.sal.fs.listDirsInDir(bridgefile):
+                brif = self.j.sal.fs.getBaseName(brif)
                 vlanfile = '/proc/net/vlan/%s' % (brif)
-                if j.sal.fs.exists(vlanfile):
-                    return j.sal.nettools.getVlanTagFromInterface(brif)
+                if self.j.sal.fs.exists(vlanfile):
+                    return self.j.sal.nettools.getVlanTagFromInterface(brif)
             return "0"
-        elif j.core.platformtype.myplatform.isMac or j.core.platformtype.myplatform.isWindows:
-            return j.sal.nettools.getVlanTagFromInterface(interface)
+        elif self.j.core.platformtype.myplatform.isMac or self.j.core.platformtype.myplatform.isWindows:
+            return self.j.sal.nettools.getVlanTagFromInterface(interface)
         else:
-            raise j.exceptions.RuntimeError("Not supported on this platform!")
+            raise self.j.exceptions.RuntimeError("Not supported on this platform!")
 
     def getVlanTagFromInterface(self, interface):
         """Get vlan tag from interface
         @param interface: string interface to get vlan tag on
         @rtype: integer representing the vlan tag
         """
-        if j.core.platformtype.myplatform.isLinux:
+        if self.j.core.platformtype.myplatform.isLinux:
             vlanfile = '/proc/net/vlan/%s' % (interface)
-            if j.sal.fs.exists(vlanfile):
-                content = j.sal.fs.fileGetContents(vlanfile)
+            if self.j.sal.fs.exists(vlanfile):
+                content = self.j.sal.fs.fileGetContents(vlanfile)
                 match = re.search("^%s\s+VID:\s+(?P<vlantag>\d+)\s+.*$" %
                                   (interface), content, re.MULTILINE)
                 if match:
@@ -405,7 +401,7 @@ class NetTools(JSBASE):
             else:
                 raise ValueError(
                     "This is not a vlaninterface %s" % (interface))
-        elif j.core.platformtype.myplatform.isMac:
+        elif self.j.core.platformtype.myplatform.isMac:
             # work with interfaces which are subnetted on vlans eq e1000g5000:1
             interface = interface.split(':')[0]
             match = re.search("^\w+?(?P<interfaceid>\d+)$",
@@ -414,10 +410,10 @@ class NetTools(JSBASE):
                 raise ValueError(
                     "This is not a vlaninterface %s" % (interface))
             return int(match.group('interfaceid')) / 1000
-        elif j.core.platformtype.myplatform.isWindows:
+        elif self.j.core.platformtype.myplatform.isWindows:
             import wmi
             vir = wmi.WMI(namespace='virtualization')
-            mac = j.sal.nettools.getMacAddress(interface)
+            mac = self.j.sal.nettools.getMacAddress(interface)
             mac = mac.replace(":", "")
             dynFor = vir.Msvm_DynamicForwardingEntry(elementname=mac)
             return dynFor[0].VlanId if dynFor else 0
@@ -429,13 +425,13 @@ class NetTools(JSBASE):
         try:
             s.connect((ip, port))
         except BaseException:
-            raise j.exceptions.RuntimeError(
+            raise self.j.exceptions.RuntimeError(
                 "Cannot connect to %s:%s, check network configuration" % (ip, port))
         return s.getsockname()[0]
 
     def getDefaultIPConfig(self):
         ipaddr = self.getReachableIpAddress("8.8.8.8", 22)
-        for item in j.sal.nettools.getNetworkInfo():
+        for item in self.j.sal.nettools.getNetworkInfo():
             for ipaddr2 in item["ip"]:
                 # print "%s %s"%(ipaddr2,ipaddr)
                 if str(ipaddr) == str(ipaddr2):
@@ -443,7 +439,7 @@ class NetTools(JSBASE):
 
     def bridgeExists(self, bridgename):
         cmd = "brctl show"
-        rc, out, err = j.sal.process.execute(cmd, showout=False)
+        rc, out, err = self.j.sal.process.execute(cmd, showout=False)
         for line in out.split("\n"):
             if line.lower().startswith(bridgename):
                 return True
@@ -452,7 +448,7 @@ class NetTools(JSBASE):
     def resetDefaultGateway(self, gw):
         def gwexists():
             cmd = "ip r"
-            rc, out, err = j.sal.process.execute(cmd, showout=False)
+            rc, out, err = self.j.sal.process.execute(cmd, showout=False)
             for line in out.split("\n"):
                 if line.lower().startswith("default"):
                     return True
@@ -460,7 +456,7 @@ class NetTools(JSBASE):
 
         def removegw():
             cmd = "ip route del 0/0"
-            rc, out, err = j.sal.process.execute(
+            rc, out, err = self.j.sal.process.execute(
                 cmd, showout=False, ignoreErrorOutput=False, die=False)
 
         removegw()
@@ -471,10 +467,10 @@ class NetTools(JSBASE):
             self.logger.debug("try to delete def gw")
             counter += 1
             if counter > 10:
-                raise j.exceptions.RuntimeError("cannot delete def gw")
+                raise self.j.exceptions.RuntimeError("cannot delete def gw")
 
         cmd = 'route add default gw %s' % gw
-        j.sal.process.execute(cmd)
+        self.j.sal.process.execute(cmd)
 
 
 
@@ -499,23 +495,23 @@ class NetTools(JSBASE):
 
         """
         #TODO: use caching feature from jumpscale to keep for e.g. 1 min, if not usecache needs to reset cache to make sure we load again
-        return j.tools.prefab.local.system.net.getInfo(device=device)
+        return self.j.tools.prefab.local.system.net.getInfo(device=device)
         
 
     def getIpAddress(self, interface):
         """Return a list of ip addresses and netmasks assigned to this interface"""
 
         #TODO: use getNetworkInfo to return info
-        if j.core.platformtype.myplatform.isLinux or j.core.platformtype.myplatform.isMac:
+        if self.j.core.platformtype.myplatform.isLinux or self.j.core.platformtype.myplatform.isMac:
             output =list()
-            output = j.tools.prefab.local.system.net.getInfo()
+            output = self.j.tools.prefab.local.system.net.getInfo()
             result = {'ip': [],'ip6': []}
             for nic in output:
                 if nic['name']== interface:
                     result['ip'].append(nic['ip'])
                     result['ip6'].append(nic['ip6'])
                     return result
-        elif j.core.platformtype.myplatform.isWindows:
+        elif self.j.core.platformtype.myplatform.isWindows:
             import wmi
             ipv4Pattern = '^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$'
 
@@ -531,53 +527,53 @@ class NetTools(JSBASE):
                             [str(nic.IPAddress[x]), str(nic.IPSubnet[x]), ''])
             return result
         else:
-            raise j.exceptions.RuntimeError(
-                "j.sal.nettools.getIpAddress not supported on this platform")
+            raise self.j.exceptions.RuntimeError(
+                "self.j.sal.nettools.getIpAddress not supported on this platform")
 
     def getMacAddress(self, interface):
         """Return the MAC address of this interface"""
         if interface not in self.getNics():
             raise LookupError(
                 "Interface %s not found on the system" % interface)
-        if j.core.platformtype.myplatform.isLinux or j.core.platformtype.myplatform.isMac:               
+        if self.j.core.platformtype.myplatform.isLinux or self.j.core.platformtype.myplatform.isMac:               
             output =list()
-            output = j.tools.prefab.local.system.net.getInfo()
+            output = self.j.tools.prefab.local.system.net.getInfo()
             result=list()
             for nic in output:
                 if nic['name']== interface:
                     result.append(nic['mac'])
                     break
             return result
-        elif j.core.platformtype.myplatform.isSolaris():
+        elif self.j.core.platformtype.myplatform.isSolaris():
             # check if interface is a logical inteface ex: bge0:1
             tokens = interface.split(':')
             if len(tokens) > 1:
                 interface = tokens[0]
             command = "ifconfig %s" % interface
-            exitcode, output, err = j.sal.process.execute(
+            exitcode, output, err = self.j.sal.process.execute(
                 command, showout=False, die=False)
             if exitcode != 0:
                 # temporary plumb the interface to lookup its mac
                 self.logger.warning(
                     "Interface %s is down. Temporarily plumbing it to be able to lookup its MAC address" % interface)
-                j.sal.process.execute('%s plumb' % command, showout=False)
-                exitcode, output, err = j.sal.process.execute(
+                self.j.sal.process.execute('%s plumb' % command, showout=False)
+                exitcode, output, err = self.j.sal.process.execute(
                     command, showout=False, die=False)
-                j.sal.process.execute('%s unplumb' % command, showout=False)
+                self.j.sal.process.execute('%s unplumb' % command, showout=False)
             if exitcode == 0:
                 match = re.search(
                     r"^\s*(ipib|ether)\s*(?P<mac>\S*)", output, re.MULTILINE)
                 if match:
                     return self.pm_formatMacAddress(match.group("mac"))
             return None
-        elif j.core.platformtype.myplatform.isWindows:
+        elif self.j.core.platformtype.myplatform.isWindows:
             import wmi
             w = wmi.WMI()
             NICIndex = interface.split(":")[0]
             return str(w.Win32_NetworkAdapterConfiguration(index=NICIndex)[0].MACAddress)
         else:
-            raise j.exceptions.RuntimeError(
-                "j.sal.nettools.getMacAddress not supported on this platform")
+            raise self.j.exceptions.RuntimeError(
+                "self.j.sal.nettools.getMacAddress not supported on this platform")
 
     def pm_formatMacAddress(self, macaddress):
         macpieces = macaddress.strip().split(':')
@@ -609,11 +605,11 @@ class NetTools(JSBASE):
         @return: The MAC address corresponding with the given IP
         @raise: RuntimeError if no MAC found for IP or if platform is not suppported
         """
-        if j.core.platformtype.myplatform.isLinux or j.core.platformtype.myplatform.isMac :
+        if self.j.core.platformtype.myplatform.isLinux or self.j.core.platformtype.myplatform.isMac :
             IpAdress = list()
             IpAdress.append(ipaddress)
             output =list()
-            output = j.tools.prefab.local.system.net.getInfo()
+            output = self.j.tools.prefab.local.system.net.getInfo()
             result=list()
 
             for nic in output:
@@ -625,8 +621,8 @@ class NetTools(JSBASE):
                     return result
             return "no MAC found for %s" %ipaddress
         else:
-            raise j.exceptions.RuntimeError(
-                "j.sal.nettools.getMacAddressForIp not supported on this platform")
+            raise self.j.exceptions.RuntimeError(
+                "self.j.sal.nettools.getMacAddressForIp not supported on this platform")
 
     def getHostname(self):
         """Get hostname of the machine
@@ -634,19 +630,19 @@ class NetTools(JSBASE):
         return socket.gethostname()
 
     def isNicConnected(self, interface):
-        if j.core.platformtype.myplatform.isLinux:
+        if self.j.core.platformtype.myplatform.isLinux:
             carrierfile = '/sys/class/net/%s/carrier' % (interface)
-            if not j.sal.fs.exists(carrierfile):
+            if not self.j.sal.fs.exists(carrierfile):
                 return False
             try:
-                return int(j.sal.fs.fileGetContents(carrierfile)) != 0
+                return int(self.j.sal.fs.fileGetContents(carrierfile)) != 0
             except IOError:
                 return False
-        elif j.core.platformtype.myplatform.isMac:
+        elif self.j.core.platformtype.myplatform.isMac:
             command = "dladm show-dev -p -o STATE %s" % interface
             expectResults = ['up', 'unknown']
 
-            exitcode, output, err = j.sal.process.execute(
+            exitcode, output, err = self.j.sal.process.execute(
                 command, die=False, showout=False)
             if exitcode != 0:
                 return False
@@ -664,19 +660,19 @@ class NetTools(JSBASE):
         """Get default router
         @rtype: string representing the router interface
         """
-        if j.core.platformtype.myplatform.isLinux:
+        if self.j.core.platformtype.myplatform.isLinux:
             command = "ip r | grep 'default' | awk {'print $3'}"
-            exitcode, output, err = j.sal.process.execute(
+            exitcode, output, err = self.j.sal.process.execute(
                 command, showout=False)
             return output.strip()
-        elif j.core.platformtype.myplatform.isMac:
+        elif self.j.core.platformtype.myplatform.isMac:
             command = "netstat -rn | grep default | awk '{print $2}'"
-            exitcode, output, err = j.sal.process.execute(
+            exitcode, output, err = self.j.sal.process.execute(
                 command, showout=False)
             return output.strip()
         else:
-            raise j.exceptions.RuntimeError(
-                "j.sal.nettools.getDefaultRouter not supported on this platform")
+            raise self.j.exceptions.RuntimeError(
+                "self.j.sal.nettools.getDefaultRouter not supported on this platform")
 
     def validateIpAddress(self, ipaddress):
         """Validate wether this ip address is a valid ip address of 4 octets ranging from 0 to 255 or not
@@ -720,7 +716,7 @@ class NetTools(JSBASE):
         @rtype: True if machine is pingable, False otherwise
         """
         if not allowhostname:
-            if not j.sal.nettools.validateIpAddress(ip):
+            if not self.j.sal.nettools.validateIpAddress(ip):
                 raise ValueError('ERROR: invalid ip address passed:[%s]' % ip)
 
         self.logger.debug('pingMachine %s, timeout=%d, recheck=%s' %
@@ -729,23 +725,23 @@ class NetTools(JSBASE):
         start = time.time()
         pingsucceeded = False
         while time.time() - start < pingtimeout:
-            # if j.core.platformtype.myplatform.isSolaris():
+            # if self.j.core.platformtype.myplatform.isSolaris():
             #     #ping -c 1 IP 1
             #     #Last 1 is timeout in seconds
-            #     exitcode, output, err = j.sal.process.execute(
+            #     exitcode, output, err = self.j.sal.process.execute(
             #                         'ping -c 1 %s 1' % ip, False, False)
-            if j.core.platformtype.myplatform.isLinux:
+            if self.j.core.platformtype.myplatform.isLinux:
                 # ping -c 1 -W 1 IP
-                exitcode, output, err = j.sal.process.execute(
+                exitcode, output, err = self.j.sal.process.execute(
                     'ping -c 1 -W 1 -w 1 %s' % ip, False, True)
-            elif j.core.platformtype.myplatform.isMac:
-                exitcode, output, err = j.sal.process.execute(
+            elif self.j.core.platformtype.myplatform.isMac:
+                exitcode, output, err = self.j.sal.process.execute(
                     'ping -c 1 %s' % ip, False, True)
-            elif j.core.platformtype.myplatform.isWindows:
-                exitcode, output, err = j.sal.process.execute(
+            elif self.j.core.platformtype.myplatform.isWindows:
+                exitcode, output, err = self.j.sal.process.execute(
                     'ping -w %d %s' % (pingtimeout, ip), False, True)
             else:
-                raise j.exceptions.RuntimeError('Platform is not supported')
+                raise self.j.exceptions.RuntimeError('Platform is not supported')
             if exitcode == 0:
                 pingsucceeded = True
                 self.logger.debug('Machine with ip:[%s] is pingable' % ip)
@@ -762,16 +758,16 @@ class NetTools(JSBASE):
         or if the target file checksum doesn't match the expected checksum.
         """
 
-        if j.sal.fs.exists(destination_file_path):
+        if self.j.sal.fs.exists(destination_file_path):
 
             if md5_checksum:
 
-                if j.data.hash.md5(destination_file_path) == md5_checksum:
+                if self.j.data.hash.md5(destination_file_path) == md5_checksum:
                     # File exists locally and its checksum checks out!
                     return
 
                 # On invalid checksum, delete the local file
-                j.sal.fs.remove(destination_file_path)
+                self.j.sal.fs.remove(destination_file_path)
 
             else:
                 # It exists but no checksum is provided so any existence of the local file suffices.
@@ -782,8 +778,8 @@ class NetTools(JSBASE):
                       username=http_auth_username, passwd=http_auth_password)
 
         # Now check if the downloaded file matches the provided checksum
-        if md5_checksum and not j.data.hash.md5(destination_file_path) == md5_checksum:
-            raise j.exceptions.RuntimeError(
+        if md5_checksum and not self.j.data.hash.md5(destination_file_path) == md5_checksum:
+            raise self.j.exceptions.RuntimeError(
                 'The provided MD5 checksum did not match that of a freshly-downloaded file!')
 
     def download(self, url, localpath, username=None, passwd=None, overwrite=True):
@@ -805,10 +801,10 @@ class NetTools(JSBASE):
         filename = ''
         if localpath == '-':
             filename = '-'
-        if j.sal.fs.isDir(localpath):
-            filename = j.sal.fs.joinPaths(localpath, j.sal.fs.getBaseName(url))
+        if self.j.sal.fs.isDir(localpath):
+            filename = self.j.sal.fs.joinPaths(localpath, self.j.sal.fs.getBaseName(url))
         else:
-            if j.sal.fs.isDir(j.sal.fs.getDirName(localpath)):
+            if self.j.sal.fs.isDir(self.j.sal.fs.getDirName(localpath)):
                 filename = localpath
             else:
                 raise ValueError('Local path is an invalid path')
@@ -828,18 +824,18 @@ class NetTools(JSBASE):
 
             def prompt_user_passwd(self, host, realm):
                 if not self._user or not self._passwd:
-                    raise j.exceptions.RuntimeError(
+                    raise self.j.exceptions.RuntimeError(
                         'Server requested authentication but nothing was given')
                 if not self._promptcalled:
                     self._promptcalled = True
                     return self._user, self._passwd
-                raise j.exceptions.RuntimeError(
+                raise self.j.exceptions.RuntimeError(
                     'Could not authenticate with the given authentication user:%s and password:%s' %
                     (self._user, self._passwd))
 
         urlopener = myURLOpener(username, passwd)
 
-        if not j.sal.fs.exists(filename):
+        if not self.j.sal.fs.exists(filename):
             overwrite = True
 
         if overwrite:
@@ -860,18 +856,18 @@ class NetTools(JSBASE):
         Retrieve the dns domain name
         """
         cmd = ""
-        if j.core.platformtype.myplatform.isLinux:
+        if self.j.core.platformtype.myplatform.isLinux:
             cmd = "dnsdomainname"
 
-        elif j.core.platformtype.myplatform.isMac :
+        elif self.j.core.platformtype.myplatform.isMac :
             cmd = "domainname"
 
         if not cmd:
             raise PlatformNotSupportedError(
                 'Platform "%s" is not supported. Command is only supported on Linux and Solaris' %
-                j.core.platformtype.name)
+                self.j.core.platformtype.name)
 
-        _, domainName, _ = j.sal.process.execute(cmd, showout=False)
+        _, domainName, _ = self.j.sal.process.execute(cmd, showout=False)
 
         if not domainName:
             raise ValueError("There's no Domain Name") 
@@ -885,7 +881,7 @@ class NetTools(JSBASE):
         Return all interfaces that has this ifname
         """
         if device not in self.getNics():
-            raise j.exceptions.RuntimeError('Invalid NIC')
+            raise self.j.exceptions.RuntimeError('Invalid NIC')
 
         if inet not in ['static', 'dhcp']:
             raise ValueError('Invalid inet .. use either dhcp or static')
@@ -893,7 +889,7 @@ class NetTools(JSBASE):
         if inet == 'static' and (not ip or not netmask):
             raise ValueError('ip, and netmask, are required in static inet.')
 
-        file = j.tools.path.get('/etc/network/interfaces.d/%s' % device)
+        file = self.j.tools.path.get('/etc/network/interfaces.d/%s' % device)
         content = 'auto %s\n' % device
 
         if inet == 'dhcp':
@@ -913,17 +909,14 @@ class NetTools(JSBASE):
     def commit(self, device=None):
         #- make sure loopback exist
         content = 'auto lo\niface lo inet loopback\n'
-        j.tools.path.get('/etc/network/interfaces.d/lo').write_text(content)
+        self.j.tools.path.get('/etc/network/interfaces.d/lo').write_text(content)
 
-        j.sal.process.execute('service networking restart')
+        self.j.sal.process.execute('service networking restart')
         if device:
             self.logger.info('Restarting interface %s' % device)
-            j.sal.process.execute('ifdown %s && ifup %s' % (device, device))
+            self.j.sal.process.execute('ifdown %s && ifup %s' % (device, device))
         self.logger.info('DONE')
 
-class NetworkZone(JSBASE):
-
-    def __init__(self):
-        JSBASE.__init__(self)
-
+# XXX TODO: make dynamic-js-based.  doesn't seem to be used anywhere?
+class NetworkZone:
     ipRanges = None  # array(IPRange)
