@@ -67,7 +67,7 @@ class Application(object):
         self.reload()
 
     def reload(self):
-        self.j.tools.jsloader.generate()
+        self.j.tools.loader.generate()
 
     @property
     def debug(self):
