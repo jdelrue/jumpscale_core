@@ -48,6 +48,9 @@ class RedisFactory(JSBASE):
             ssl=False,
             ssl_certfile=None,
             ssl_keyfile=None,
+            sec_timeout=2,
+            ping=True,
+            die=True,
             **args):
         """
         get an instance of redis client, store it in cache so we could easily retrieve it later
@@ -73,15 +76,30 @@ class RedisFactory(JSBASE):
 
         if key not in self._redis or not fromcache:
             if unixsocket is None:
-                self._redis[key] = Redis(ipaddr, port, password=password, ssl=ssl, ssl_certfile=ssl_certfile, ssl_keyfile=ssl_keyfile, **args)
+                self._redis[key] = Redis(ipaddr, port, password=password, ssl=ssl, ssl_certfile=ssl_certfile, \
+                                         ssl_keyfile=ssl_keyfile, socket_timeout=sec_timeout,**args)
             else:
-                self._redis[key] = Redis(unix_socket_path=unixsocket, password=password,  ssl=ssl, ssl_certfile=ssl_certfile, ssl_keyfile=ssl_keyfile, **args)
+                self._redis[key] = Redis(unix_socket_path=unixsocket,
+                                         socket_timeout=sec_timeout, password=password,
+                                         ssl=ssl, ssl_certfile=ssl_certfile, ssl_keyfile=ssl_keyfile, **args)
 
         if ardb_patch:
             self._ardb_patch(self._redis[key])
         
         if set_patch:
             self._set_patch(self._redis[key])
+
+        if ping:
+            try:
+                res = self._redis[key].ping()
+            except Exception as e:
+                if "Timeout" in str(e) or "Connection refused" in str(e):
+                    if die==False:
+                        return None
+                    else:
+                        raise RuntimeError("Redis on %s:%s did not answer"%(ipaddr,port))
+                else:
+                    raise e
 
         return self._redis[key]
 
