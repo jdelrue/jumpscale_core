@@ -1,12 +1,8 @@
-
-from Jumpscale import j
 import random
 # import sys
 import string
 
-JSBASE = j.application.jsbase_get_class()
-
-class IDGenerator(JSBASE):
+class IDGenerator:
     """
     generic provider of id's
     lives at j.data.idgenerator
@@ -39,8 +35,8 @@ class IDGenerator(JSBASE):
         """
         key = "incrementor_%s" % incrTypeId
         if reset:
-            j.core.db.delete(key)
-        return j.core.db.incr(key)
+            self.j.core.db.delete(key)
+        return self.j.core.db.incr(key)
 
     def getID(self, incrTypeId, objectUniqueSeedInfo, reset=False):
         """
@@ -48,12 +44,12 @@ class IDGenerator(JSBASE):
         remembers previously given id's
         """
         key = "idint_%s_%s" % (incrTypeId, objectUniqueSeedInfo)
-        if j.core.db.exists(key) and reset is False:
-            id = int(j.core.db.get(key))
+        if self.j.core.db.exists(key) and reset is False:
+            id = int(self.j.core.db.get(key))
             return id
         else:
             id = self.generateIncrID(incrTypeId)
-            j.core.db.set(key, str(id))
+            self.j.core.db.set(key, str(id))
             return id
 
     def generateGUID(self):
