@@ -88,4 +88,4 @@ class TestcasesBase(TestCase):
         return logger
 
     def random_string(self, length=10):
-        return str(uuid.uuid4()).replace('-', '')[:length]
+        return "random"+str(uuid.uuid4()).replace('-', '')[:length]
