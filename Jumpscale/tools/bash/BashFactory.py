@@ -248,7 +248,7 @@ class BashFactory(object):
     @property
     def local(self):
         if not self._local:
-            DBash = self.j._jsbase(self.j, 'Bash', [Bash])
+            DBash = self.j._jsbase('Bash', [Bash])
             self._local = DBash()
         return self._local
 
@@ -256,7 +256,7 @@ class BashFactory(object):
         """
         if executor==None then will be local
         """
-        DBash = self.j._jsbase(self.j, 'Bash', [Bash])
+        DBash = self.j._jsbase('Bash', [Bash])
         b = DBash(executor=executor)
         return b
 
@@ -316,7 +316,7 @@ class Bash(object):
         path = path.replace("~", self.home)
         if not self.executor.exists(path):
             self.executor.file_write(path, "")
-        DProfile = self.j._jsbase(self.j, 'Profile', [Profile])
+        DProfile = self.j._jsbase('Profile', [Profile])
         return DProfile(self, path)
 
     @property

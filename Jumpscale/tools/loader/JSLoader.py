@@ -131,7 +131,7 @@ def bootstrap_j(j, logging_enabled=False, filter=None, config_dir=None):
     j.j = j # sets up the global singleton
     j.j.__dynamic_ready__ = False # set global dynamic loading OFF
 
-    DLoggerFactory = j._jsbase(j, 'LoggerFactory', [LoggerFactory])
+    DLoggerFactory = j._jsbase('LoggerFactory', [LoggerFactory], basej=j)
     l = DLoggerFactory()
     l.enabled = logging_enabled
     l.filter = filter or []  # default filter which captures all is *
@@ -144,7 +144,7 @@ def bootstrap_j(j, logging_enabled=False, filter=None, config_dir=None):
             rootnames.append(child)
 
     if False:
-        DJSLoader = j._jsbase(j, 'JSLoader', [JSLoader])
+        DJSLoader = j._jsbase('JSLoader', [JSLoader], basej=j)
         dl = DJSLoader()
         #j = dl._dynamic_generate(j, modules, bases, aliases)
         j = dl.dynamic_generate(basej=j)
@@ -303,7 +303,7 @@ if os.environ.get('JUMPSCALEMODE') == 'STATICLOADER':
     j = Jumpscale()
 else:
     from Jumpscale.tools.loader.JSLoader import JSLoader
-    DJ = JSBase._jsbase(j, 'JSLoader', [JSLoader])
+    DJ = JSBase._jsbase('JSLoader', [JSLoader], basej=j)
     jl = DJ()
     j = jl.dynamic_generate(basej=j)
 j.j = j # patch the (new) global j instance to know itself (zennnn.....)

@@ -25,7 +25,7 @@ class ExceptionsFactory(object):
             ]
         for e in exceptions:
             ename = e.__name__[1:]
-            ekls = self._jsbase(self.j, ename, [e])
+            ekls = self._jsbase(ename, [e])
             globals()[ename] = ekls
             setattr(self, ename, ekls)
 

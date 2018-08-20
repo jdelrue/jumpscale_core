@@ -21,7 +21,7 @@ class ExecutorFactory(object):
 
         """
         if 'localhost' not in self._executors:
-            DL = self._jsbase(self.j, "ExecutorLocal", [ExecutorLocal])
+            DL = self._jsbase("ExecutorLocal", [ExecutorLocal])
             self._executors['localhost'] = DL()
         return self._executors['localhost']
 
@@ -35,7 +35,7 @@ class ExecutorFactory(object):
                 sshclient.config.data['login'])
             if key not in self._executors or \
                     self._executors[key].sshclient is None:
-                DS = self._jsbase(self.j, "ExecutorSSH", [ExecutorSSH])
+                DS = self._jsbase("ExecutorSSH", [ExecutorSSH])
                 self._executors[key] = DS(sshclient=sshclient)
             return self._executors[key]
 
@@ -75,7 +75,6 @@ class ExecutorFactory(object):
             key = '%s:%s:%s' % (addr, port, login)
             if key not in self._executors_async or usecache is False:
                 D = self._jsbase(
-                    self.j,
                     "ExecutorAsyncSSH",
                     [ExecutorAsyncSSH])
                 self._executors_async[key] = D(
@@ -88,7 +87,7 @@ class ExecutorFactory(object):
 
     def getLocalDocker(self, container_id_or_name):
         from .ExecutorDocker import ExecutorDocker
-        D = self._jsbase(self.j, "ExecutorDocker", [ExecutorDocker])
+        D = self._jsbase("ExecutorDocker", [ExecutorDocker])
         return D.from_local_container(container_id_or_name)
 
     def reset(self, executor=None):

@@ -428,8 +428,7 @@ class ErrorHandler:
     def halt(self, msg, eco):
         if eco is not None:
             eco = eco.__dict__
-        DH = self._jsbase(self.j, 'HaltException', [_HaltException,],
-                                  'HaltException')
+        DH = self._jsbase('HaltException', [_HaltException,], 'HaltException')
         raise DH(msg, eco)
 
     def raiseWarning(self, message, msgpub="", tags="", level=4):

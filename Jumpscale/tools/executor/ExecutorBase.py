@@ -33,7 +33,7 @@ class ExecutorBase(object):
     def state(self):
         if self._state is None:
             from ...core.State import State
-            DState = self._jsbase(self.j, "State", [State])
+            DState = self._jsbase("State", [State])
             self._state = DState(executor=self)
             self._state.load()
         return self._state

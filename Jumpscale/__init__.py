@@ -25,5 +25,5 @@ else:
     options, args = parser.parse_known_args()
 
     bj = JSBase() # start with a dummy 
-    j = bj.j._create_jsbase_instance('Jumpscale')
+    j = bj.j._create_jsbase_instance('Jumpscale', bj)
     j = bootstrap_j(j, config_dir=options.config)

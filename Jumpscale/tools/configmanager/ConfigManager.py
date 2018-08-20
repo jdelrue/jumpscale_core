@@ -34,7 +34,7 @@ class ConfigFactory(object):
         self._keyname = ""  # if set will overrule from the main js config file
         self._init = False
 
-        self.Config = self._jsbase(self.j, "Config", [Config]) # dynamic config class
+        self.Config = self._jsbase("Config", [Config]) # dynamic config class
 
     def reset(self, location=None, instance=None, force=False):
         """

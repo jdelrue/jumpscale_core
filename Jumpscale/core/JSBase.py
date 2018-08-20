@@ -241,8 +241,7 @@ class ModuleSetup(object):
                 break
             if not jsbased:
                 #klsname = "%s.%s" % (self.modulepath, self.objectname)
-                kls = JSBase._jsbase(self.basej, self.objectname,
-                                     [kls])
+                kls = JSBase._jsbase(self.objectname, [kls], self.basej)
             self._kls = kls
         return self._kls
 
@@ -438,12 +437,14 @@ class JSBase(BaseGetter):
     def cache(self, cache):
         self._cache = cache
 
-    @staticmethod
-    def _jsbase(basej, jname, derived_classes=None, dynamicname=None):
+    def _jsbase(self, jname, derived_classes=None, dynamicname=None,
+                      basej=None):
         """ dynamically creates a class which is derived from JSBase,
             that has the name "jname".  sets up a "super" caller
             (a dynamic __init__) that calls __init__ on the derived classes
         """
+        if basej is None:
+            basej = self.j
         #print ("_jsbase", basej, jname, derived_classes)
         if derived_classes is None:
             derived_classes = []
@@ -486,7 +487,7 @@ class JSBase(BaseGetter):
     def _create_jsbase_instance(jname, basej=None, derived_classes=None):
         """ dynamically creates a class instance derived from JSBase,
         """
-        memberkls = JSBase._jsbase(basej, jname, derived_classes)
+        memberkls = basej._jsbase(jname, derived_classes, basej=basej)
         instance = memberkls()
         if basej:
             instance.j = basej

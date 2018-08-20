@@ -18,7 +18,7 @@ class NACLFactory:
         if more than 1 will match ourid (generated from sshagent)
         if path not specified then is ~/.secrets
         """
-        DN = self._jsbase(self.j, 'NACL', [NACL,])
+        DN = self._jsbase('NACL', [NACL,])
         return DN(name, secret, sshkeyname=self.j.tools.configmanager.keyname)
 
     @property
