@@ -44,7 +44,17 @@ class ExecutorLocal(ExecutorBase):
                 #     homedir = "/host"
                 # else:
                 homedir = os.environ["HOME"]
-            cfgdir = "%s/jumpscale/cfg" % homedir
+
+            # override cfgdir from environment variables so that even
+            # on startup it's possible to set the config directory.
+            # the default (prior) behaviour (which is UNCHANGED) is to
+            # have it as $HOME/jumpscale/cfg.
+            # NOT reading $HOSTCFGDIR right at startup doesn't make sense.
+            if "HOSTCFGDIR" in os.environ.keys():
+                cfgdir = os.environ['HOSTCFGDIR']
+            else:
+                cfgdir = "%s/jumpscale/cfg" % homedir
+
             res = {}
 
             def load(name):

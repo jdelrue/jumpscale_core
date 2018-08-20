@@ -117,13 +117,16 @@ def add_dynamic_instance(j, parent, child, module, kls):
             walkfrom = getattr(walkfrom, subname)
         parent.__aliases__[child] = walkfrom
 
-def bootstrap_j(j, logging_enabled=False, filter=None):
+def bootstrap_j(j, logging_enabled=False, filter=None, config_dir=None):
     from ...logging.LoggerFactory import LoggerFactory
 
     # LoggerFactory isn't instantiated from JSBase so there has to
     # be a little bit of a dance to get it established and pointing
     # to the right global j.  JSBase now contains a property "j"
     # which is actually a singleton (global)
+
+    if config_dir:
+        os.environ['HOSTCFGDIR'] = config_dir
 
     j.j = j # sets up the global singleton
     j.j.__dynamic_ready__ = False # set global dynamic loading OFF
