@@ -172,7 +172,7 @@ $ grep -E "^stat|^open" log.txt.* | grep -i jumpscale | wc
 * The new capability involves a global j.__dynamic_ready__ boolean
   as well as a per-object __dynamic_ready__ which, if both are set,
   sets off a chain of (near-dangerously-recursive) searches for the
-  property that has been requested (and doesn't actually exist... yet).
+  property that has been requested (and does not actually exist... yet).
   The dangerous recursion is broken by setting __dynamic_ready__
   (see JSBase._check_child_mod_cache).
 * Accessing a (non-existent) property results in (AT PRESENT) a
@@ -202,6 +202,6 @@ call that *SPECIFICALLY* and *EXCLUSIVELY* loads *SPECIFICALLY* that
 python module *DIRECTLY* and *NOTHING* else.  This in complete contrast to
 the current system which relies on asking the standard python import system to
 locate the module, which results in a massive hit on absolutely every
-plugin directory of six to seven stat operations per module (that's
+plugin directory of six to seven stat operations per module (that is
 excluding searches for parent modules), ".pyc", ".pyo", ".so"...
 ... "__pycache__/*.pyo" and so on.
