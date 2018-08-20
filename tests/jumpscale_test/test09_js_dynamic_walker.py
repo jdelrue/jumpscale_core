@@ -47,18 +47,8 @@ class TestJSDynamicWalker(TestcasesBase):
             Creates a dynamic walker and a static one and does a compare
         """
         from Jumpscale import j
-        j.tools.jsloader.generate()
-        dj = j.tools.jsloader.dynamic_generate(basej=j)
+        #j.tools.loader.generate()
+        #dj = j.tools.loader.dynamic_generate(basej=j)
 
-        from jumpscale import j as jgen
-        from Jumpscale.logging.LoggerFactory import LoggerFactory
-        l = LoggerFactory()
-        dj.logging = l
-        dj.j = j
-        dj.cache = j.data.cache
-
-        compare('j', jgen, dj, 2)
-
-        print (dir(dj.clients))
-        print (dir(jgen.clients))
+        compare('j', j, j, 2)
 
