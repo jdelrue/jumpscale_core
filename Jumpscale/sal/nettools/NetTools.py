@@ -11,7 +11,6 @@ class NetTools:
 
     def __init__(self):
         self.__imports__ = "netaddr"
-        JSBASE.__init__(self)
         self._windowsNetworkInfo = None
 
     def tcpPortConnectionTest(self, ipaddr, port, timeout=None):
