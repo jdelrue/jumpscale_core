@@ -30,6 +30,8 @@ bootstrap = [
         #('', 'errorhandling', 'errorhandling', 'Exceptions'),
         ('data', 'types', 'data.types.Types', 'Types'),
         ('data', 'text', 'data.text.Text', 'Text'),
+        # idgen not strictly needed for bootstrap but for error reporting
+        ('data', 'idgenerator', 'data.idgenerator.IDGenerator', 'IDGenerator'),
         ('sal', 'fs', 'fs.SystemFS', 'SystemFS'),
         ('core', 'application', 'core.Application', 'Application'),
         ('core', 'errorhandler', 'errorhandler.ErrorHandler', 'ErrorHandler'),
