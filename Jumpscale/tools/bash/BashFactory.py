@@ -241,14 +241,15 @@ class Profile(object):
 
 class BashFactory(object):
 
+    __jslocation__ = "j.tools.bash"
     def __init__(self):
-        self.__jslocation__ = "j.tools.bash"
         self._local = None
 
     @property
     def local(self):
         if not self._local:
-            DBash = self.j._jsbase('Bash', [Bash])
+            DBash = self._jsbase('Bash',
+                    ['Jumpscale.tools.bash.BashFactory.Bash'])
             self._local = DBash()
         return self._local
 

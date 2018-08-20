@@ -69,7 +69,8 @@ class PlatformTypes(object):
     @property
     def myplatform(self):
         if self._myplatform is None:
-            DP = self._jsbase('PlatformType', [PlatformType])
+            DP = self._jsbase('PlatformType',
+                    ['Jumpscale.core.PlatformTypes.PlatformType'])
             self._myplatform = DP()
         return self._myplatform
 

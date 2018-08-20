@@ -28,7 +28,6 @@ def jspath_imoprt(modulepath, fullpath):
 
     if False:
         module = importlib.import_module(modulepath)
-        module.__jsfullpath__ = modulepath
 
     module = sys.modules.get(modulepath, None)
     if not module:
@@ -64,6 +63,9 @@ def jspath_imoprt(modulepath, fullpath):
     #        (fullpath, modulepath, objectname))
     if module not in sys.modules:
         sys.modules[modulepath] = module
+
+    module.__jsmodpath__ = modulepath
+    module.__jsfullpath__ = fullpath
 
     return module
 
@@ -246,7 +248,8 @@ class ModuleSetup(object):
                 break
             if not jsbased:
                 #klsname = "%s.%s" % (self.modulepath, self.objectname)
-                kls = JSBase._jsbase(self.objectname, [kls], basej=self.basej)
+                kls = self.basej._jsbase(self.objectname, [kls],
+                                         basej=self.basej)
             self._kls = kls
         return self._kls
 
@@ -442,18 +445,52 @@ class JSBase(BaseGetter):
     def cache(self, cache):
         self._cache = cache
 
-    @staticmethod
-    def _jsbase(jname, derived_classes=None, dynamicname=None,
+    def _jsbase(self, jname, derived_classes=None, dynamicname=None,
                       basej=None):
         """ dynamically creates a class which is derived from JSBase,
             that has the name "jname".  sets up a "super" caller
             (a dynamic __init__) that calls __init__ on the derived classes
+
+            if the derived class list contains a string, see comments
+            below: full path is created for importing of the format:
+            Jumpscale.submod.submod.Module.CLASSNAME
         """
         if basej is None:
-            basej = global_j
+            basej = self.j
         #print ("_jsbase", basej, jname, derived_classes)
         if derived_classes is None:
             derived_classes = []
+        for idx, kls in enumerate(derived_classes):
+            if isinstance(kls, str):
+                # ok we assume it's a jumpscale class, FOR NOW
+                # we assume it's in the same plugin as the parent
+                # (don't use this for pulling in classes from other plugins!)
+                # so, from the parent, get a fixed path
+                #module = __import__(modulename)
+                mpathname, _, objectname = kls.rpartition('.')
+                parent_path = os.path.split(self.__jsfullpath__)[0]
+
+                # ok first we count the number of dots in the parent module
+                # and walk back that number of path entries
+                dotcount = len(mpathname.split(".")) - 1
+                parent_path = parent_path.split('/')[:-dotcount]
+                parent_path = "/".join(parent_path)
+
+                # now drop in the filename, replacing . with /, and
+                # add .py on the end
+                fullpath = mpathname.replace(".", "/") + ".py"
+                fullpath = os.path.join(parent_path, fullpath)
+
+                # XXX TODO, check plugin directory matches...
+                #plugins = basej.tools.executorLocal.state.configGet('plugins')
+
+                # ok finally get the module (and the class)
+                module = jspath_imoprt(mpathname, fullpath)
+                kls = getattr(module, objectname)
+
+                # aaaand replace the string with the actual class. wheww.
+                derived_classes[idx] = kls
+
         classes = [JSBase] + copy(derived_classes)
 
         import inspect
@@ -493,7 +530,7 @@ class JSBase(BaseGetter):
     def _create_jsbase_instance(jname, basej=None, derived_classes=None):
         """ dynamically creates a class instance derived from JSBase,
         """
-        memberkls = JSBase._jsbase(jname, derived_classes, basej=basej)
+        memberkls = basej._jsbase(jname, derived_classes, basej=basej)
         instance = memberkls()
         if basej:
             instance.j = basej
