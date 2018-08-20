@@ -52,7 +52,7 @@ class TestBASH(TestcasesBase):
         #. Update existing environment variable's value, should succeed.
         """
         self.lg.info('Set new environment variable')
-        key = self.random_string()
+        key = "JS-040"+self.random_string()
         value = self.random_string()
         self.bash.envSet(key, value)
 
@@ -68,6 +68,9 @@ class TestBASH(TestcasesBase):
         self.assertEqual(self.bash.envGet(key), value)
         self.assertEqual(self.bash.env[key], value)
 
+        # clean up afterwards!
+        self.bash.envDelete(key)
+
     def test004_delete_env(self):
         """ JS-041
 
@@ -77,7 +80,7 @@ class TestBASH(TestcasesBase):
         #. Delete non-existing environment variable, shoild fail.
         """
         self.lg.info('Set new environment variable')
-        key = self.random_string()
+        key = "JS-041"+self.random_string()
         value = self.random_string()
         self.bash.envSet(key, value)
 
@@ -89,6 +92,15 @@ class TestBASH(TestcasesBase):
 
         with self.assertRaises(KeyError):
             self.bash.envGet(key)
+
+        # ok now test with a new bash env, to read the environment
+        # direct off-disk.  check it REALLY has been deleted
+        b = j.tools.bash.get()
+
+        self.cleanup_key = key
+
+        with self.assertRaises(KeyError):
+            b.envGet(key)
 
 
 class TestPROFILEJS(TestcasesBase):
@@ -107,7 +119,7 @@ class TestPROFILEJS(TestcasesBase):
         #. Get the environment variable, should succeed.
         """
         self.lg.info('Set new environment variables')
-        key = self.random_string()
+        key = "JS-044"+self.random_string()
         value = self.random_string()
         self.profileJS.envSet(key, value)
 
@@ -122,6 +134,9 @@ class TestPROFILEJS(TestcasesBase):
         self.lg.info('Get the environment variable, should succeed')
         self.assertEqual(self.profileJS.env[key], value)
         self.assertEqual(self.profileJS.envGet(key), value)
+
+        # clean up afterwards!
+        self.profileJS.envDeleteAll(key)
 
     def test02_env_get(self):
         """ JS-045
@@ -165,7 +180,7 @@ class TestPROFILEJS(TestcasesBase):
         #. Delete non-existing environment variable, shoild fail.
         """
         self.lg.info('Set new environment variables')
-        key = self.random_string()
+        key = "JS-047"+self.random_string()
         value = self.random_string()
         self.profileJS.envSet(key, value)
 
@@ -233,7 +248,7 @@ class TestPROFILEDEFAULT(TestcasesBase):
         #. Get the environment variable, should succeed.
         """
         self.lg.info('Set new environment variables')
-        key = self.random_string()
+        key = "JS-050"+self.random_string()
         value = self.random_string()
         self.profileDefault.envSet(key, value)
 
@@ -248,6 +263,9 @@ class TestPROFILEDEFAULT(TestcasesBase):
         self.lg.info('Get the environment variable, should succeed')
         self.assertEqual(self.profileDefault.env[key], value)
         self.assertEqual(self.profileDefault.envGet(key), value)
+
+        # clean up afterwards!
+        self.profileDefault.envDeleteAll(key)
 
     def test02_env_get(self):
         """ JS-051
@@ -291,7 +309,7 @@ class TestPROFILEDEFAULT(TestcasesBase):
         #. Delete non-existing environment variable, shoild fail.
         """
         self.lg.info('Set new environment variables')
-        key = self.random_string()
+        key = "JS-053"+self.random_string()
         value = self.random_string()
         self.profileDefault.envSet(key, value)
 
@@ -311,6 +329,9 @@ class TestPROFILEDEFAULT(TestcasesBase):
         self.lg.info('Delete non-existing environment variable, shoild fail')
         with self.assertRaises(KeyError):
             self.profileDefault.envDelete(self.random_string())
+
+        # clean up afterwards!
+        self.profileDefault.envDeleteAll(key)
 
     def test05_env_delete_all(self):
         """ JS-054

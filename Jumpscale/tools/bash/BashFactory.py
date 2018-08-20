@@ -356,6 +356,7 @@ class Bash(object):
 
     def envDelete(self, key):
         if self.profileJS.envExists(key):
-            return self.profileJS.envDelete(key)
+            self.profileJS.envDelete(key)
+            self.profileJS.save(True) # issue #70
         else:
             del self.executor.env[key]
