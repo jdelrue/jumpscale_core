@@ -120,7 +120,7 @@ class Config(object):
     @property
     def template(self):
         if self._template is None or self._template == '':
-            obj = eval(self.location)
+            obj = self.jget(self.location)
             if hasattr(obj, "_child_class"):
                 obj._child_class
                 myvars = {}

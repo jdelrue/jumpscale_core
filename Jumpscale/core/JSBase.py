@@ -3,6 +3,12 @@ import os
 import sys
 import importlib.util
 
+def jwalk(instance, name, start=None, end=None):
+    for fromname in name.split('.')[start:end]:
+        #print ("patchfrom", walkfrom, fromname)
+        instance = getattr(instance, fromname)
+    return instance
+
 def _import_parent_recurse(mpathname, parent_name):
     if mpathname in sys.modules:
         return
@@ -386,6 +392,12 @@ class JSBase(BaseGetter):
         for (fn, args, kwargs) in self._late_init_fns:
             #print ("calling late init", self.__class__, fn, args, kwargs)
             fn(*args, *kwargs)
+
+    def jget(self, attrname, start=None, end=None):
+        """ gets an attribute in "j" format (dotted), walks down the
+            object tree
+        """
+        return jwalk(self, attrname, start, end)
 
     @property
     def j(self):
