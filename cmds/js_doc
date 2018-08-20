@@ -33,7 +33,7 @@ def verify():
     # j.data.cache.resetAll()
     path,name=path_name_get()
     j.tools.markdowndocs.load(path=path,name=name)
-    # ds = j.tools.markdowndocs.docsite_get("info_foundation")
+    # ds = j.tools.docsite.docsite_get("info_foundation")
     # ds.doc_get("wallet.md")
     for key,ds in j.tools.markdowndocs.docsites.items():
         j.sal.fs.remove(ds.error_file_path)

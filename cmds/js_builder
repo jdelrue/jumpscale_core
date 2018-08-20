@@ -19,14 +19,29 @@ def cli():
 
 
 @click.command()
-@click.argument('ip')
+@click.argument('ip',default='')
 def configure(ip):
     """
     configure the zero-os, also make sure partitions are done for zerodb, need ip addr
+
+    ipaddr of zero-os if not specified then will be localhost (VM) on port 4445
+
+
     """
-    node = j.clients.zos.get('builder', data={'host': ip})
+    if ip is not "":
+        node = j.clients.zos.get('builder', data={'host': ip})
+    else:
+        node = j.clients.zos.get('builder')
     node.zerodbs.partition_and_mount_disks()
 
+
+@click.command()
+def init():
+    """
+    use virtualbox to launch a zero-os on your machine (now only tested on OSX)
+    the name of the machine is builder
+    """
+    j.clients.virtualbox.zero_os_get(name="builder",redis_port=4445)
 
 @click.command()
 @click.option('--name', '-n', default='zdb_main', help='name of the zdb instance')
@@ -128,6 +143,7 @@ def digitalme(name, port):
     print("can also connect using js_node toolset, recommended: 'js_node ssh -i %s'" % name)
 
 
+cli.add_command(init)
 cli.add_command(configure)
 cli.add_command(zdb)
 cli.add_command(container)
