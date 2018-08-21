@@ -77,9 +77,9 @@ def find_jslocation(line):
 
 # gets down to the Jumpscale core9 subdirectory from here
 # (.../Jumpscale/tools/loader/JSLoader.py)
-top_level_path = os.path.dirname(os.path.abspath(__file__))
-top_level_path = os.path.dirname(top_level_path)
-top_level_path = os.path.dirname(top_level_path)
+plugin_path = os.path.dirname(os.path.abspath(__file__))
+plugin_path = os.path.dirname(plugin_path)
+top_level_path = os.path.dirname(plugin_path)
 
 def add_dynamic_instance(j, parent, child, module, kls):
     """ very similar to dynamic_generate, needs work
@@ -112,7 +112,6 @@ def add_dynamic_instance(j, parent, child, module, kls):
         parent.__aliases__[child] = walkfrom
 
 def bootstrap_j(j, logging_enabled=False, filter=None, config_dir=None):
-    from ...logging.LoggerFactory import LoggerFactory
 
     # LoggerFactory isn't instantiated from JSBase so there has to
     # be a little bit of a dance to get it established and pointing
@@ -123,9 +122,13 @@ def bootstrap_j(j, logging_enabled=False, filter=None, config_dir=None):
         os.environ['HOSTCFGDIR'] = config_dir
 
     j.j = j # sets up the global singleton
+    j.__jsfullpath__ = os.path.join(plugin_path, "Jumpscale.py")
+    j.__jsmodulepath__ = 'Jumpscale'
     j.j.__dynamic_ready__ = False # set global dynamic loading OFF
 
-    DLoggerFactory = j._jsbase('LoggerFactory', [LoggerFactory], basej=j)
+    DLoggerFactory = j._jsbase('LoggerFactory',
+                        ['Jumpscale.logging.LoggerFactory.LoggerFactory'],
+                        basej=j)
     l = DLoggerFactory()
     l.enabled = logging_enabled
     l.filter = filter or []  # default filter which captures all is *

@@ -24,6 +24,6 @@ else:
     del parser._registries['action']['help'] # remove help action (stops exit)
     options, args = parser.parse_known_args()
 
-    bj = JSBase() # start with a dummy 
+    bj = JSBase() # start with a dummy (more initialisation done in bootstrap)
     j = bj.j._create_jsbase_instance('Jumpscale', bj)
     j = bootstrap_j(j, config_dir=options.config)
