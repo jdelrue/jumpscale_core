@@ -9,6 +9,7 @@ import builtins
 from .PrimitiveTypes import String, Integer
 import copy
 import time
+from uuid import UUID
 from ipaddress import IPv4Address, IPv6Address
 from ipaddress import AddressValueError, NetmaskValueError
 
@@ -23,14 +24,18 @@ class Guid(String):
 
     def __init__(self):
         String.__init__(self)
-        self._RE = re.compile(
-            '^[0-9a-fA-F]{8}[-:][0-9a-fA-F]{4}[-:][0-9a-fA-F]{4}[-:][0-9a-fA-F]{4}[-:][0-9a-fA-F]{12}$')
 
     def check(self, value):
-        '''Check whether provided value is a valid GUID string'''
-        if not j.data.types.string.check(value):
+        ''' Check whether provided value is a valid GUID string
+            (WITHOUT using insane regular expressions.  also catches
+             INVALID uuid4 which would otherwise be valid hex strings
+             https://gist.github.com/ShawnMilo/7777304)
+        '''
+        try:
+            val = UUID(value, version=4)
+        except ValueError:
             return False
-        return self._RE.match(value) is not None
+        return val.hex == value.replace('-', '')
 
     def get_default(self):
         return j.data.idgenerator.generateGUID()
