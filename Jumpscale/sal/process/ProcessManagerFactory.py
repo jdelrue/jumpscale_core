@@ -87,6 +87,13 @@ class StdDuplicate(JSBASE):
     def fileno(self):
         return self.buffer.fileno()
 
+    def __del__(self):
+        self.flush()
+        self.buffer.close()
+
+    @property
+    def errors(self):
+        return None
 
 class Process(JSBASE):
 
