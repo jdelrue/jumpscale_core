@@ -27,6 +27,7 @@ bootstrap = [
         ('', 'sal', 'sal', 'Sal'),
         ('', 'data', 'data', 'Data'),
         ('', 'clients', 'clients', 'Clients'),
+        ('', 'servers', 'servers', 'Servers'),
         #('', 'errorhandling', 'errorhandling', 'Exceptions'),
         ('data', 'types', 'data.types.Types', 'Types'),
         ('data', 'text', 'data.text.Text', 'Text'),
