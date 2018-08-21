@@ -73,7 +73,7 @@ class Config(object):
         if not self._nacl:
             if self.j.tools.configmanager.keyname:
                 self._nacl = self.j.data.nacl.get(
-                    sshkeyname=j.tools.configmanager.keyname)
+                    sshkeyname=self.j.tools.configmanager.keyname)
             else:
                 self._nacl = self.j.data.nacl.get()
         return self._nacl
