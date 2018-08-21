@@ -17,8 +17,9 @@ class TarantoolFactory(JSConfigFactory):
 
     """
 
+    __jslocation__ = "j.clients.tarantool"
+
     def __init__(self):
-        self.__jslocation__ = "j.clients.tarantool"
         self.__imports__ = "tarantool"
         if j.core.platformtype.myplatform.isMac:
             self.cfgdir = "/usr/local/etc/tarantool/instances.enabled"
@@ -110,7 +111,7 @@ class TarantoolFactory(JSConfigFactory):
         j.sal.fs.remove(todel + "/model.lua")
         j.sal.fs.remove(todel + "/UserCollection.py")
 
-        tt = self.client_get()
+        tt = self.get()
         tt.addScripts()  # will add the system scripts
         tt.reloadSystemScripts()
         tt.addModels()
@@ -136,7 +137,7 @@ class TarantoolFactory(JSConfigFactory):
         assert len(users) == num_user
 
     def test_find(self):
-        cl = self.client_get()
+        cl = self.get()
         cl.addScripts()  # will add the system scripts
         cl.addModels()
 
@@ -150,7 +151,7 @@ class TarantoolFactory(JSConfigFactory):
 
     def test(self):
 
-        tt = self.client_get()
+        tt = self.get()
         tt.addScripts()
         tt.reloadSystemScripts()
         tt.addModels()
