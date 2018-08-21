@@ -32,3 +32,7 @@ class ZeroRepos(JSBASE):
         else:
             from IPython import embed;embed(colors='Linux')
             self.repos[name] = ZeroRepo(path=path,gitrepo=repo) 
+
+    def __iter__(self):
+        return self.repos.__iter__()
+
