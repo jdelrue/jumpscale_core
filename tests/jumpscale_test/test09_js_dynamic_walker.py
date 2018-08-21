@@ -119,7 +119,7 @@ def _listtests(tree, j, obj1, obj2, depth):
     name = tree.replace(".", "_")
     _testfn = types.MethodType(_testfn, j)
     setattr(TestJSDynamicWalkerTestSearch,
-            "test%4d_%s" % (dynamic_test_count, name),
+            "test%04d_%s" % (dynamic_test_count, name),
             _testfn)
 
 skipproperties = [
