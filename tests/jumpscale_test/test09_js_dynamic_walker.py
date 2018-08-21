@@ -1,3 +1,4 @@
+import types
 from .testcases_base import TestcasesBase
 from collections import Mapping, Set, Sequence 
 
@@ -11,7 +12,13 @@ def listin(list1, list2):
             notin.append(i)
     return isin, notin
 
-def compare(tree, obj1, obj2, depth):
+def compare(tree, j, obj1, obj2, depth, actionfn=None, exclude=None):
+
+    if exclude is None:
+        exclude = []
+    if actionfn:
+        actionfn(tree, j, obj1, obj2, depth)
+
     if depth == 0:
         return
     contents1 = dir(obj1)
@@ -35,9 +42,12 @@ def compare(tree, obj1, obj2, depth):
         print ("isin", tree, isin)
 
     for subname in isin:
+        if "%s.%s" % (tree, subname) in exclude:
+            continue
         subobj1 = getattr(obj1, subname)
         subobj2 = getattr(obj2, subname)
-        compare("%s.%s" % (tree, subname), subobj1, subobj2, depth-1)
+        compare("%s.%s" % (tree, subname), j,
+                subobj1, subobj2, depth-1, actionfn, exclude)
 
 class TestJSDynamicWalker(TestcasesBase):
 
@@ -50,5 +60,43 @@ class TestJSDynamicWalker(TestcasesBase):
         #j.tools.loader.generate()
         #dj = j.tools.loader.dynamic_generate(basej=j)
 
-        compare('j', j, j, 2)
+        compare('j', j, j, j, 2)
+
+from Jumpscale import j
+dynamic_test_count = 0
+
+class TestJSDynamicWalkerTestSearch(TestcasesBase):
+    pass
+
+def _listtests(tree, j, obj1, obj2, depth):
+    """ adds a function named after the tree (j.xxx.xxx) if its
+        last component ends in "test{something}"
+    """
+    if not tree.split('.')[-1].startswith('test'):
+        return
+    print ("listtests", tree, tree.split('.')[-1])
+    if not callable(obj1):
+        return
+    global dynamic_test_count
+    dynamic_test_count += 1
+    def _testfn(*args, **kwargs):
+        print ("tree", obj1, tree)
+        obj1()
+    name = tree.replace(".", "_")
+    #_testfn = types.MethodType(_testfn, self)
+    setattr(TestJSDynamicWalkerTestSearch,
+            "test%4d_%s" % (dynamic_test_count, name),
+            _testfn)
+
+skipproperties = [
+        'j.clients.currencylayer',
+        'j.clients.google_compute',
+        'j.data.nacl.test',
+        'j.data.nacl.test_perf',
+        'j.data.markdown.test',
+        'j.data.indexfile.test',
+        'j.data.indexdb.test',
+        'j.clients.zdb.testdb_server_start_client_get',
+        ]
+compare('j', j, j, j, 3, _listtests, exclude=skipproperties)
 

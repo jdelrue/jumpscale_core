@@ -7,7 +7,7 @@ if os.environ.get('JUMPSCALEMODE') == 'TESTING':
 
 else:
 
-    from .core.JSBase import JSBase
+    from .core.JSBase import JSBase, global_j
     from .tools.loader.JSLoader import bootstrap_j
 
     # slightly hacky (invisible) way to add a -c/--config option
@@ -24,6 +24,10 @@ else:
     del parser._registries['action']['help'] # remove help action (stops exit)
     options, args = parser.parse_known_args()
 
-    bj = JSBase() # start with a dummy (more initialisation done in bootstrap)
-    j = bj.j._create_jsbase_instance('Jumpscale', bj)
-    j = bootstrap_j(j, config_dir=options.config)
+    if global_j is None:
+        bj = JSBase() # start with dummy (more initialisation done in bootstrap)
+        bj.j = bj
+        j = bj.j._create_jsbase_instance('Jumpscale', bj)
+        j = bootstrap_j(j, config_dir=options.config)
+    else:
+        j = global_j

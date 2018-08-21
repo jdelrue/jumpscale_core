@@ -551,5 +551,4 @@ class JSBase(BaseGetter):
 # don't touch this directly - go through any instance of JSBase, assign self.j
 # and it will get globally set.  generally not too good an idea to do that,
 # though, as pretty much everything could break.
-global_j = JSBase()
-global_j.j = global_j
+global_j = None
