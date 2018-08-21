@@ -36,7 +36,7 @@ bootstrap = [
         ('core', 'application', 'core.Application', 'Application'),
         ('core', 'errorhandler', 'errorhandler.ErrorHandler', 'ErrorHandler'),
         ('data', 'datacache', 'data.cache.Cache', 'Cache'),
-        ('tools', 'loader', 'tools.loader.JSLoader', 'JSLoader'),
+        ('tools', 'jsloader', 'tools.jsloader.JSLoader', 'JSLoader'),
         ('tools', 'executorLocal', 'tools.executor.ExecutorLocal',
                                     'ExecutorLocal'),
         #('', 'errorhandling', 'errorhandling.JSExceptions',

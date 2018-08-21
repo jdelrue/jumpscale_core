@@ -8,7 +8,7 @@ if os.environ.get('JUMPSCALEMODE') == 'TESTING':
 else:
 
     from .core.JSBase import JSBase, global_j
-    from .tools.loader.JSLoader import bootstrap_j
+    from .tools.jsloader.JSLoader import bootstrap_j
 
     # slightly hacky (invisible) way to add a -c/--config option
     # which (because of add_help=False and del on the help action)
