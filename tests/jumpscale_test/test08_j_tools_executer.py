@@ -9,10 +9,9 @@ from parameterized import parameterized
 
 class EXECUTER(TestcasesBase):
 
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.executer = self.j.tools.executor.local_get()
+    def setUp(self):
+        super().setUp()
+        self.executer = self.j.tools.executor.local_get()
 
     def test01_read_file(self):
         """ JS-061

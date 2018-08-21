@@ -112,12 +112,12 @@ def _listtests(tree, j, obj1, obj2, depth):
         return
     global dynamic_test_count
     dynamic_test_count += 1
-    def _testfn(*args, **kwargs):
+    def _testfn(self, *args, **kwargs):
         newobj = self.j.jget(tree)
         print ("tree", newobj, tree)
         newobj()
     name = tree.replace(".", "_")
-    #_testfn = types.MethodType(_testfn, self)
+    _testfn = types.MethodType(_testfn, j)
     setattr(TestJSDynamicWalkerTestSearch,
             "test%4d_%s" % (dynamic_test_count, name),
             _testfn)
