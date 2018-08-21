@@ -69,14 +69,14 @@ class StdDuplicate(JSBASE):
 
     def write(self, message):
         self.redirect.write(message)
-        self.buffer.write(message)
+        self.buffer.write(message.encode())
 
     def getBuffer(self):
         pos = self.buffer.tell()
         self.buffer.seek(0)
         contents = self.buffer.read()
         self.buffer.seek(pos)
-        return contents
+        return contents.decode()
 
     def restore(self):
         return self.redirect
