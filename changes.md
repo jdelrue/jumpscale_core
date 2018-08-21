@@ -76,15 +76,15 @@ need to redo:
   dictionary of any modules (root modules) in files named "\_\_init\_\_.py"
   that have a \_\_jslocation\_\_ in them.
 * From the information obtained, the BaseGetter._add_instance
-  and JSBase._jsbase process can be repeated, this time dropping
+  and JSBase.\_jsbase process can be repeated, this time dropping
   in the ENTIRE series of modules into a new "j" instance,
   which is itself dynamically created, but externally, and
-  must be passed in to the bootstrap_j function.
+  must be passed in to the bootstrap\_j function.
 * The reason for needing to pass that in is because there are
   still recursive imports "from Jumpscale import j" that get
   used *during the bootstrap process*, that cannot yet be
   removed.  To solve this, Jumpscale.j has to exist and then
-  be passed in to the JSLoader.bootstrap_j function.  It is
+  be passed in to the JSLoader.bootstrap\_j function.  It is
   a total miracle that python is able to cope with this at all.
 * With the lazy-loading in place, and the global singleton
   "j" being kept in JSBase, the actual bootstrap process is
@@ -107,7 +107,7 @@ need to redo:
   (now self.j) which they really should not do, as that sets up a
   critical dependency chain.  To help break the cycle,
   a "late initialisation" system has been added to JSBase.  It is
-  used by calling self.add_late_init(self.load, "loadarg1", kwarg=5)
+  used by calling self.add\_late\_init(self.load, "loadarg1", kwarg=5)
   and, on lazy-instantiation, AFTER the \_\_init\_\_ has been set up,
   all the registered late initialisations are called.
   However extreme care has to be taken as this basically changes
@@ -115,7 +115,7 @@ need to redo:
 
 Lastly: if ever a new class instance is needed, it should NOT
 be inherited from JSBase, and it should NOT be instantiated
-without first going through JSBase._jsbase, as follows:
+without first going through JSBase.\_jsbase, as follows:
 
     DynamicCC = self._jsbase(self.j, 'CacheCategory', [CacheCategory])
     self._cache[id] = DynamicCC( id=id, expiration=expiration, reset=reset)
@@ -134,13 +134,13 @@ of places.
 A large number of details are in commit message 0852c1430, they are
 partially documented here.  strace is being used to check progress:
 
-$ strace -o log.txt -ff js_shell
-$ grep -E "^stat|^open" log.txt.* | grep -i jumpscale | wc
+    $ strace -o log.txt -ff js_shell
+    $ grep -E "^stat|^open" log.txt.* | grep -i jumpscale | wc
 
 * A circular dependency between j.core.dirs (Jumpscale/core/Dirs.py)
   and j.tools.executorLocal.state (Jumpscale/tools/executor/ExecutorBase.py)
   was identified in the Dirs.reload() function, which in turn was being
-  called specifically from the Dirs __init__ constructor.
+  called specifically from the Dirs \_\_init\_\_ constructor.
   Dirs.JSAPPDIR and Dirs.TEMPLATEDIR were therefore HOPELESSLY out-of-date
   and would have required the application to EXIT COMPLETELY should these
   two variables (which were also stored in the os ENVIRON) ever be changed.
@@ -149,7 +149,7 @@ $ grep -E "^stat|^open" log.txt.* | grep -i jumpscale | wc
   The removal of the dependence on VARDIR helps break the circular
   dependency between Dirs.py and ExecutorBase.py
 * An additional dependency on HOSTDIR was also successfully removed
-  by no longer calling JSLoader.prepare_config, JSLoader._generate
+  by no longer calling JSLoader.prepare\_config, JSLoader.\_generate
   or anything else that was being used to write into the HOSTDIR
   (except locations as specified by ExecutorBase.py)
 * When there is no config file (at all), it is assumed that because the
@@ -160,21 +160,21 @@ $ grep -E "^stat|^open" log.txt.* | grep -i jumpscale | wc
   and consistent fashion.  (Note: not having the plugin directory be EXACTLY
   that from which the file WITHIN that plugin directory is located is neither
   reasonable nor sane, and a sanity check needs to be added to that effect)
-* Overloading of __dir__ (called when dir(j.core) is done, which includes
-  in IPython) has been accompanied by an overload of __getattribute__
+* Overloading of \_\_dir\_\_ (called when dir(j.core) is done, which includes
+  in IPython) has been accompanied by an overload of \_\_getattribute\_\_
   that will now carry out a specific search for only that j.[insertnamehere].
   This is carried out through the combined use of BaseGetter, JSBase and
   JSLoader.
-* Overloading __dir__ means that "fake" (lazy) properties can *appear* to
+* Overloading \_\_dir\_\_ means that "fake" (lazy) properties can *appear* to
   be listed in a j.[insertobjname] and even a j.[parent].[insertchildname].
-  This is done in BaseGetter.__dir__ by storing a "fake" (lazy) property
+  This is done in BaseGetter.\_\_dir\_\_ by storing a "fake" (lazy) property
   loader (ModuleSetup) as described above (12aug2018).
-* The new capability involves a global j.__dynamic_ready__ boolean
-  as well as a per-object __dynamic_ready__ which, if both are set,
+* The new capability involves a global j.\_\_dynamic\_ready\_\_ boolean
+  as well as a per-object \_\_dynamic\_ready\_\_ which, if both are set,
   sets off a chain of (near-dangerously-recursive) searches for the
   property that has been requested (and does not actually exist... yet).
-  The dangerous recursion is broken by setting __dynamic_ready__
-  (see JSBase._check_child_mod_cache).
+  The dangerous recursion is broken by setting \_\_dynamic\_ready\_\_
+  (see JSBase.\_check\_child\_mod\_cache).
 * Accessing a (non-existent) property results in (AT PRESENT) a
   walk of each of the plugins directories, specifically looking for objects
   that match that name. THIS REQUIRES THAT THE DIRECTORY HIERARCHY MATCH
@@ -190,21 +190,21 @@ $ grep -E "^stat|^open" log.txt.* | grep -i jumpscale | wc
 
 So now, where requesting a listing "dir (j.tools)" results in a
 filesystem walk of plugin directories looking for anything *inside*
-a directory called "tools", a __getattribute__ will result in a very
+a directory called "tools", a \_\_getattribute\_\_ will result in a very
 specific search for a very specific (single) module in each of the
 plugin locations.
 
 This will subsequently be modified to no longer even need to walk
 the filesystem (at all), by storing the dependency information actually inside
-the parent (JSClassName.__jsdeps__), merging those across multiple
-plugins, and issuing a very very specific importlib.util.module_from_spec()
+the parent (JSClassName.\_\_jsdeps\_\_), merging those across multiple
+plugins, and issuing a very very specific importlib.util.module\_from\_spec()
 call that *SPECIFICALLY* and *EXCLUSIVELY* loads *SPECIFICALLY* that
 python module *DIRECTLY* and *NOTHING* else.  This in complete contrast to
 the current system which relies on asking the standard python import system to
 locate the module, which results in a massive hit on absolutely every
 plugin directory of six to seven stat operations per module (that is
 excluding searches for parent modules), ".pyc", ".pyo", ".so"...
-... "__pycache__/*.pyo" and so on.
+and so on.
 
 ## 21aug2018
 
@@ -228,4 +228,4 @@ so that it will be called later.
 Tests that are to be skipped can be added, as long as a bugreport
 is also filed and the bugreport link listed in the unit test.
 
-see tests/jumpscale_test/test09_js_dynamic_walker.py for details.
+see tests/jumpscale\_test/test09\_js\_dynamic\_walker.py for details.
