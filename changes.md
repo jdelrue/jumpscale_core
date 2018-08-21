@@ -205,3 +205,27 @@ locate the module, which results in a massive hit on absolutely every
 plugin directory of six to seven stat operations per module (that is
 excluding searches for parent modules), ".pyc", ".pyo", ".so"...
 ... "__pycache__/*.pyo" and so on.
+
+## 21aug2018
+
+There is absolutely no automated testing methodology in place.
+
+This is unacceptable for a large project written in a weakly-typed language.
+
+Therefore, a unit test has been added that dynamically walks the entire
+jumpscale object tree, looking for all functions in all objects starting
+with the word "test".
+
+If simply accessing the test fails (due to a parent object further down the
+tree or a dependent object initialisation causing an exception), an
+"error" test is dynamically added that will report the exception during
+the actual test.
+
+If there are no exceptions caused just by accessing the object, the
+test function is added to the TestJSDynamicWalkerTestSearch class
+so that it will be called later.
+
+Tests that are to be skipped can be added, as long as a bugreport
+is also filed and the bugreport link listed in the unit test.
+
+see tests/jumpscale_test/test09_js_dynamic_walker.py for details.
