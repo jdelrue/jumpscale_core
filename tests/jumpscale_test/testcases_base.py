@@ -1,3 +1,5 @@
+from Jumpscale.core import JSBase
+
 import time
 import signal
 import uuid
@@ -17,18 +19,6 @@ import atexit
 # here, and the HOSTCFGDIR environment variable set.  it's done here
 # GLOBALLY because jumpscale is, annoyingly, a global variable and a global
 # import *sigh*...
-
-tempdirpth = tempfile.mkdtemp()
-tempcfg = os.path.join(tempdirpth, "cfg")
-os.environ['HOSTDIR'] = tempdirpth
-os.environ['HOSTCFGDIR'] = os.path.join(tempdirpth, "cfg")
-os.environ['HOSTCFGDIR'] = tempcfg
-os.mkdir(tempcfg)
-
-def cleanup():
-    shutil.rmtree(tempdirpth)
-
-atexit.register(cleanup)
 
 def squash_dictionaries(d1, d2):
     from io import StringIO
@@ -61,6 +51,21 @@ class TestcasesBase(TestCase):
             '====== Testcase [{}] is started ======'.format(
                 self._testID))
 
+        self.tempdirpth = tempfile.mkdtemp()
+        tempcfg = os.path.join(self.tempdirpth, "cfg")
+        os.environ['HOSTDIR'] = self.tempdirpth
+        os.environ['HOSTCFGDIR'] = os.path.join(self.tempdirpth, "cfg")
+        os.environ['HOSTCFGDIR'] = tempcfg
+        os.mkdir(tempcfg)
+
+        # record the old global_j, create a new j for use in the test
+        self.old_global_j = JSBase.global_j
+        JSBase.global_j = None
+        from Jumpscale import j
+
+        self.j = j
+        JSBase.global_j = j
+
         def timeout_handler(signum, frame):
             raise TimeExpired(
                 'Timeout expired before end of test %s' %
@@ -75,6 +80,11 @@ class TestcasesBase(TestCase):
         self.lg.info(
             'Testcase [{}] is ended, Duration: {} seconds'.format(
                 self._testID, self._duration))
+
+        # delete the old j, restore the previous global_j
+        del self.j
+        shutil.rmtree(self.tempdirpth)
+        JSBase.global_j = self.old_global_j
 
     def logger(self):
         logger = logging.getLogger('Jumpscale')

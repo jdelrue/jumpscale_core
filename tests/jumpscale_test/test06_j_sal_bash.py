@@ -3,14 +3,13 @@ import random
 import unittest
 from .testcases_base import TestcasesBase, squash_dictionaries
 
-from jumpscale import j
 
 class TestBASH(TestcasesBase):
 
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.bash = j.tools.bash.get()
+        cls.bash = self.j.tools.bash.get()
 
     def test001_env(self):
         """ JS-038
@@ -95,7 +94,7 @@ class TestBASH(TestcasesBase):
 
         # ok now test with a new bash env, to read the environment
         # direct off-disk.  check it REALLY has been deleted
-        b = j.tools.bash.get()
+        b = self.j.tools.bash.get()
 
         self.cleanup_key = key
 
@@ -107,7 +106,7 @@ class TestPROFILEJS(TestcasesBase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        bash = j.tools.bash.get()
+        bash = self.j.tools.bash.get()
         cls.profileJS = bash.profileJS
 
     def test01_env_set(self):
@@ -236,7 +235,7 @@ class TestPROFILEDEFAULT(TestcasesBase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        bash = j.tools.bash.get()
+        bash = self.j.tools.bash.get()
         cls.profileDefault = bash.profileDefault
 
     def test01_env_set(self):

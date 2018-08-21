@@ -4,7 +4,6 @@ import random
 import pytoml
 import unittest
 import uuid
-from jumpscale import j
 
 
 class TestJCONFIG(TestcasesBase):
@@ -31,7 +30,7 @@ class TestJCONFIG(TestcasesBase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.client = j.core.state
+        cls.client = self.j.core.state
         cls.config_path = cls.client.configJSPath
         cls.config_file_content = cls.get_config()
 
@@ -72,7 +71,7 @@ class TestJCONFIG(TestcasesBase):
         self.assertEqual(value, 'value_1')
 
         self.lg.info('Get the value of a non-existing key')
-        with self.assertRaises(j.exceptions.Input) as e:
+        with self.assertRaises(self.j.exceptions.Input) as e:
             self.client.configGet('new_key')
 
         self.lg.info(
@@ -80,7 +79,7 @@ class TestJCONFIG(TestcasesBase):
         value = self.client.configGet('new_key', defval='new_value')
         self.assertEqual(value, 'new_value')
 
-        with self.assertRaises(j.exceptions.Input) as e:
+        with self.assertRaises(self.j.exceptions.Input) as e:
             self.client.configGet('new_value')
 
         self.lg.info(

@@ -80,6 +80,10 @@ class TestJSDynamicWalker(TestcasesBase):
 
         compare('j', j, j, j, 2)
 
+# import here to get a recursive walk on the tree.  it is NOT used
+# to do the actual test: see def _testfn() which does a "self.j.jget"
+# on the *name* of the object, in the TestcasesBase j instance that's
+# been set up in an isolated config
 from Jumpscale import j
 dynamic_test_count = 0
 
@@ -109,8 +113,9 @@ def _listtests(tree, j, obj1, obj2, depth):
     global dynamic_test_count
     dynamic_test_count += 1
     def _testfn(*args, **kwargs):
-        print ("tree", obj1, tree)
-        obj1()
+        newobj = self.j.jget(tree)
+        print ("tree", newobj, tree)
+        newobj()
     name = tree.replace(".", "_")
     #_testfn = types.MethodType(_testfn, self)
     setattr(TestJSDynamicWalkerTestSearch,

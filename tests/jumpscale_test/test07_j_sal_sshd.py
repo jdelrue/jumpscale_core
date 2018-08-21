@@ -1,4 +1,3 @@
-from jumpscale import j
 import os
 import random
 import unittest
@@ -17,7 +16,7 @@ class TestSALLSSHD(TestcasesBase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.sshd = j.sal.sshd
+        cls.sshd = self.j.sal.sshd
         cls.authorized_keys = cls.sshd.SSH_AUTHORIZED_KEYS.text().splitlines()
 
     @classmethod
