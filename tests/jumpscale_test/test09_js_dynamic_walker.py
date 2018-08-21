@@ -121,20 +121,6 @@ skipproperties = [
         'j.clients.currencylayer',
         'j.clients.google_compute',
 
-        # all of these are down to NACL failing (secret)
-        'j.data.nacl.test',
-        'j.data.nacl.test_perf',
-        'j.data.markdown.test',
-        'j.data.indexfile.test',
-        'j.data.indexdb.test',
-        'j.clients.zdb.testdb_server_start_client_get',
-        'j.clients.trello.test',
-        'j.data.encryption.test',
-        'j.data.html.test',
-        'j.data.datacache.test',
-        'j.data.capnp.testWithRedis',
-        'j.data.capnp.test',
-        'j.clients.zerotier.test',
         ]
 compare('j', j, j, j, 3, _listtests, exclude=skipproperties,
         errorfn=_errortest)
