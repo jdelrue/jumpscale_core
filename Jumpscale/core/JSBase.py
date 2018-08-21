@@ -13,16 +13,13 @@ def _import_parent_recurse(mpathname, parent_name):
     if mpathname in sys.modules:
         return
     ppath = os.path.join(parent_name, "__init__.py")
-    print ("import recurse", mpathname, ppath, parent_name)
+    #print ("import recurse", mpathname, ppath, parent_name)
     spec = importlib.util._find_spec_from_path(ppath, None)
-    print ("spec", spec)
+    #print ("spec", spec)
     if spec:
         module = importlib.util.module_from_spec(spec)
-        print (
-            "adding module",
-            mpathname,
-            module,
-            mpathname not in sys.modules)
+        #print ( "adding module", mpathname, module,
+        #        mpathname not in sys.modules)
         if mpathname not in sys.modules:
             sys.modules[mpathname] = module
     mpathname = mpathname.rpartition('.')[0]
@@ -38,7 +35,7 @@ def jspath_import(modulepath, fullpath):
     module = sys.modules.get(modulepath, None)
     if not module:
         parent_name = modulepath.rpartition('.')[0]
-        print ("parentname", modulepath, parent_name)
+        #print ("parentname", modulepath, parent_name)
         if parent_name:
             spec = None
             if False:
@@ -46,7 +43,7 @@ def jspath_import(modulepath, fullpath):
                 mpathname = modulepath.rpartition('.')[0]
                 _import_parent_recurse(mpathname, parentpath)
                 parent = __import__(parent_name, fromlist=['__path__'])
-                print ("parent", parent_name, parent)
+                #print ("parent", parent_name, parent)
                 spec = importlib.util._find_spec(modulepath,
                                                  parent.__path__)
             if spec is None:
@@ -54,14 +51,14 @@ def jspath_import(modulepath, fullpath):
                     modulepath,
                     fullpath)
         else:
-            print ("no parent")
+            #print ("no parent")
             # spec = importlib.util._find_spec_from_path(modulepath,
             #                                        fullpath)
             spec = importlib.util.spec_from_file_location(
                 modulepath,
                 fullpath)
 
-        print ("spec", spec, dir(spec))
+        #print ("spec", spec, dir(spec))
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
 
@@ -133,7 +130,7 @@ class BaseGetter(object):
             note the inclusion of the automatic "JSBased" prefix on the
             original class named "Application".
         """
-        print ("add instance", self, subname, modulepath, objectname, basej)
+        #print ("add instance", self, subname, modulepath, objectname, basej)
         ms = ModuleSetup(subname, modulepath, objectname, fullpath, basej)
         #print (dir(self))
         d = object.__getattribute__(self, '__subgetters__')
@@ -234,8 +231,8 @@ class ModuleSetup(object):
     @property
     def kls(self):
         if self._kls is None:
-            print ("about to get modulepath %s object %s path %s basej %s" % \
-                   (self.modulepath, self.objectname, self.fullpath, self.basej))
+            #print ("about to get modulepath %s object %s path %s basej %s" % \
+            #     (self.modulepath, self.objectname, self.fullpath, self.basej))
 
             module = jspath_import(self.modulepath, self.fullpath)
             kls = getattr(module, self.objectname)
@@ -261,7 +258,7 @@ class ModuleSetup(object):
 
     def getter(self):
         if self._obj is None:
-            print ("getter", self.kls)
+            #print ("getter", self.kls)
             self._obj = self.kls()
             self._obj.__dynamic_ready__ = True
             # post-add child properties
@@ -298,12 +295,12 @@ class JSBase(BaseGetter):
             if not tocheck: # nothing to check
                 return keys
             toadd = tocheck
-        print ("JSBase check child cache", self, keys, toadd)
-        print ("fullpath", getattr(self, '__jsfullpath__', None))
-        print ("modpath", getattr(self, '__jsmodulepath__', None))
+        #print ("JSBase check child cache", self, keys, toadd)
+        #print ("fullpath", getattr(self, '__jsfullpath__', None))
+        #print ("modpath", getattr(self, '__jsmodulepath__', None))
         module = self.__jsbasekls__.__module__
         filename = sys.modules[module].__file__
-        print ("mod,fname", module, filename)
+        #print ("mod,fname", module, filename)
 
         # obtain a list of modules listed across all plugins which match
         # the child's jslocation. XXX THIS REQUIRES that the plugin
@@ -313,26 +310,26 @@ class JSBase(BaseGetter):
         try:
             startchildj = object.__getattribute__(self, '__jslocation__')
         except AttributeError:
-            print ("no __jslocation__")
+            #print ("no __jslocation__")
             return keys # too early
 
-        print ("__jslocation__", startchildj)
+        #print ("__jslocation__", startchildj)
         # really awkward but absolutely must avoid BaseGetter recursion
         try:
             loader = self.j.tools.loader
         except AttributeError:
-            print ("not found loader")
+            #print ("not found loader")
             return keys # too early: skip it
     
         if False:
             loader = self.j
             for attr in ['tools', 'loader']:
                 try:
-                    print ("searching", loader, attr)
+                    #print ("searching", loader, attr)
                     loader = object.__getattribute__(loader, attr)
                     #loader = getattr(loader, attr)
                 except AttributeError:
-                    print ("not found")
+                    #print ("not found")
                     return keys # too early: skip it
 
         if toadd:
@@ -356,8 +353,8 @@ class JSBase(BaseGetter):
         # expensive, it basically has to do a depth=2 search.
 
         mods, base = loader.gather_modules(startchildj, depth=2)
-        print ("check mod cache mods", mods)
-        print ("check mod cache bas", base)
+        #print ("check mod cache mods", mods)
+        #print ("check mod cache bas", base)
 
         # now check if the child modules found in the filesystem (across all
         # plugins) exist in the dir() listing, and if not, add it.

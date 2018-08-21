@@ -4,7 +4,7 @@ import json
 import fcntl
 import pystache
 from subprocess import Popen, PIPE
-from ...core.JSBase import JSBase
+from ...core.JSBase import JSBase, jwalk
 
 import functools
 import types
@@ -52,12 +52,6 @@ bootstrap = [
         ('', 'exceptions', 'core.errorhandler.exceptions', None),
     ]
 
-def jwalk(instance, name, start=None, end=None):
-    for fromname in name.split('.')[start:end]:
-        #print ("patchfrom", walkfrom, fromname)
-        instance = getattr(instance, fromname)
-    return instance
-
 def find_jslocation(line):
     """ finds self.__jslocation__ for class-instance declaration version
         OR __jslocation__ with whitespace in front of it, indicating
@@ -91,7 +85,7 @@ def add_dynamic_instance(j, parent, child, module, kls):
     """ very similar to dynamic_generate, needs work
         to morph into using same code
     """
-    print ("adding", parent, child, module, kls)
+    #print ("adding", parent, child, module, kls)
     if not parent:
         parent = j
     else:
@@ -100,17 +94,17 @@ def add_dynamic_instance(j, parent, child, module, kls):
         # assume here that modules are imported from Jumpscale *only*
         # (*we're in boostrap mode so it's ok), and hand-create
         # a full module path.
-        print (top_level_path)
+        #print (top_level_path)
         if "." in module:
             mname = "%s.py" % module.replace(".", "/")
             fullpath = os.path.join(top_level_path, mname)
         else:
             mname = "%s/__init__.py" % module.replace(".", "/")
             fullpath = os.path.join(top_level_path, mname)
-        print ("fullpath", fullpath)
+        #print ("fullpath", fullpath)
         parent._add_instance(child, "Jumpscale." + module, kls,
                              fullpath, basej=j)
-        print ("added", parent, child)
+        #print ("added", parent, child)
     else:
         walkfrom = j
         for subname in module.split('.'):
@@ -531,12 +525,12 @@ class JSLoader():
                         defaultplugins)
         if 'Jumpscale' not in plugins:
             plugins['Jumpscale'] = defaultplugins['Jumpscale']
-        print ("plugins", plugins)
+        #print ("plugins", plugins)
         for name, _path in plugins.items():
             path = [_path] + startpath
             path = os.path.join(*path)
             self.logger.info("find modules in jumpscale for : '%s'" % path)
-            print ("startpath: %s depth: %d" % (startpath, depth))
+            #print ("startpath: %s depth: %d" % (startpath, depth))
             if not self.j.sal.fs.exists(_path, followlinks=True):
                 raise RuntimeError("Could not find plugin dir:%s" % _path)
             if not self.j.sal.fs.exists(path, followlinks=True):
@@ -556,9 +550,9 @@ class JSLoader():
         for jlocationRoot, jlocationRootDict in moduleList.items():
             # is per item under j e.g. self.j.clients
 
-            print ("jlocationRoot", jlocationRoot)
-            if jlocationRoot == 'j':
-                print (jlocationRootDict)
+            #print ("jlocationRoot", jlocationRoot)
+            #if jlocationRoot == 'j':
+            #    print (jlocationRootDict)
             if not jlocationRoot.startswith("j.") and jlocationRoot != 'j':
                 raise RuntimeError(
                     "jlocation should start with j, found: '%s', in %s" %
@@ -573,16 +567,16 @@ class JSLoader():
         return moduleList, baseList
 
     def add_submodules(self, basej, subname, sublist):
-        print (subname, sublist)
+        #print (subname, sublist)
         parent = jwalk(basej, subname, end=-1)
         jname = subname.split(".")[-1]
-        print ("add_submodule", basej, jname, parent)
+        #print ("add_submodule", basej, jname, parent)
         #print ("dynamic generate root", jname, jlocationRoot)
         modulename, classname, imports = sublist
-        print ("subs", jname, sublist)
+        #print ("subs", jname, sublist)
         importlocation = removeDirPart(
             modulename)[:-3].replace("//", "/").replace("/", ".")
-        print ("importlocation", importlocation)
+        #print ("importlocation", importlocation)
         parent._add_instance(jname, importlocation, classname,
                              fullpath=modulename,
                              basej=basej)
@@ -619,22 +613,22 @@ class JSLoader():
         _j.__jsdeps__ = {}
         rootmembers = {}
 
-        print ("baselist", baseList)
+        #print ("baselist", baseList)
         for jlocationRoot in baseList:
             jname = jlocationRoot.split(".")[1].strip()
             kls = baseList[jlocationRoot]
-            print ("baselisted", jname, kls)
+            #print ("baselisted", jname, kls)
             m = _j._add_instance(jname, "Jumpscale."+jname, kls, basej=_j)
             member = m.getter()
             setattr(_j, jname, member)
-            print ("baselisted", jname, member)
+            #print ("baselisted", jname, member)
             rootmembers[jname] = member
 
         for jlocationRoot, jlocationRootDict in moduleList:
             #self.add_submodules( _j, jlocationRoot, jlocationRootDict)
-            print ("jlocattion", jlocationRoot, jlocationRootDict)
+            #print ("jlocattion", jlocationRoot, jlocationRootDict)
             jname = jlocationRoot.split(".")[1].strip()
-            print ("dynamic generate root", jname, jlocationRoot)
+            #print ("dynamic generate root", jname, jlocationRoot)
             if jlocationRoot in baseList:
                 continue
             member = JSBase._create_jsbase_instance(jname)
@@ -705,7 +699,7 @@ class JSLoader():
         if aliases is None:
             aliases = list(map(lambda x: (x['from'], x['to']), patchers))
 
-        print ("aliases", aliases)
+        #print ("aliases", aliases)
         _j = basej._create_jsbase_instance('Jumpscale')
         _j.__jslocation__ = 'j'
         _j.__fullpath__ = None # TODO
@@ -713,18 +707,18 @@ class JSLoader():
         _j.__jsdeps__ = {}
         rootmembers = {}
 
-        print ("baselist", baseList)
+        #print ("baselist", baseList)
         for jlocationRoot in baseList:
-            print ("jlocationRoot", jlocationRoot)
+            #print ("jlocationRoot", jlocationRoot)
             jname = jlocationRoot.split(".")[1].strip()
             kls = baseList[jlocationRoot]
-            print ("baselisted", jname, kls)
+            #print ("baselisted", jname, kls)
             m = _j._add_instance(jname, "Jumpscale."+jname, kls, basej=_j)
             member = m.getter()
             if hasattr(m.kls, '__jsdeps__'):
-                print ("jlocation __jsdeps__", jname, m.kls.__jsdeps__,
-                       member.__class__.__name__, member.__module__,
-                       m.kls.__jsbasekls__.__module__)
+                #print ("jlocation __jsdeps__", jname, m.kls.__jsdeps__,
+                #       member.__class__.__name__, member.__module__,
+                #       m.kls.__jsbasekls__.__module__)
                 for cjname, childspec in m.kls.__jsdeps__.items():
                     if isinstance(childspec, str):
                         childspec = childspec, childspec
@@ -736,20 +730,20 @@ class JSLoader():
                     if not cjname.startswith("j."):
                         cm = member._add_instance(cjname, cmn, childkls,
                                                   basej=_j)
-                        print ("adding child", cmn, member, cjname,
-                                    cm.subname, cm.modulepath, cm.objectname)
+                        #print ("adding child", cmn, member, cjname,
+                        #            cm.subname, cm.modulepath, cm.objectname)
                     else:
                         walkfrom = jwalk(_j, cjname, start=1, end=-1)
                         setattr(walkfrom, cjname, cm.kls)
 
             setattr(_j, jname, member)
-            print ("baselisted", jname, member)
+            #print ("baselisted", jname, member)
             rootmembers[jname] = member
 
         for jlocationRoot, jlocationRootDict in moduleList:
-            print ("jlocattion", jlocationRoot, jlocationRootDict)
+            #print ("jlocattion", jlocationRoot, jlocationRootDict)
             jname = jlocationRoot.split(".")[1].strip()
-            print ("dynamic generate root", jname, jlocationRoot)
+            #print ("dynamic generate root", jname, jlocationRoot)
             if jlocationRoot in baseList:
                 continue
             member = JSBase._create_jsbase_instance(jname)
@@ -760,7 +754,7 @@ class JSLoader():
         #print ("rootmembers", rootmembers)
 
         for frommodule, tomodule in aliases:
-            print ("alias", frommodule, tomodule)
+            #print ("alias", frommodule, tomodule)
             #print ("patching", p)
             walkfrom = jwalk(_j, frommodule, end=-1)
             walkto = jwalk(_j, tomodule)
@@ -930,7 +924,7 @@ class JSLoader():
                         "while loading jumpscale lib." %
                         path)
                 # XXX not a good way to get value after equals (remove " and ')
-                print ("line ------->", line)
+                #print ("line ------->", line)
                 location = line.split("=", 1)[1]
                 location = location.replace('"', "")
                 location = location.replace("'", "").strip()
@@ -992,12 +986,12 @@ class JSLoader():
                                                depth=depth)
         pyfiles = initfiles + pyfiles
         for classfile in pyfiles:
-            print("found", classfile)
+            #print("found", classfile)
             basename = self.j.sal.fs.getBaseName(classfile)
             if basename.startswith('__init__'):
                 for classname, item in self.findJumpscaleLocationsInFile(
                         classfile).items():
-                    print ("found __init__", classfile, classname, item)
+                    #print ("found __init__", classfile, classname, item)
                     # hmm probably can use moduleList but not sure...
                     if "location" not in item:
                         continue
