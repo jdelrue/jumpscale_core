@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from jumpscale import j
+from Jumpscale import j
 
 import argparse
 j.application.start("jsshell")
