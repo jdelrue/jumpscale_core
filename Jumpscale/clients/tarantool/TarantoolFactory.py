@@ -94,6 +94,16 @@ class TarantoolFactory(JSConfigFactory):
         db.start()
 
     def testmodels(self):
+        """ WARNING - XXX this is a destructive test that REMOVES code
+            from the actual git repository (or, the deployed system).
+
+            either the code being destroyed should never have been
+            checked in in the first place, or this test needs to be
+            modified to either not be destructive, or to clean up
+            properly after itself
+
+            issue #79
+        """
 
         # remove the generated code
         todel = j.sal.fs.getDirName(os.path.abspath(__file__)) + "models/user/"
