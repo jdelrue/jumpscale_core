@@ -129,7 +129,11 @@ skipproperties = [
         # bugreport as a comment here.
 
         'j.tools.testengine.testFile', # not a unit test
-        ]
+
+        # https://github.com/threefoldtech/jumpscale_core/issues/79
+        'j.clients.tarantool.testmodel', # destroys files
+    ]
+
 compare('j', j, j, j, 3, _listtests, exclude=skipproperties,
         errorfn=_errortest)
 
