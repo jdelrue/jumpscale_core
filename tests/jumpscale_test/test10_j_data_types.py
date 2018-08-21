@@ -601,9 +601,12 @@ class TestJDataTypes(TestcasesBase):
 
             # Invalid data'
             ('XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:1.2.3.4', False),
+            ('1111:2222:3333:4444:5555:6666:256.256.256.256', False),
+
+            # These actually fail (!!)  raised as a bug against
+            # the *standard* python library: https://bugs.python.org/issue34453
             ('1111:2222:3333:4444:5555:6666:00.00.00.00', False),
             ('1111:2222:3333:4444:5555:6666:000.000.000.000', False),
-            ('1111:2222:3333:4444:5555:6666:256.256.256.256', False),
         ]
 
         for i, (test, expected) in enumerate(ipv6_tests):
