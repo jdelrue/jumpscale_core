@@ -12,7 +12,8 @@ def listin(list1, list2):
             notin.append(i)
     return isin, notin
 
-def compare(tree, j, obj1, obj2, depth, actionfn=None, exclude=None):
+def compare(tree, j, obj1, obj2, depth, actionfn=None, exclude=None,
+            errorfn=None):
 
     if exclude is None:
         exclude = []
@@ -21,6 +22,15 @@ def compare(tree, j, obj1, obj2, depth, actionfn=None, exclude=None):
 
     if depth == 0:
         return
+    if errorfn:
+        try:
+            contents1 = dir(obj1)
+            contents1 = list(filter(lambda x: not x.startswith("__"),
+                                contents1))
+            contents1.sort()
+        except Exception as e:
+            errorfn(tree, j, obj1, obj2, depth, e)
+            return
     contents1 = dir(obj1)
     contents1 = list(filter(lambda x: not x.startswith("__"), contents1))
     contents1.sort()
@@ -44,10 +54,18 @@ def compare(tree, j, obj1, obj2, depth, actionfn=None, exclude=None):
     for subname in isin:
         if "%s.%s" % (tree, subname) in exclude:
             continue
-        subobj1 = getattr(obj1, subname)
-        subobj2 = getattr(obj2, subname)
+        if errorfn:
+            try:
+                subobj1 = getattr(obj1, subname)
+                subobj2 = getattr(obj2, subname)
+            except Exception as e:
+                errorfn(tree, j, obj1, obj2, depth, e)
+                continue
+        else:
+            subobj1 = getattr(obj1, subname)
+            subobj2 = getattr(obj2, subname)
         compare("%s.%s" % (tree, subname), j,
-                subobj1, subobj2, depth-1, actionfn, exclude)
+                subobj1, subobj2, depth-1, actionfn, exclude, errorfn)
 
 class TestJSDynamicWalker(TestcasesBase):
 
@@ -67,6 +85,17 @@ dynamic_test_count = 0
 
 class TestJSDynamicWalkerTestSearch(TestcasesBase):
     pass
+
+def _errortest(tree, j, obj1, obj2, depth, e):
+    global dynamic_test_count
+    dynamic_test_count += 1
+    def _testfn(*args, **kwargs):
+        print ("error walking object %s" % tree)
+        raise e
+    name = tree.replace(".", "_")
+    setattr(TestJSDynamicWalkerTestSearch,
+            "test%4d_%s_error" % (dynamic_test_count, name),
+            _testfn)
 
 def _listtests(tree, j, obj1, obj2, depth):
     """ adds a function named after the tree (j.xxx.xxx) if its
@@ -91,12 +120,22 @@ def _listtests(tree, j, obj1, obj2, depth):
 skipproperties = [
         'j.clients.currencylayer',
         'j.clients.google_compute',
+
+        # all of these are down to NACL failing (secret)
         'j.data.nacl.test',
         'j.data.nacl.test_perf',
         'j.data.markdown.test',
         'j.data.indexfile.test',
         'j.data.indexdb.test',
         'j.clients.zdb.testdb_server_start_client_get',
+        'j.clients.trello.test',
+        'j.data.encryption.test',
+        'j.data.html.test',
+        'j.data.datacache.test',
+        'j.data.capnp.testWithRedis',
+        'j.data.capnp.test',
+        'j.clients.zerotier.test',
         ]
-compare('j', j, j, j, 3, _listtests, exclude=skipproperties)
+compare('j', j, j, j, 3, _listtests, exclude=skipproperties,
+        errorfn=_errortest)
 
