@@ -49,6 +49,7 @@ import fcntl
 import copy
 from io import StringIO
 # don't do logging, slows down
+from tempfile import TemporaryFile
 
 import multiprocessing
 import datetime
@@ -57,21 +58,34 @@ JSBASE = j.application.jsbase_get_class()
 
 
 class StdDuplicate(JSBASE):
+    """ file duplicator.  requires flush and fileno in order to be used.
+        (therefore cannot use StringIO)
+    """
 
     def __init__(self, original):
         JSBASE.__init__(self)
         self.redirect = original
-        self.buffer = StringIO()
+        self.buffer = TemporaryFile()
 
     def write(self, message):
         self.redirect.write(message)
         self.buffer.write(message)
 
     def getBuffer(self):
-        return self.buffer.getvalue()
+        pos = self.buffer.tell()
+        self.buffer.seek(0)
+        contents = self.buffer.read()
+        self.buffer.seek(pos)
+        return contents
 
     def restore(self):
         return self.redirect
+
+    def flush(self):
+        return self.buffer.flush()
+
+    def fileno(self):
+        return self.buffer.fileno()
 
 
 class Process(JSBASE):
