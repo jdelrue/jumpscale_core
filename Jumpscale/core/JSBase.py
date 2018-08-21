@@ -316,7 +316,7 @@ class JSBase(BaseGetter):
         #print ("__jslocation__", startchildj)
         # really awkward but absolutely must avoid BaseGetter recursion
         try:
-            loader = self.j.tools.loader
+            loader = self.j.tools.jsloader
         except AttributeError:
             #print ("not found loader")
             return keys # too early: skip it
