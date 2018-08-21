@@ -626,7 +626,7 @@ class ConfigFactory(object):
             """
             data = self.j.data.serializers.toml.loads(MYCONFIG)
 
-            self.init(path=tdir, data=data, silent=True)
+            self.init(configpath=tdir, data=data, silent=True)
 
             assert self.j.tools.myconfig.config.data == data
 
