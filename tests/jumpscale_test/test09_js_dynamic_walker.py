@@ -118,9 +118,10 @@ def _listtests(tree, j, obj1, obj2, depth):
             _testfn)
 
 skipproperties = [
-        'j.clients.currencylayer',
-        'j.clients.google_compute',
-
+        # add tests which are to be skipped due to being dangerous
+        # (destructive) or are being skipped because they have
+        # a bugreport associated with them.  add the link to the
+        # bugreport as a comment here.
         ]
 compare('j', j, j, j, 3, _listtests, exclude=skipproperties,
         errorfn=_errortest)
