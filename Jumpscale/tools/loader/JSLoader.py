@@ -507,6 +507,10 @@ class JSLoader():
         baseList = {}
         if startpath is None:
             startpath = "j"
+        if startpath == 'j':
+            logfn = self.logger.info
+        else:
+            logfn = self.logger.debug
 
         # split the startpath (j format) to create subdirectory
         # search locations to be appended to plugin path
@@ -529,7 +533,7 @@ class JSLoader():
         for name, _path in plugins.items():
             path = [_path] + startpath
             path = os.path.join(*path)
-            self.logger.info("find modules in jumpscale for : '%s'" % path)
+            logfn("find modules in jumpscale for : '%s'" % path)
             #print ("startpath: %s depth: %d" % (startpath, depth))
             if not self.j.sal.fs.exists(_path, followlinks=True):
                 raise RuntimeError("Could not find plugin dir:%s" % _path)
