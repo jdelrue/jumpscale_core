@@ -16,7 +16,7 @@ class TestSALLSSHD(TestcasesBase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.sshd = self.j.sal.sshd
+        cls.sshd = cls.j.sal.sshd
         cls.authorized_keys = cls.sshd.SSH_AUTHORIZED_KEYS.text().splitlines()
 
     @classmethod

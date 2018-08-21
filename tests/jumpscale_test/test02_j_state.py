@@ -30,7 +30,7 @@ class TestJSTATE(TestcasesBase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.client = self.j.core.state
+        cls.client = cls.j.core.state
         cls.state_path = cls.client.configStatePath
         cls.state_file_content = cls.get_state()
 

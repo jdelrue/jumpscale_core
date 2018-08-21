@@ -30,7 +30,7 @@ class TestJCONFIG(TestcasesBase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.client = self.j.core.state
+        cls.client = cls.j.core.state
         cls.config_path = cls.client.configJSPath
         cls.config_file_content = cls.get_config()
 

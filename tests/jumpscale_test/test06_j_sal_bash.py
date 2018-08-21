@@ -9,7 +9,9 @@ class TestBASH(TestcasesBase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.bash = self.j.tools.bash.get()
+        cls.j.tools.executorLocal.env_check_init()
+        cls.j.dirs.reload()
+        cls.bash = cls.j.tools.bash.get()
 
     def test001_env(self):
         """ JS-038
@@ -106,7 +108,9 @@ class TestPROFILEJS(TestcasesBase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        bash = self.j.tools.bash.get()
+        cls.j.tools.executorLocal.env_check_init()
+        cls.j.dirs.reload()
+        bash = cls.j.tools.bash.get()
         cls.profileJS = bash.profileJS
 
     def test01_env_set(self):
@@ -235,7 +239,9 @@ class TestPROFILEDEFAULT(TestcasesBase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        bash = self.j.tools.bash.get()
+        cls.j.tools.executorLocal.env_check_init()
+        cls.j.dirs.reload()
+        bash = cls.j.tools.bash.get()
         cls.profileDefault = bash.profileDefault
 
     def test01_env_set(self):
