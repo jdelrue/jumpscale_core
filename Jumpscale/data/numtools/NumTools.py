@@ -1,20 +1,18 @@
-from jumpscale import j
 import numpy
 import struct
 import math
 
-JSBASE = j.application.jsbase_get_class()
-class NumTools(JSBASE):
+class NumTools:
+
+    __jslocation__ = "j.tools.numtools"
 
     def __init__(self):
-        self.__jslocation__ = "j.tools.numtools"
-        JSBASE.__init__(self)
         self.__imports__ = "numpy"
         self._currencies = {}
 
     @property
     def currencies(self):
-        return j.clients.currencylayer.cur2usd
+        return self.j.clients.currencylayer.cur2usd
 
     def _getYearFromMonthId(self, monthid, startyear=0):
         """
@@ -71,7 +69,7 @@ class NumTools(JSBASE):
             tointerpolate = [0.0 for item in tointerpolate]
 
         for xpos in range(len(tointerpolate)):
-            if not tointerpolate[xpos] is None and not j.data.types.int.check(tointerpolate[xpos]):
+            if not tointerpolate[xpos] is None and not self.j.data.types.int.check(tointerpolate[xpos]):
                 isint = False
             if tointerpolate[xpos] is None:
                 x.append(xpos)
@@ -156,14 +154,14 @@ class NumTools(JSBASE):
         j.tools.numtools.text2val("0.1mEUR")
 
         """
-        d = j.data.types.numeric.str2bytes(value)
-        return j.data.types.numeric.bytes2cur(d,curcode=curcode)
+        d = self.j.data.types.numeric.str2bytes(value)
+        return self.j.data.types.numeric.bytes2cur(d,curcode=curcode)
 
     def int_to_bitstring(self, val):
         """
         bitstring is like '10101011' 
         """
-        if j.data.types.int.check(val):
+        if self.j.data.types.int.check(val):
             bits = "{0:b}".format(val)
         else:
             raise RuntimeError("bits need to be an integer")
@@ -174,7 +172,7 @@ class NumTools(JSBASE):
         return bits
 
     def bitstring8_to_int(self, val):
-        if not j.data.types.string.check(val):
+        if not self.j.data.types.string.check(val):
             raise RuntimeError("bits need to be string")
         if len(val) != 8:
             raise RuntimeError("bitstring needs to be 8 char")
@@ -194,7 +192,7 @@ class NumTools(JSBASE):
 
         bitsnew = self.int_to_bitstring(int(math.pow(2, pos)))
 
-        if not j.data.types.string.check(bits):
+        if not self.j.data.types.string.check(bits):
             bits = self.int_to_bitstring(bits)
 
         bits = int(bits, 2) | int(bitsnew, 2)
@@ -213,7 +211,7 @@ class NumTools(JSBASE):
 
         """
 
-        if not j.data.types.string.check(bits):
+        if not self.j.data.types.string.check(bits):
             bits = self.int_to_bitstring(bits)
 
         bitsnew = self.int_to_bitstring(int(math.pow(2, pos)))
