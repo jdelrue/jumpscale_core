@@ -4,10 +4,17 @@ import sys
 import importlib.util
 
 
-def jwalk(instance, name, start=None, end=None):
+def jwalk(instance, name, start=None, end=None, stealth=False):
     for fromname in name.split('.')[start:end]:
         #print ("patchfrom", walkfrom, fromname)
-        instance = getattr(instance, fromname)
+        if stealth: # use BaseGetter __getattribute__
+            d = object.__getattribute__(instance, '__subgetters__')
+            if fromname in d:
+                instance = d[fromname]
+            else:
+                instance = getattr(instance, fromname)
+        else:
+            instance = getattr(instance, fromname)
     return instance
 
 
@@ -400,11 +407,11 @@ class JSBase(BaseGetter):
             #print ("calling late init", self.__class__, fn, args, kwargs)
             fn(*args, *kwargs)
 
-    def jget(self, attrname, start=None, end=None):
+    def jget(self, attrname, start=None, end=None, stealth=False):
         """ gets an attribute in "j" format (dotted), walks down the
             object tree
         """
-        return jwalk(self, attrname, start, end)
+        return jwalk(self, attrname, start, end, stealth)
 
     @property
     def j(self):

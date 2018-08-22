@@ -450,7 +450,7 @@ class JSLoader():
                 # otherwise it will kick the dynamic loading into gear
                 fullchildname = "%s.%s" % (jname, subname)
                 try:
-                    childmember = _j.jget(fullchildname)
+                    childmember = _j.jget(fullchildname, stealth=True)
                 except AttributeError:
                     childmember = None
                 if childmember:
