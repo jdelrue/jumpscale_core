@@ -39,41 +39,17 @@ def _import_parent_recurse(mpathname, parent_name):
 
 def jspath_import(modulepath, fullpath):
 
-    if False:
-        module = importlib.import_module(modulepath)
+    #print ("jspath_import fullpath %s modulepath %s" % (fullpath, modulepath))
 
     module = sys.modules.get(modulepath, None)
     if not module:
         parent_name = modulepath.rpartition('.')[0]
+        spec = importlib.util.spec_from_file_location(modulepath, fullpath)
         #print ("parentname", modulepath, parent_name)
-        if parent_name:
-            spec = None
-            if False:
-                parentpath = os.path.split(fullpath)[0]
-                mpathname = modulepath.rpartition('.')[0]
-                _import_parent_recurse(mpathname, parentpath)
-                parent = __import__(parent_name, fromlist=['__path__'])
-                #print ("parent", parent_name, parent)
-                spec = importlib.util._find_spec(modulepath,
-                                                 parent.__path__)
-            if spec is None:
-                spec = importlib.util.spec_from_file_location(
-                    modulepath,
-                    fullpath)
-        else:
-            #print ("no parent")
-            # spec = importlib.util._find_spec_from_path(modulepath,
-            #                                        fullpath)
-            spec = importlib.util.spec_from_file_location(
-                modulepath,
-                fullpath)
-
         #print ("spec", spec, dir(spec))
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
 
-    # print ("about to set fullpath %s modulepath %s object %s" % \
-    #        (fullpath, modulepath, objectname))
     if module not in sys.modules:
         sys.modules[modulepath] = module
 
@@ -93,21 +69,7 @@ class BaseGetter(object):
         and a class named RedisFactory, and an instance name "redis",
         if ever Basegetter.redis is referred to, you get a RedisFactory()
         instantiated and returned
-
-        at the moment the import is done using importlib.import_module()
-        however see 32.5.7.5 https://docs.python.org/3/library/importlib.html
-        really we should be *explicitly* importing from the exact location
-        required / requested, using a modified variant of the code shown
-        there.
-
-        the problem at the moment is that the code below (found on
-        stackoverflow) doesn't deal with relative imports: parent
-        has to be set (and loaded prior to the child... and all the
-        way down), so it gets... compplicated.
-
-        import_module, although it will go searching in /usr/local/
-        etc. etc. will do the job for now
-        """
+    """
 
     __dynamic_ready__ = False
 
