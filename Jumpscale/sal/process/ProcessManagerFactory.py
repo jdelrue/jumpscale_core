@@ -170,23 +170,30 @@ class Process(JSBASE):
         # clearing pid, not used
         self.pid = None
 
+        _wclosed = False
+
         try:
             self._state = "running"
             self.started_at = datetime.datetime.now()
             res = self.method(**self.args)
             self._setSuccess(res)
 
-        except Exception as e:
-            eco = j.errorhandler.processPythonExceptionObject(e)
-            self._setException(eco.toJson())
-
-        finally:
             os.close(wpipe)
+            _wclosed = True
 
             temp = self.inpipe.read()
             data = j.data.serializers.json.loads(temp)
-
             self._update(data)
+
+        except Exception as e:
+            eco = j.errorhandler.processPythonExceptionObject(e)
+            print (eco, type(eco), dir(eco))
+            self._setException(eco.json)
+
+        finally:
+            if not _wclosed:
+                os.close(wpipe)
+
             self.stdout = sys.stdout.getBuffer()
             self.stderr = sys.stderr.getBuffer()
 
@@ -232,7 +239,7 @@ class Process(JSBASE):
             except Exception as e:
                 eco = j.errorhandler.processPythonExceptionObject(e)
 
-                self._setException(eco.toJson())
+                self._setException(eco.json)
                 self._clean()
                 os._exit(1)
 
@@ -532,7 +539,7 @@ class ProcessManagerFactory(JSBASE):
         def anerror(x=None, till=1):
             print("a line - normal")
             print("a line2 - normal")
-            j.logger.log("testlog")
+            j.logger.debug("test anerror")
             raise RuntimeError("raised, generic python error")
 
         p = self.startProcess(anerror, {"x": i, "till": 1}, sync=True)
