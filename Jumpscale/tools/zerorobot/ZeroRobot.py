@@ -54,6 +54,8 @@ class ZeroRobot(JSBASE):
     def test(self):
         self.templates.load() #will load all templates it can find
 
-        from IPython import embed;embed(colors='Linux')
+        # XXX tests need to be non-interactive.  use a different function name
+        # e.g. _interactive_test
+        #from IPython import embed;embed(colors='Linux')
 
 
