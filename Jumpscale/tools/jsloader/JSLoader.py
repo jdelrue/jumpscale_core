@@ -161,6 +161,8 @@ def bootstrap_j(j, logging_enabled=False, filter=None, config_dir=None):
         modlist, baselist = j.__jsmodbase__
         loader._dynamic_merge(j, modlist, baselist, {})
 
+    print ("jsonfiles", loader.jsonfiles)
+
     # now finally set dynamic on.  if the json loader was empty
     # or if ever something is requested that's not *in* the json
     # file, dynamic checking kicks in.
@@ -275,6 +277,35 @@ class JSLoader():
 
         return rc, generationParamsSub
 
+    @property
+    def plugins(self):
+        """ get the plugins from the config file... or get a default
+            suitable for bootstrapping
+        """
+        # ok, set up a default based on the current location of THIS
+        # file.  it's a hack however it will at least get started.
+        # this will get the plugins recognised from Jumpscale
+        # when there is absolutely no config file set up.
+        #
+        # related to issue #71
+        #
+        defaultplugins = {'Jumpscale': top_level_path}
+
+        plugins = self.j.tools.executorLocal.state.configGet('plugins',
+                                                             defaultplugins)
+        if 'Jumpscale' not in plugins:
+            plugins['Jumpscale'] = defaultplugins['Jumpscale']
+        return plugins
+
+    @property
+    def jsonfiles(self):
+        """ returns a list of the json plugin files
+        """
+        res = []
+        for name, _path in self.plugins.items():
+            res.append(os.path.join(_path, "%s.plugins.json" % name))
+        return res
+
     def gather_modules(self, startpath=None, depth=0, recursive=True):
         """ identifies and gathers information about (only) jumpscale modules
         """
@@ -298,21 +329,8 @@ class JSLoader():
         # search locations to be appended to plugin path
         startpath = startpath.split('.')[1:]
 
-        # ok, set up a default based on the current location of THIS
-        # file.  it's a hack however it will at least get started.
-        # this will get the plugins recognised from Jumpscale
-        # when there is absolutely no config file set up.
-        #
-        # related to issue #71
-        #
-        defaultplugins = {'Jumpscale': top_level_path}
-
-        plugins = self.j.tools.executorLocal.state.configGet('plugins',
-                                                             defaultplugins)
-        if 'Jumpscale' not in plugins:
-            plugins['Jumpscale'] = defaultplugins['Jumpscale']
         #print ("plugins", plugins)
-        for name, _path in plugins.items():
+        for name, _path in self.plugins.items():
             path = [_path] + startpath
             path = os.path.join(*path)
             logfn("find modules in jumpscale for : '%s'" % path)
