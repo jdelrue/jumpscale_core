@@ -229,3 +229,52 @@ Tests that are to be skipped can be added, as long as a bugreport
 is also filed and the bugreport link listed in the unit test.
 
 see tests/jumpscale\_test/test09\_js\_dynamic\_walker.py for details.
+
+## 22aug2018 JSON loader added (similar to python package ".pth" files)
+
+The last part of the dynamic loading is to leverage what was formerly
+the creation of /root/jumpscale/autocomplete/jumpscale.json, containing
+the complete search of "__jslocation__" and "__import__" in all .py
+files in all modules, and leveraging it to create a *per plugin*
+version of the same.
+
+Each python3 setup.py develop, per plugin, must now call
+j.tools.jsloader.generate_json('<LIBRARYNAME>') instead of
+j.tools.jsloader.generate() as this *only* creates the list of
+files (and records their jslocations/imports) required for
+that plugin, *not* the entire set for all plugins.
+
+On startup the bootstrap_j function will still create the absolute,
+absolute minimum required to get the config file(s), state db,
+logging etc. started up, and then it is in a position to load
+the config file and get the full plugins list.  All of these are
+done in "lazy" evaluation mode (see JSBase ModuleSetup)
+
+From there, the json file at the root of each plugin subdirectory
+may be obtained, and lazy-evaluation again carried out, dropping
+ModuleSetup instances into the j tree, ready to be created on-demand
+(when or if they are later accessed).  *At no time* are actual
+modules imported, unless they are accessed as a parent, in order
+for the child to be dropped in them.
+
+Finally: dynamic loading is still taking place, as it may prove
+useful, particularly if json files have not been created, or
+have become corrupted, or are out-of-date.  It may however come
+as a surprise as it will trigger loads/searches... at least
+they are not massive ones: the only files searched for will be
+python .py files, not .so, .pyc3, etc. etc. etc.
+
+All of this results in strace showing only 248 occurrences of
+stat and open of files/directories related to "jumpscale".  The
+present version (9.4 at the time of writing) requires over 450.
+It *may* be possible to reduce this number further.  Also,
+compared to 9.4, when it comes to actually importing, the dynamic
+loader *only* loads the actual .py file direct (and annoyingly
+also the __pycache__ file), rather than looking for six possibly
+twelve files which do not exist.
+
+    $ strace -o log.txt -ff js_shell
+    In [1]: ^D
+    $ grep -E "^stat|^open" log.txt.* | grep -i jumpscale |wc
+        248    1548   30775
+
