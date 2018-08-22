@@ -487,6 +487,7 @@ class JSLoader():
 
             self.logger.info("* jumpscale json path:%s" % outJSON)
 
+            print (modbase)
             modlistout_json = json.dumps(modbase, sort_keys=True, indent=4)
             self.j.sal.fs.writeFile(outJSON, modlistout_json)
             self.j.__jsmodbase__[plugin] = modbase
@@ -559,7 +560,7 @@ class JSLoader():
                 imports = imports.replace("\"", "")
                 imports = imports.replace("'", "").strip()
                 imports = map(str.strip, imports.split(","))
-                imports = filter(None, imports)
+                imports = list(filter(None, imports))
                 if classname not in res:
                     res[classname] = {}
                 res[classname]["import"] = imports
