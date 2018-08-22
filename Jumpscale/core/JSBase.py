@@ -256,11 +256,17 @@ class JSBase(BaseGetter):
         self._logger_force = False
         self._late_init_called = False
         self._late_init_fns = []
-        self._child_mod_cache = {}
-        self._child_mod_cache_checked = False
-        self._child_toadd_cache_checked = set()
+        # these respectively make sure that dir / getattr are called only once
+        self._child_mod_cache_checked = False # for __dir__
+        self._child_toadd_cache_checked = set() # for direct getattr
 
     def _check_child_mod_cache(self, keys, toadd=None):
+        """ checks the child module.  has two modes.  toadd=None will
+            do a filesystem walk (directory) at the current module
+            path, and toadd=["list", "of", "modules"] will check
+            directly for individual modules.  these are fired by
+            dir(j.clients) and by getattr(j.clients, "fred") respectively
+        """
         if toadd is None:
             if self._child_mod_cache_checked:
                 return keys
