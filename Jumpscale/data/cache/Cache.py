@@ -144,7 +144,7 @@ class CacheCategory(object):
             res = pickle.loads(res)
         if expire is None:
             expire = self.expiration
-        print("key:%s res:%s" % (key, res))
+        #print("key:%s res:%s" % (key, res))
         if refresh or res is None:
             if method is None:
                 raise self.j.exceptions.RuntimeError(
@@ -173,16 +173,12 @@ class CacheCategory(object):
         return [item.decode().split(":")[-1]
                 for item in self.db.keys("cache:%s:*" % self.id)]
 
-    # XXX issue #35 - commenting these out for now as they can't work.
-    # self.j.data does not have a serializer instance
-    def __BUG35str__(self):
+    def __str__(self):
         res = {}
         for key in self.db.keys():
             val = self.db.get(key)
             res[key] = val
-        # out = self.j.data.serializers.yaml.dumps(res, default_flow_style=False)
-        print (dir(self.j.data))
         out = self.j.data.serializers.yaml.dumps(res)
         return out
 
-    __BUG35repr__ = __BUG35str__
+    __repr__ = __str__
