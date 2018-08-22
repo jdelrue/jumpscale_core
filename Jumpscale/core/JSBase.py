@@ -148,7 +148,10 @@ class BaseGetter(object):
         except AttributeError:
             jbk = None
         if jbk is not None:
-            keys = self._check_child_mod_cache(keys)
+            global_ready = object.__getattribute__(self.j, '__dynamic_ready__')
+            dynamic_ready = object.__getattribute__(self, '__dynamic_ready__')
+            if dynamic_ready and global_ready:
+                keys = self._check_child_mod_cache(keys)
         keys = sorted(keys)
         return keys
 
