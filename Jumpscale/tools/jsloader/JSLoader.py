@@ -306,8 +306,15 @@ class JSLoader():
             res.append(os.path.join(_path, "%s.plugins.json" % name))
         return res
 
-    def gather_modules(self, startpath=None, depth=0, recursive=True):
+    def gather_modules(self, startpath=None, depth=0, recursive=True,
+                             pluginsearch=None):
         """ identifies and gathers information about (only) jumpscale modules
+
+            can be used to search specific paths (use startparth), by depth
+            (0=infinite), and recursively.
+
+            also can be restricted to search only specific plugins
+            (pluginsearch)
         """
         # outCC = outpath for code completion
         # out = path for core of jumpscale
@@ -315,6 +322,9 @@ class JSLoader():
         # make sure the jumpscale toml file is set / will also link cmd files
         # to system
         self.j.tools.executorLocal.env_check_init()
+
+        if not pluginsearch:
+            pluginsearch = []
 
         moduleList = {}
         baseList = {}
@@ -331,6 +341,8 @@ class JSLoader():
 
         #print ("plugins", plugins)
         for name, _path in self.plugins.items():
+            if pluginsearch and name not in pluginsearch:
+                continue
             path = [_path] + startpath
             path = os.path.join(*path)
             logfn("find modules in jumpscale for : '%s'" % path)
@@ -476,7 +488,7 @@ class JSLoader():
 
         return True
 
-    def generate_json(self):
+    def generate_json(self, plugin=None):
         """ generates the jumpscale json file, walking the plugin directories
             and saving the results in $HOSTCFGDIR/jumpscale.json.  also
             stores the results in self.j.__jsjson__
