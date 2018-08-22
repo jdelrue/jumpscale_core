@@ -451,7 +451,8 @@ class RegexTools:
             # and add unit tests
             addLine = ( self.matchMultiple( linesIncludePatterns, line) and \
                         not self.matchMultiple( linesExcludePatterns, line)) \
-                        or emptyLine if state == "foundblock" and (
+                        or emptyLine
+            if state == "foundblock" and (
                 t == len(lines) -
                 1 or (
                     self.matchMultiple(
