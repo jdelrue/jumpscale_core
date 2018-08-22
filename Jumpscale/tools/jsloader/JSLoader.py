@@ -149,7 +149,7 @@ def bootstrap_j(j, logging_enabled=False, filter=None, config_dir=None):
     #j.core.db_reset() # used fake redis up to now: move to real if it exists
 
     # now load the json file
-    print ("loader", j.tools.jsloader)
+    #print ("loader", j.tools.jsloader)
     loader = j.tools.jsloader
     if loader.load_json():
         modlist, baselist = j.__jsmodbase__
@@ -435,19 +435,19 @@ class JSLoader():
         return _j
 
     def load_json(self):
-        """ reads the jumpscale json file,
+        """ reads the jumpscale json file.
         """
 
         outJSON = os.path.join( self.j.dirs.HOSTCFGDIR, "jumpscale.json")
+        self.logger.info("* jumpscale json path:%s" % outJSON)
         try:
             outJSON = self.j.sal.fs.readFile(outJSON)
             self.j.__jsmodbase__ = json.loads(outJSON)
         except ValueError as e:
-            print ("e", str(e))
+            #print ("e", str(e))
             self.j.__jsmodbase__ = ({}, {})
             return False
 
-        self.logger.info("* jumpscale json path:%s" % outJSON)
         return True
 
     def generate_json(self):
