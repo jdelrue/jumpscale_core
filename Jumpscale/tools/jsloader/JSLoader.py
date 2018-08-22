@@ -155,11 +155,10 @@ def bootstrap_j(j, logging_enabled=False, filter=None, config_dir=None):
         modlist, baselist = j.__jsmodbase__
         loader._dynamic_merge(j, modlist, baselist, {})
 
-    # now finally set dynamic on
+    # now finally set dynamic on.  if the json loader was empty
+    # or if ever something is requested that's not *in* the json
+    # file, dynamic checking kicks in.
     j.__dynamic_ready__ = True # set global dynamic loading ON
-
-    #for jname in rootnames:
-    #    getattr(j, jname)._child_mod_cache_checked = False
 
     return j
 
@@ -361,12 +360,7 @@ class JSLoader():
                              basej=basej)
 
     def _dynamic_merge(self, basej, moduleList, baseList, aliases=None):
-        """ dynamically merges modules a jumpscale instance.
-
-            uses gather_modules (which strips out non-Jumpscale modules for us)
-            to get a list of root (base) modules that are in __init__.py
-            files (and have a __jslocation__), and submodules that need
-            to be added to them.
+        """ dynamically merges modules into a jumpscale instance.
 
             base (root) instance constructors are **REQUIRED** to not
             have side-effects: they get instantiated straight away
@@ -375,7 +369,14 @@ class JSLoader():
             anything else gets created as a lazy-property
             (see BaseGetter __getattribute__ override, they
              end up in BaseGetter.__subgetters__)
+
+             NOTE: this function MUST be called when __dynamic_ready__ == False
+             as the use of getattr checking (child modules) would fire
+             off dynamic filesystem-walking on every child module being
+             added
         """
+        assert basej.__dynamic_ready__ == False, \
+                "merging must not be combined with dynamic loading"
 
         if isinstance(moduleList, dict):
             moduleList = moduleList.items()
@@ -385,7 +386,7 @@ class JSLoader():
         _j = basej
         rootmembers = {}
 
-        print ("baselist", baseList)
+        #print ("baselist", baseList)
         for jlocationRoot in baseList:
             jname = jlocationRoot.split(".")[1].strip()
             kls = baseList[jlocationRoot]
@@ -407,17 +408,14 @@ class JSLoader():
             member = rootmembers[jname]
             #print ("dynamic generate root", jname, jlocationRoot)
             for subname, sublist in jlocationRootDict.items():
-                modulename, classname, imports = sublist
-                print ("subs", jlocationRoot, subname, sublist)
-                importlocation = remove_dir_part(
-                    modulename)[:-3].replace("//", "/").replace("/", ".")
-                print (importlocation)
+                #print ("subs", jlocationRoot, subname, sublist)
+                # XXX ONLY do this in __dynamic_ready__ == False!
+                # otherwise it will kick the dynamic loading into gear
                 childmember = getattr(member, subname, None)
                 if childmember:
                     continue
-                member._add_instance(subname, importlocation, classname,
-                                     fullpath=modulename,
-                                     basej=basej)
+                fullchildname = "%s.%s" % (jname, subname)
+                self.add_submodules(_j, fullchildname, sublist)
 
         for frommodule, tomodule in aliases:
             #print ("alias", frommodule, tomodule)
