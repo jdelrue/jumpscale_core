@@ -1,15 +1,10 @@
-from jumpscale import j
 
 order = ['', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']
 
-JSBASE = j.application.jsbase_get_class()
-class Sizes(JSBASE):
+class Sizes:
     _BASE = 1000.
 
-    def __init__(self):
-        if not hasattr(self, '__jslocation__'):
-            self.__jslocation__ = "j.data_units.sizes"
-        JSBASE.__init__(self)
+    __jslocation__ = "j.data_units.sizes"
 
     def toSize(self, value, input='', output='K'):
         """
@@ -35,6 +30,4 @@ class Sizes(JSBASE):
 class Bytes(Sizes):
     _BASE = 1024.
 
-    def __init__(self):
-        self.__jslocation__ = "j.data_units.bytes"
-        Sizes.__init__(self)
+    __jslocation__ = "j.data_units.bytes"
