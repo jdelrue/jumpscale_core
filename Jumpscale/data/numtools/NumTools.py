@@ -157,7 +157,7 @@ class NumTools(JSBASE):
 
         """
         d = j.data.types.numeric.str2bytes(value)
-        return j.data.types.numeric.bin2cur(d,curcode=curcode)
+        return j.data.types.numeric.bytes2cur(d,curcode=curcode)
 
     def int_to_bitstring(self, val):
         """
