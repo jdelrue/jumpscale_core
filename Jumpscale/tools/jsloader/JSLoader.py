@@ -17,6 +17,7 @@ patchers = [
     {'from': 'exceptions', 'to': 'core.errorhandler.exceptions'},
     {'from': 'events', 'to': 'core.events'},
     {'from': 'data.datacache', 'to': 'data.cache'},
+    {'from': 'data.serializer', 'to': 'data.serializers'}, # YUK!
     {'from': 'logging', 'to': 'core.logging'},
     {'from': 'core.state', 'to': 'tools.executorLocal.state'},
 ]
