@@ -86,8 +86,8 @@ class PerfTestToolsFactory:
         """ will do monitoring & send results to redis, env is used to
             get config parameters from
         """
-        nodename = os.environ["nodename"]
-        if nodename == "":
+        nodename = os.environ.get("nodename", None)
+        if not nodename:
             nodename = self.j.sal.process.execute("hostname")[1].strip()
 
         net = os.environ["net"] == '1'
