@@ -13,6 +13,9 @@ def _post_install(libname, libpath):
     for item in j.sal.fs.find("/usr/local/bin/", fileregex="js_*"):
         j.sal.fs.remove("/usr/local/bin/%s" % item)
 
+    # re-generates the Jumpscale core plugin json (similar to .pth)
+    j.tools.jsloader.generate_json('Jumpscale')
+
 
 class install(_install):
 
