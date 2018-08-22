@@ -16,7 +16,6 @@ from .SerializerBase import SerializerBase
 
 
 def as_python_object(dct):
-    print ("as_python_object", dct)
     if '_python_object' in dct:
         pickled = dct['_python_object']
         unpickled = pickle.loads(codecs.decode(pickled.encode(), 'base64'))
