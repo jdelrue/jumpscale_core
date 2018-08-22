@@ -22,36 +22,37 @@ patchers = [
 ]
 
 bootstrap = [
-        ('', 'core', 'core', 'Core'),
-        ('', 'tools', 'tools', 'Tools'),
-        ('', 'sal', 'sal', 'Sal'),
-        ('', 'data', 'data', 'Data'),
-        ('', 'clients', 'clients', 'Clients'),
-        ('', 'servers', 'servers', 'Servers'),
-        #('', 'errorhandling', 'errorhandling', 'Exceptions'),
-        ('data', 'types', 'data.types.Types', 'Types'),
-        ('data', 'text', 'data.text.Text', 'Text'),
-        # idgen not strictly needed for bootstrap but for error reporting
-        ('data', 'idgenerator', 'data.idgenerator.IDGenerator', 'IDGenerator'),
-        ('sal', 'fs', 'fs.SystemFS', 'SystemFS'),
-        ('core', 'application', 'core.Application', 'Application'),
-        ('core', 'errorhandler', 'errorhandler.ErrorHandler', 'ErrorHandler'),
-        ('data', 'datacache', 'data.cache.Cache', 'Cache'),
-        ('tools', 'jsloader', 'tools.jsloader.JSLoader', 'JSLoader'),
-        ('tools', 'executorLocal', 'tools.executor.ExecutorLocal',
-                                    'ExecutorLocal'),
-        #('', 'errorhandling', 'errorhandling.JSExceptions',
-        #                        'ExceptionsFactory'),
-        ('', 'dirs', 'core.Dirs', 'Dirs'),
-        ('core', 'platformtype', 'core.PlatformTypes', 'PlatformTypes'),
-        ('sal', 'process', 'sal.process.SystemProcess', 'SystemProcess'),
-        ('', 'application', 'core.application', None),
-        ('', 'cache', 'data.cache', None),
-        #('core', 'state', 'tools.executorLocal.state', None),
-        ('core', 'dirs', 'dirs', None),
-        ('', 'errorhandler', 'core.errorhandler', None),
-        ('', 'exceptions', 'core.errorhandler.exceptions', None),
-    ]
+    ('', 'core', 'core', 'Core'),
+    ('', 'tools', 'tools', 'Tools'),
+    ('', 'sal', 'sal', 'Sal'),
+    ('', 'data', 'data', 'Data'),
+    ('', 'clients', 'clients', 'Clients'),
+    ('', 'servers', 'servers', 'Servers'),
+    #('', 'errorhandling', 'errorhandling', 'Exceptions'),
+    ('data', 'types', 'data.types.Types', 'Types'),
+    ('data', 'text', 'data.text.Text', 'Text'),
+    # idgen not strictly needed for bootstrap but for error reporting
+    ('data', 'idgenerator', 'data.idgenerator.IDGenerator', 'IDGenerator'),
+    ('sal', 'fs', 'fs.SystemFS', 'SystemFS'),
+    ('core', 'application', 'core.Application', 'Application'),
+    ('core', 'errorhandler', 'errorhandler.ErrorHandler', 'ErrorHandler'),
+    ('data', 'datacache', 'data.cache.Cache', 'Cache'),
+    ('tools', 'jsloader', 'tools.jsloader.JSLoader', 'JSLoader'),
+    ('tools', 'executorLocal', 'tools.executor.ExecutorLocal',
+     'ExecutorLocal'),
+    # ('', 'errorhandling', 'errorhandling.JSExceptions',
+    #                        'ExceptionsFactory'),
+    ('', 'dirs', 'core.Dirs', 'Dirs'),
+    ('core', 'platformtype', 'core.PlatformTypes', 'PlatformTypes'),
+    ('sal', 'process', 'sal.process.SystemProcess', 'SystemProcess'),
+    ('', 'application', 'core.application', None),
+    ('', 'cache', 'data.cache', None),
+    #('core', 'state', 'tools.executorLocal.state', None),
+    ('core', 'dirs', 'dirs', None),
+    ('', 'errorhandler', 'core.errorhandler', None),
+    ('', 'exceptions', 'core.errorhandler.exceptions', None),
+]
+
 
 def find_jslocation(line):
     """ finds self.__jslocation__ for class-instance declaration version
@@ -76,11 +77,13 @@ def find_jslocation(line):
     prefix = line[:idx]
     return prefix.isspace()
 
+
 # gets down to the Jumpscale core9 subdirectory from here
 # (.../Jumpscale/tools/loader/JSLoader.py)
 plugin_path = os.path.dirname(os.path.abspath(__file__))
 plugin_path = os.path.dirname(plugin_path)
 top_level_path = os.path.dirname(plugin_path)
+
 
 def add_dynamic_instance(j, parent, child, module, kls):
     """ very similar to dynamic_generate, needs work
@@ -104,13 +107,14 @@ def add_dynamic_instance(j, parent, child, module, kls):
             fullpath = os.path.join(top_level_path, mname)
         #print ("fullpath", fullpath)
         return parent._add_instance(child, "Jumpscale." + module, kls,
-                             fullpath, basej=j)
+                                    fullpath, basej=j)
         #print ("added", parent, child)
     else:
         walkfrom = j
         for subname in module.split('.'):
             walkfrom = getattr(walkfrom, subname)
         parent.__aliases__[child] = walkfrom
+
 
 def bootstrap_j(j, logging_enabled=False, filter=None, config_dir=None):
 
@@ -122,15 +126,16 @@ def bootstrap_j(j, logging_enabled=False, filter=None, config_dir=None):
     if config_dir:
         os.environ['HOSTCFGDIR'] = config_dir
 
-    j.j = j # sets up the global singleton
+    j.j = j  # sets up the global singleton
     j.__jsfullpath__ = os.path.join(plugin_path, "Jumpscale.py")
     j.__jsmodulepath__ = 'Jumpscale'
     j.__jsmodbase__ = ({}, {})
-    j.j.__dynamic_ready__ = False # set global dynamic loading OFF
+    j.j.__dynamic_ready__ = False  # set global dynamic loading OFF
 
-    DLoggerFactory = j._jsbase('LoggerFactory',
-                        ['Jumpscale.logging.LoggerFactory.LoggerFactory'],
-                        basej=j)
+    DLoggerFactory = j._jsbase(
+        'LoggerFactory',
+        ['Jumpscale.logging.LoggerFactory.LoggerFactory'],
+        basej=j)
     l = DLoggerFactory()
     l.enabled = logging_enabled
     l.filter = filter or []  # default filter which captures all is *
@@ -143,10 +148,10 @@ def bootstrap_j(j, logging_enabled=False, filter=None, config_dir=None):
             rootnames.append(child)
 
     # initialise
-    j.tools.executorLocal.env_check_init() # OUCH! doubles file-accesses!
+    j.tools.executorLocal.env_check_init()  # OUCH! doubles file-accesses!
     j.dirs.reload()
     j.logging.init()  # will reconfigure the logging to use the config file
-    #j.core.db_reset() # used fake redis up to now: move to real if it exists
+    # j.core.db_reset() # used fake redis up to now: move to real if it exists
 
     # now load the json file
     #print ("loader", j.tools.jsloader)
@@ -158,9 +163,10 @@ def bootstrap_j(j, logging_enabled=False, filter=None, config_dir=None):
     # now finally set dynamic on.  if the json loader was empty
     # or if ever something is requested that's not *in* the json
     # file, dynamic checking kicks in.
-    j.__dynamic_ready__ = True # set global dynamic loading ON
+    j.__dynamic_ready__ = True  # set global dynamic loading ON
 
     return j
+
 
 def lazyprop(fn):
     attr_name = '_lazy_' + fn.__name__
@@ -173,6 +179,7 @@ def lazyprop(fn):
         return getattr(self, attr_name)
 
     return _lazyprop
+
 
 def remove_dir_part(path):
     "only keep part after jumpscale or digitalme"
@@ -259,7 +266,7 @@ class JSLoader():
             classfile)[:-3].replace("//", "/").replace("/", ".")
         generationParamsSub["importlocation"] = importlocation
         prefix = importlocation.split('.')[:-1]
-        prefix = map(lambda x: x[0].upper()+x[1:], prefix)
+        prefix = map(lambda x: x[0].upper() + x[1:], prefix)
         prefix = ''.join(prefix)
         generationParamsSub["classprefix"] = prefix
 
@@ -300,7 +307,7 @@ class JSLoader():
         defaultplugins = {'Jumpscale': top_level_path}
 
         plugins = self.j.tools.executorLocal.state.configGet('plugins',
-                        defaultplugins)
+                                                             defaultplugins)
         if 'Jumpscale' not in plugins:
             plugins['Jumpscale'] = defaultplugins['Jumpscale']
         #print ("plugins", plugins)
@@ -313,23 +320,23 @@ class JSLoader():
                 raise RuntimeError("Could not find plugin dir:%s" % _path)
             if not self.j.sal.fs.exists(path, followlinks=True):
                 continue
-            if False: # XXX hmmm.... nasty hack... disable....
+            if False:  # XXX hmmm.... nasty hack... disable....
                 pth = path
                 if pth[-1] == '/':
                     pth = pth[:-1]
                 pth = os.path.split(pth)[0]
                 sys.path = [pth] + sys.path
             moduleList, baseList = self.findModules(path=path,
-                                    moduleList=moduleList,
-                                    baseList=baseList,
-                                    depth=depth,
-                                    recursive=recursive)
+                                                    moduleList=moduleList,
+                                                    baseList=baseList,
+                                                    depth=depth,
+                                                    recursive=recursive)
 
         for jlocationRoot, jlocationRootDict in moduleList.items():
             # is per item under j e.g. self.j.clients
 
             #print ("jlocationRoot", jlocationRoot)
-            #if jlocationRoot == 'j':
+            # if jlocationRoot == 'j':
             #    print (jlocationRootDict)
             if not jlocationRoot.startswith("j.") and jlocationRoot != 'j':
                 raise RuntimeError(
@@ -376,7 +383,7 @@ class JSLoader():
              added
         """
         assert basej.__dynamic_ready__ == False, \
-                "merging must not be combined with dynamic loading"
+            "merging must not be combined with dynamic loading"
 
         if isinstance(moduleList, dict):
             moduleList = moduleList.items()
@@ -438,7 +445,7 @@ class JSLoader():
         """ reads the jumpscale json file.
         """
 
-        outJSON = os.path.join( self.j.dirs.HOSTCFGDIR, "jumpscale.json")
+        outJSON = os.path.join(self.j.dirs.HOSTCFGDIR, "jumpscale.json")
         self.logger.info("* jumpscale json path:%s" % outJSON)
         try:
             outJSON = self.j.sal.fs.readFile(outJSON)
@@ -465,7 +472,7 @@ class JSLoader():
         # outCC = outpath for code completion
         # out = path for core of jumpscale
 
-        outJSON = os.path.join( self.j.dirs.HOSTCFGDIR, "jumpscale.json")
+        outJSON = os.path.join(self.j.dirs.HOSTCFGDIR, "jumpscale.json")
 
         self.logger.info("* jumpscale json path:%s" % outJSON)
 
@@ -547,7 +554,7 @@ class JSLoader():
         return res
 
     def findModules(self, path, moduleList=None, baseList=None, depth=None,
-                          recursive=True):
+                    recursive=True):
         """ walk over code files & find locations for jumpscale modules
             return as two dicts.
 
@@ -568,8 +575,8 @@ class JSLoader():
         # ok search for files up to the requested depth, BUT, __init__ files
         # are treated differently: they are depth+1 because searching e.g.
         # "j.core" we want to look for Jumpscale/core/__init__.py
-        initfiles = self.j.sal.fs.listFilesInDir(path, recursive, "__init__.py",
-                                               depth=depth+1)
+        initfiles = self.j.sal.fs.listFilesInDir(
+            path, recursive, "__init__.py", depth=depth + 1)
         pyfiles = self.j.sal.fs.listFilesInDir(path, recursive, "*.py",
                                                depth=depth)
         pyfiles = initfiles + pyfiles
@@ -629,32 +636,33 @@ class JSLoader():
                 "dirs in your jumpscale.toml not ok, hostdir cannot be empty")
 
         if autocompletepath is None:
-            autocompletepath = os.path.join(self.j.dirs.HOSTDIR, "autocomplete")
+            autocompletepath = os.path.join(
+                self.j.dirs.HOSTDIR, "autocomplete")
             self.j.sal.fs.createDir(autocompletepath)
 
         for name, path in self.j.core.state.configGet('plugins', {}).items():
             if self.j.sal.fs.exists(path, followlinks=True):
                 # link libs to location for hostos
                 self.j.sal.fs.copyDirTree(path,
-                                     os.path.join(autocompletepath, name),
-                                     overwriteFiles=True,
-                                     ignoredir=['*.egg-info',
-                                                '*.dist-info',
-                                                "*Jumpscale*",
-                                                "*Tests*",
-                                                "*tests*"],
+                                          os.path.join(autocompletepath, name),
+                                          overwriteFiles=True,
+                                          ignoredir=['*.egg-info',
+                                                     '*.dist-info',
+                                                     "*Jumpscale*",
+                                                     "*Tests*",
+                                                     "*tests*"],
 
-                                     ignorefiles=['*.egg-info',
-                                                  "*.pyc",
-                                                  "*.so",
-                                                  ],
-                                     rsync=True,
-                                     recursive=True,
-                                     rsyncdelete=True,
-                                     createdir=True)
+                                          ignorefiles=['*.egg-info',
+                                                       "*.pyc",
+                                                       "*.so",
+                                                       ],
+                                          rsync=True,
+                                          recursive=True,
+                                          rsyncdelete=True,
+                                          createdir=True)
 
         self.j.sal.fs.touch(os.path.join(self.j.dirs.HOSTDIR, 'autocomplete',
-                "__init__.py"))
+                                         "__init__.py"))
 
         # DO NOT AUTOPIP the deps are now installed while installing the libs
         self.j.core.state.configSetInDictBool("system", "autopip", False)
@@ -671,8 +679,8 @@ class JSLoader():
         self._generate()
 
     def dynamic_generate(self, autocompletepath=None, basej=None,
-                               moduleList=None, baseList=None,
-                                       aliases=None):
+                         moduleList=None, baseList=None,
+                         aliases=None):
         """
         """
         assert basej is not None

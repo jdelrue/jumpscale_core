@@ -3,11 +3,13 @@ import os
 import sys
 import importlib.util
 
+
 def jwalk(instance, name, start=None, end=None):
     for fromname in name.split('.')[start:end]:
         #print ("patchfrom", walkfrom, fromname)
         instance = getattr(instance, fromname)
     return instance
+
 
 def _import_parent_recurse(mpathname, parent_name):
     if mpathname in sys.modules:
@@ -18,7 +20,7 @@ def _import_parent_recurse(mpathname, parent_name):
     #print ("spec", spec)
     if spec:
         module = importlib.util.module_from_spec(spec)
-        #print ( "adding module", mpathname, module,
+        # print ( "adding module", mpathname, module,
         #        mpathname not in sys.modules)
         if mpathname not in sys.modules:
             sys.modules[mpathname] = module
@@ -26,6 +28,7 @@ def _import_parent_recurse(mpathname, parent_name):
     parent_name = os.path.split(parent_name)[0]
     if mpathname:
         _import_parent_recurse(mpathname, parent_name)
+
 
 def jspath_import(modulepath, fullpath):
 
@@ -72,6 +75,7 @@ def jspath_import(modulepath, fullpath):
 
     return module
 
+
 class BaseGetter(object):
     """ this is a rather.. um... ugly class that has a list of module names
         added to it, where if a property is ever referred to it will either
@@ -99,6 +103,7 @@ class BaseGetter(object):
         """
 
     __dynamic_ready__ = False
+
     def __init__(self):
         self.__subgetters__ = {}
         self.__aliases__ = {}
@@ -175,7 +180,7 @@ class BaseGetter(object):
             instance = d[name].getter()
             instance.j = self.j
             object.__setattr__(self, name, instance)
-            d.pop(name) # take the subgetter out now that it's been done
+            d.pop(name)  # take the subgetter out now that it's been done
             return instance
         try:
             return object.__getattribute__(self, name)
@@ -219,7 +224,8 @@ class BaseGetter(object):
             d = object.__getattribute__(self, '__subgetters__')
             if name in d:
                 res = d[name]
-                
+
+
 class ModuleSetup(object):
     def __init__(self, subname, modulepath, objectname, fullpath, basej):
         self.subname = subname
@@ -229,12 +235,12 @@ class ModuleSetup(object):
         self.basej = basej
         self._obj = None
         self._kls = None
-        self._child_props = {} # to be added after class is instantiated
+        self._child_props = {}  # to be added after class is instantiated
 
     @property
     def kls(self):
         if self._kls is None:
-            #print ("about to get modulepath %s object %s path %s basej %s" % \
+            # print ("about to get modulepath %s object %s path %s basej %s" % \
             #     (self.modulepath, self.objectname, self.fullpath, self.basej))
 
             module = jspath_import(self.modulepath, self.fullpath)
@@ -269,6 +275,7 @@ class ModuleSetup(object):
                 setattr(self._obj, cname, prop)
         return self._obj
 
+
 class JSBase(BaseGetter):
 
     def __init__(self, _logger=None):
@@ -288,14 +295,14 @@ class JSBase(BaseGetter):
         if toadd is None:
             if self._child_mod_cache_checked:
                 return keys
-            self._child_mod_cache_checked = True # clear straight away
+            self._child_mod_cache_checked = True  # clear straight away
         else:
             tocheck = toadd.copy()
             for k in toadd:
                 if k in self._child_toadd_cache_checked:
                     tocheck.remove(k)
                 self._child_toadd_cache_checked.add(k)
-            if not tocheck: # nothing to check
+            if not tocheck:  # nothing to check
                 return keys
             toadd = tocheck
         #print ("JSBase check child cache", self, keys, toadd)
@@ -314,7 +321,7 @@ class JSBase(BaseGetter):
             startchildj = object.__getattribute__(self, '__jslocation__')
         except AttributeError:
             #print ("no __jslocation__")
-            return keys # too early
+            return keys  # too early
 
         #print ("__jslocation__", startchildj)
         # really awkward but absolutely must avoid BaseGetter recursion
@@ -322,8 +329,8 @@ class JSBase(BaseGetter):
             loader = self.j.tools.jsloader
         except AttributeError:
             #print ("not found loader")
-            return keys # too early: skip it
-    
+            return keys  # too early: skip it
+
         if False:
             loader = self.j
             for attr in ['tools', 'loader']:
@@ -333,7 +340,7 @@ class JSBase(BaseGetter):
                     #loader = getattr(loader, attr)
                 except AttributeError:
                     #print ("not found")
-                    return keys # too early: skip it
+                    return keys  # too early: skip it
 
         if toadd:
             # this is specifically seeking modules by name (child name)
@@ -458,7 +465,7 @@ class JSBase(BaseGetter):
         self._cache = cache
 
     def _jsbase(self, jname, derived_classes=None, dynamicname=None,
-                      basej=None):
+                basej=None):
         """ dynamically creates a class which is derived from JSBase,
             that has the name "jname".  sets up a "super" caller
             (a dynamic __init__) that calls __init__ on the derived classes
@@ -537,7 +544,7 @@ class JSBase(BaseGetter):
             newname = "JSBased" + jname
         else:
             newname = dynamicname
-        memberkls = type(newname,  tuple(classes), inits)
+        memberkls = type(newname, tuple(classes), inits)
         return memberkls
 
     @staticmethod
