@@ -520,10 +520,11 @@ class JSBase(BaseGetter):
     def _create_jsbase_instance(jname, basej=None, derived_classes=None):
         """ dynamically creates a class instance derived from JSBase,
         """
+        if basej is None:
+            basej = global_j
+        assert basej is not None, "cannot create instance on empty global_j"
         memberkls = basej._jsbase(jname, derived_classes, basej=basej)
         instance = memberkls()
-        if basej:
-            instance.j = basej
         return instance
 
 
