@@ -30,8 +30,7 @@ class BytesEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, bytes):
             return obj.decode(self.ENCODING)
-        if not isinstance(obj, (list, dict, str, int, float,
-                            bool, type(None))):
+        if not isinstance(obj, (list, dict, str, int, float, bool, type(None))):
             pickled = pickle.dumps(obj)
             pickled = codecs.encode(pickled, 'base64')
             pickled = pickled.decode()
@@ -53,13 +52,8 @@ class SerializerUJson(SerializerBase):
         SerializerBase.__init__(self)
 
     def dumps(self, obj, sort_keys=False, indent=False, encoding='ascii'):
-        return json.dumps(
-            obj,
-            ensure_ascii=False,
-            sort_keys=sort_keys,
-            indent=indent,
-            cls=Encoder.get(
-                encoding=encoding))
+        return json.dumps( obj, ensure_ascii=False, sort_keys=sort_keys,
+                           indent=indent, cls=Encoder.get( encoding=encoding))
 
     def loads(self, s):
         if isinstance(s, bytes):
