@@ -531,10 +531,17 @@ class JSLoader():
         return [p['name'] for p in pip_list]
 
     def findJumpscaleLocationsInFile(self, path):
-        """
-        returns:
-            [$classname]["location"] =$location
-            [$classname]["import"] = $importitems
+        """ XXX this *REALLY* should not be done.  duplicating what
+            python does already is a really, really bad idea.  several
+            bugs have been found already.
+
+            it would be much better to actually load/compile the file
+            then actually walk either the AST or the module.  that
+            way at least it is using a standard python library.
+
+            returns:
+                [$classname]["location"] =$location
+                [$classname]["import"] = $importitems
         """
         res = {}
         C = self.j.sal.fs.readFile(path)
@@ -542,6 +549,7 @@ class JSLoader():
         locfound = False
         for line in C.split("\n"):
             if line.startswith("class "):
+                locfound = False # reset search
                 classname = line.replace(
                     "class ", "").split(":")[0].split(
                     "(", 1)[0].strip()
