@@ -584,7 +584,7 @@ class JSLoader():
         if baseList is None:
             baseList = {}
 
-        self.logger.info("findmodules in %s, depth %s" % (path, repr(depth)))
+        self.logger.debug("findmodules in %s, depth %s" % (path, repr(depth)))
 
         # ok search for files up to the requested depth, BUT, __init__ files
         # are treated differently: they are depth+1 because searching e.g.
