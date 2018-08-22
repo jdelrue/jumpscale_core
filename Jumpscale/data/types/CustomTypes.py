@@ -33,7 +33,7 @@ class Guid(String):
         '''
         try:
             val = UUID(value, version=4)
-        except ValueError:
+        except ValueError, AttributeError:
             return False
         return val.hex == value.replace('-', '')
 
