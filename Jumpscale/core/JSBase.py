@@ -274,7 +274,7 @@ class ModuleSetup(object):
 
     def getter(self):
         if self._obj is None:
-            #print ("getter", self.kls)
+            print ("getter", self.kls)
             self._obj = self.kls()
             self._obj.__dynamic_ready__ = True
             # post-add child properties
