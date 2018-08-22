@@ -94,7 +94,7 @@ def add_dynamic_instance(j, parent, child, module, kls):
     if not parent:
         parent = j
     else:
-        parent = getattr(j, parent)
+        parent = j.jget(parent)
     if kls:
         # assume here that modules are imported from Jumpscale *only*
         # (*we're in boostrap mode so it's ok), and hand-create
@@ -430,13 +430,12 @@ class JSLoader():
             jname = jlocationRoot.split(".")[1].strip()
             kls = baseList[jlocationRoot]
             #print ("_j", _j, jname)
-            member = getattr(_j, jname, None)
-            if not member:
+            try:
+                _j.jget(jname, stealth=True)
+                continue
+            except AttributeError:
                 #print ("baselisted", jname, kls)
                 m = add_dynamic_instance(_j, '', jname, jname, kls)
-                member = m.getter()
-                setattr(_j, jname, member)
-                #print ("baselisted", jname, member)
 
         #print ("rootmembers", rootmembers)
 
@@ -450,12 +449,10 @@ class JSLoader():
                 # otherwise it will kick the dynamic loading into gear
                 fullchildname = "%s.%s" % (jname, subname)
                 try:
-                    childmember = _j.jget(fullchildname, stealth=True)
-                except AttributeError:
-                    childmember = None
-                if childmember:
+                    _j.jget(fullchildname, stealth=True)
                     continue
-                self.add_submodules(_j, fullchildname, sublist)
+                except AttributeError:
+                    self.add_submodules(_j, fullchildname, sublist)
 
         for frommodule, tomodule in aliases:
             #print ("alias", frommodule, tomodule)
