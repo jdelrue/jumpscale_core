@@ -2,15 +2,11 @@
 
 import time
 import traceback
-from Jumpscale import j
 
 LASTTIME = 0
 DELTATIME_INITIALIZED = False
 
-JSBASE = j.application.jsbase_get_class()
-
-
-class TimeInterval(JSBASE):
+class TimeInterval():
     """ Enumerator for time interval units """
 
     NANOSECONDS = -3
@@ -24,9 +20,7 @@ class TimeInterval(JSBASE):
     MONTHS = 5
     YEARS = 6
 
-    def __init__(self):
-        JSBASE.__init__(self)
-
+    __jslocation__ = 'j.data.time.timeinterval'
 
 def printdelta():
     """
