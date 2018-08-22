@@ -130,7 +130,7 @@ def bootstrap_j(j, logging_enabled=False, filter=None, config_dir=None):
     j.j = j  # sets up the global singleton
     j.__jsfullpath__ = os.path.join(plugin_path, "Jumpscale.py")
     j.__jsmodulepath__ = 'Jumpscale'
-    j.__jsmodbase__ = ({}, {})
+    j.__jsmodbase__ = [({}, {})]
     j.j.__dynamic_ready__ = False  # set global dynamic loading OFF
 
     DLoggerFactory = j._jsbase(
@@ -149,24 +149,24 @@ def bootstrap_j(j, logging_enabled=False, filter=None, config_dir=None):
             rootnames.append(child)
 
     # initialise
-    j.tools.executorLocal.env_check_init()  # OUCH! doubles file-accesses!
-    j.dirs.reload()
+    j.tools.executorLocal.env_check_init() # no config file -> make one!
+    j.dirs.reload() # ... and the directories got recreated (possibly)...
     j.logging.init()  # will reconfigure the logging to use the config file
-    # j.core.db_reset() # used fake redis up to now: move to real if it exists
 
     # now load the json file
-    #print ("loader", j.tools.jsloader)
     loader = j.tools.jsloader
     if loader.load_json():
-        modlist, baselist = j.__jsmodbase__
-        loader._dynamic_merge(j, modlist, baselist, {})
-
-    print ("jsonfiles", loader.jsonfiles)
+        for pluginname, (modlist, baselist) in j.__jsmodbase__.items():
+            #print (pluginname, modlist.keys())
+            loader._dynamic_merge(j, modlist, baselist, {})
 
     # now finally set dynamic on.  if the json loader was empty
     # or if ever something is requested that's not *in* the json
     # file, dynamic checking kicks in.
     j.__dynamic_ready__ = True  # set global dynamic loading ON
+
+    # used fake redis up to now: move to real redis (if it exists)
+    j.core.db_reset()
 
     return j
 
@@ -301,9 +301,9 @@ class JSLoader():
     def jsonfiles(self):
         """ returns a list of the json plugin files
         """
-        res = []
+        res = {}
         for name, _path in self.plugins.items():
-            res.append(os.path.join(_path, "%s.plugins.json" % name))
+            res[name] = os.path.join(_path, "%s.plugins.json" % name)
         return res
 
     def gather_modules(self, startpath=None, depth=0, recursive=True,
@@ -325,6 +325,8 @@ class JSLoader():
 
         if not pluginsearch:
             pluginsearch = []
+        if not isinstance(pluginsearch, list):
+            pluginsearch = [pluginsearch]
 
         moduleList = {}
         baseList = {}
@@ -345,7 +347,7 @@ class JSLoader():
                 continue
             path = [_path] + startpath
             path = os.path.join(*path)
-            logfn("find modules in jumpscale for : '%s'" % path)
+            logfn("find modules in jumpscale for %s: '%s'" % (name, path))
             #print ("startpath: %s depth: %d" % (startpath, depth))
             if not self.j.sal.fs.exists(_path, followlinks=True):
                 raise RuntimeError("Could not find plugin dir:%s" % _path)
@@ -422,7 +424,6 @@ class JSLoader():
             aliases = map(lambda x: (x['from'], x['to']), patchers)
 
         _j = basej
-        rootmembers = {}
 
         #print ("baselist", baseList)
         for jlocationRoot in baseList:
@@ -436,23 +437,24 @@ class JSLoader():
                 member = m.getter()
                 setattr(_j, jname, member)
                 #print ("baselisted", jname, member)
-            rootmembers[jname] = member
 
         #print ("rootmembers", rootmembers)
 
         for jlocationRoot, jlocationRootDict in moduleList:
             #print (jlocationRoot, jlocationRootDict)
             jname = jlocationRoot.split(".")[1].strip()
-            member = rootmembers[jname]
             #print ("dynamic generate root", jname, jlocationRoot)
             for subname, sublist in jlocationRootDict.items():
                 #print ("subs", jlocationRoot, subname, sublist)
                 # XXX ONLY do this in __dynamic_ready__ == False!
                 # otherwise it will kick the dynamic loading into gear
-                childmember = getattr(member, subname, None)
+                fullchildname = "%s.%s" % (jname, subname)
+                try:
+                    childmember = _j.jget(fullchildname)
+                except AttributeError:
+                    childmember = None
                 if childmember:
                     continue
-                fullchildname = "%s.%s" % (jname, subname)
                 self.add_submodules(_j, fullchildname, sublist)
 
         for frommodule, tomodule in aliases:
@@ -473,43 +475,52 @@ class JSLoader():
         return _j
 
     def load_json(self):
-        """ reads the jumpscale json file.
+        """ read the jumpscale json files
         """
 
-        outJSON = os.path.join(self.j.dirs.HOSTCFGDIR, "jumpscale.json")
-        self.logger.info("* jumpscale json path:%s" % outJSON)
-        try:
-            outJSON = self.j.sal.fs.readFile(outJSON)
-            self.j.__jsmodbase__ = json.loads(outJSON)
-        except ValueError as e:
-            #print ("e", str(e))
-            self.j.__jsmodbase__ = ({}, {})
-            return False
+        self.j.__jsmodbase__ = {}
+        failed = False
+        for plugin, outJSON in self.jsonfiles.items():
+            self.logger.debug("* jumpscale json path:%s" % outJSON)
+            try:
+                outJSON = self.j.sal.fs.readFile(outJSON)
+                self.j.__jsmodbase__[plugin] = json.loads(outJSON)
+            except ValueError as e:
+                #print ("e", str(e))
+                self.j.__jsmodbase__[plugin] = ({}, {})
+                failed = True
 
-        return True
+        return not failed
 
-    def generate_json(self, plugin=None):
-        """ generates the jumpscale json file, walking the plugin directories
+    def generate_json(self, pluginsearch=None):
+        """ generates the jumpscale json file(s), walking the plugin directories
             and saving the results in $HOSTCFGDIR/jumpscale.json.  also
             stores the results in self.j.__jsjson__
+
+            may be restricted to a single plugin library (pluginsearch)
 
             to call:
             python -c 'from Jumpscale import j;j.tools.jsloader.generate_json()'
         """
 
-        # gather list of modules (also initialises environment)
-        modbase = self.gather_modules()
+        if pluginsearch is None: # reset the plugins, redoing them all
+            self.j.__jsmodbase__ = {}
 
-        # outCC = outpath for code completion
-        # out = path for core of jumpscale
+        for plugin, outJSON in self.jsonfiles.items():
+            if pluginsearch and pluginsearch != plugin:
+                continue
+            print ("pluginsearch", plugin)
+            # gather list of modules (also initialises environment)
+            modbase = self.gather_modules(pluginsearch=plugin)
 
-        outJSON = os.path.join(self.j.dirs.HOSTCFGDIR, "jumpscale.json")
+            # outCC = outpath for code completion
+            # out = path for core of jumpscale
 
-        self.logger.info("* jumpscale json path:%s" % outJSON)
+            self.logger.info("* jumpscale json path:%s" % outJSON)
 
-        modlistout_json = json.dumps(modbase, sort_keys=True, indent=4)
-        self.j.sal.fs.writeFile(outJSON, modlistout_json)
-        self.j.__jsmodbase__ = modbase
+            modlistout_json = json.dumps(modbase, sort_keys=True, indent=4)
+            self.j.sal.fs.writeFile(outJSON, modlistout_json)
+            self.j.__jsmodbase__[plugin] = modbase
 
     def _pip_installed(self):
         """ return the list of all installed pip packages
