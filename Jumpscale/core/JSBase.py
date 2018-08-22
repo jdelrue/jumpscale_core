@@ -175,7 +175,7 @@ class BaseGetter(object):
             instance = d[name].getter()
             instance.j = self.j
             object.__setattr__(self, name, instance)
-            #del d[name]
+            d.pop(name) # take the subgetter out now that it's been done
             return instance
         try:
             return object.__getattribute__(self, name)
