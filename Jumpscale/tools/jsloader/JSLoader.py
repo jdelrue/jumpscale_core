@@ -17,7 +17,7 @@ patchers = [
     {'from': 'exceptions', 'to': 'core.errorhandler.exceptions'},
     {'from': 'events', 'to': 'core.events'},
     {'from': 'data.datacache', 'to': 'data.cache'},
-    {'from': 'data.serializer', 'to': 'data.serializers'}, # YUK!
+    {'from': 'data.serializer', 'to': 'data.serializers'},  # YUK!
     {'from': 'logging', 'to': 'core.logging'},
     {'from': 'core.state', 'to': 'tools.executorLocal.state'},
 ]
@@ -133,9 +133,10 @@ def bootstrap_j(j, logging_enabled=False, filter=None, config_dir=None):
     j.__jsmodbase__ = [({}, {})]
     j.j.__dynamic_ready__ = False  # set global dynamic loading OFF
 
-    DLoggerFactory = j._jsbase('LoggerFactory',
-                    ['Jumpscale.logging.LoggerFactory.LoggerFactory'],
-                    basej=j)
+    DLoggerFactory = j._jsbase(
+        'LoggerFactory',
+        ['Jumpscale.logging.LoggerFactory.LoggerFactory'],
+        basej=j)
     l = DLoggerFactory()
     l.enabled = logging_enabled
     l.filter = filter or []  # default filter which captures all is *
@@ -145,8 +146,8 @@ def bootstrap_j(j, logging_enabled=False, filter=None, config_dir=None):
         add_dynamic_instance(j, parent, child, module, kls)
 
     # initialise
-    j.tools.executorLocal.env_check_init() # no config file -> make one!
-    j.dirs.reload() # ... and the directories got recreated (possibly)...
+    j.tools.executorLocal.env_check_init()  # no config file -> make one!
+    j.dirs.reload()  # ... and the directories got recreated (possibly)...
     j.logging.init()  # will reconfigure the logging to use the config file
 
     # now load the json files
@@ -204,7 +205,7 @@ class JSLoader():
     @property
     def autopip(self):
         return self.j.core.state.config["system"]["autopip"] in \
-                [True, "true", "1", 1]
+            [True, "true", "1", 1]
 
     def _installDevelopmentEnv(self):
         cmd = "apt-get install python3-dev libssl-dev -y"
@@ -290,7 +291,7 @@ class JSLoader():
         return res
 
     def gather_modules(self, startpath=None, depth=0, recursive=True,
-                             pluginsearch=None):
+                       pluginsearch=None):
         """ identifies and gathers information about (only) jumpscale modules
 
             can be used to search specific paths (use startparth), by depth
@@ -343,10 +344,10 @@ class JSLoader():
                 pth = os.path.split(pth)[0]
                 sys.path = [pth] + sys.path
             moduleList, baseList = self.find_modules(path=path,
-                                                    moduleList=moduleList,
-                                                    baseList=baseList,
-                                                    depth=depth,
-                                                    recursive=recursive)
+                                                     moduleList=moduleList,
+                                                     baseList=baseList,
+                                                     depth=depth,
+                                                     recursive=recursive)
 
         for jlocationRoot, jlocationRootDict in moduleList.items():
             # is per item under j e.g. self.j.clients
@@ -472,7 +473,7 @@ class JSLoader():
             python -c 'from Jumpscale import j;j.tools.jsloader.generate_json()'
         """
 
-        if pluginsearch is None: # reset the plugins, redoing them all
+        if pluginsearch is None:  # reset the plugins, redoing them all
             self.j.__jsmodbase__ = {}
 
         for plugin, outJSON in self.jsonfiles.items():
@@ -517,7 +518,7 @@ class JSLoader():
         locfound = False
         for line in C.split("\n"):
             if line.startswith("class "):
-                locfound = False # reset search
+                locfound = False  # reset search
                 classname = line.replace(
                     "class ", "").split(":")[0].split(
                     "(", 1)[0].strip()
@@ -554,8 +555,8 @@ class JSLoader():
                         "Could not find class in %s " +
                         "while loading jumpscale lib." %
                         path)
-                imports = line.split( "=", 1)[1]
-                imports = imports.replace( "\"", "")
+                imports = line.split("=", 1)[1]
+                imports = imports.replace("\"", "")
                 imports = imports.replace("'", "").strip()
                 imports = map(str.strip, imports.split(","))
                 imports = filter(None, imports)
@@ -566,7 +567,7 @@ class JSLoader():
         return res
 
     def find_modules(self, path, moduleList=None, baseList=None, depth=None,
-                    recursive=True):
+                     recursive=True):
         """ walk over code files & find locations for jumpscale modules
             return as two dicts.
 
@@ -596,7 +597,8 @@ class JSLoader():
             #print("found", classfile)
             basename = self.j.sal.fs.getBaseName(classfile)
             if basename.startswith('__init__'):
-                for classname, item in self.find_jslocations(classfile).items():
+                for classname, item in self.find_jslocations(
+                        classfile).items():
                     #print ("found __init__", classfile, classname, item)
                     # hmm probably can use moduleList but not sure...
                     if "location" not in item:
@@ -646,4 +648,3 @@ class JSLoader():
         print ("DELETE /usr/lib/python3/dist-packages/jumpscale.py")
         print ("PLEASE USE j.tools.jsloader.generate_json('<LIBNAME>')")
         return
-
