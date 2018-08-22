@@ -2,6 +2,7 @@ import numpy
 import struct
 import math
 
+
 class NumTools:
 
     __jslocation__ = "j.tools.numtools"
@@ -16,7 +17,8 @@ class NumTools:
 
     def _getYearFromMonthId(self, monthid, startyear=0):
         """
-        @param monthid is an int representing a month over a period of time e.g. month 24, is the 24th month
+        @param monthid is an int representing a month over
+        a period of time e.g. month 24, is the 24th month
         """
         year = numpy.floor(float(monthid) / 12) + startyear
         return int(round(year))
@@ -33,7 +35,8 @@ class NumTools:
 
     def getYearAndMonthFromMonthId(self, monthid, startyear=0):
         """
-        @param monthid is an int representing a month over a period of time e.g. month 24, is the 24th moth
+        @param monthid is an int representing a month over
+        a period of time e.g. month 24, is the 24th moth
         @return returns year e.g. 1999 and month in the year
         """
         monthid = monthid - 1
@@ -69,7 +72,9 @@ class NumTools:
             tointerpolate = [0.0 for item in tointerpolate]
 
         for xpos in range(len(tointerpolate)):
-            if not tointerpolate[xpos] is None and not self.j.data.types.int.check(tointerpolate[xpos]):
+            if not tointerpolate[xpos] is None \
+                and not self.j.data.types.int.check(
+                    tointerpolate[xpos]):
                 isint = False
             if tointerpolate[xpos] is None:
                 x.append(xpos)
@@ -121,7 +126,8 @@ class NumTools:
         nrX = len(data[key1][key2])
 
         for x in range(nrX):
-            for key in list(data.keys()):  # the keys we want to ignore (collapse)
+            for key in list(
+                    data.keys()):  # the keys we want to ignore (collapse)
                 datasub = data[key]
                 for keysub in list(datasub.keys()):
                     if keysub not in result:
@@ -140,8 +146,7 @@ class NumTools:
                 result.append(item)
         return result
 
-
-    def text2val(self, value,curcode="usd"):
+    def text2val(self, value, curcode="usd"):
         """
         value can be 10%,0.1,100,1m,1k  m=million
         USD/EUR/CH/EGP/GBP are also understood
@@ -155,11 +160,11 @@ class NumTools:
 
         """
         d = self.j.data.types.numeric.str2bytes(value)
-        return self.j.data.types.numeric.bytes2cur(d,curcode=curcode)
+        return self.j.data.types.numeric.bytes2cur(d, curcode=curcode)
 
     def int_to_bitstring(self, val):
         """
-        bitstring is like '10101011' 
+        bitstring is like '10101011'
         """
         if self.j.data.types.int.check(val):
             bits = "{0:b}".format(val)
@@ -224,7 +229,8 @@ class NumTools:
         """
         convert list of integers to binary
 
-        @PARM meta are the bits of a byte, the first one is reserved for short or long format, 1 if long format
+        @PARM meta are the bits of a byte, the first one is reserved
+        for short or long format, 1 if long format
 
         """
         shortFormat = True
@@ -243,7 +249,7 @@ class NumTools:
             sformat = "<I"
         for item in llist:
             bindata += struct.pack(sformat, item)
-        return struct.pack("<B", meta)+bindata
+        return struct.pack("<B", meta) + bindata
 
     def bin_to_listint(self, bindata):
         """
@@ -268,9 +274,12 @@ class NumTools:
         """
         assert self.text2val("10k") == 10000.0
 
-        assert (1/self.currencies["egp"])*10000000 == self.text2val("10 m egp")
-        assert (1/self.currencies["egp"])*10000000 == self.text2val("10m egp")
-        assert (1/self.currencies["egp"])*10000000 == self.text2val("10mEGP")
+        assert (1 / self.currencies["egp"]
+                ) * 10000000 == self.text2val("10 m egp")
+        assert (1 / self.currencies["egp"]
+                ) * 10000000 == self.text2val("10m egp")
+        assert (1 / self.currencies["egp"]
+                ) * 10000000 == self.text2val("10mEGP")
 
         assert self.int_to_bitstring(10) == '00001010'
         assert self.bitstring8_to_int('00001010') == 10
@@ -279,11 +288,11 @@ class NumTools:
         assert self.bitstring_set_bit("00000000", 0) == 1
 
         assert self.bitstring_get_bit("00000000", 0) == False
-        assert self.bitstring_get_bit(128, 7) == True
-        assert self.bitstring_get_bit("00000001", 0) == True
-        assert self.bitstring_get_bit("00000011", 1) == True
+        assert self.bitstring_get_bit(128, 7)
+        assert self.bitstring_get_bit("00000001", 0)
+        assert self.bitstring_get_bit("00000011", 1)
         assert self.bitstring_get_bit("00000011", 2) == False
-        assert self.bitstring_get_bit("10000011", 7) == True
+        assert self.bitstring_get_bit("10000011", 7)
         assert self.bitstring_get_bit("00000011", 7) == False
 
         llist0 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
@@ -292,7 +301,8 @@ class NumTools:
         assert llist == llist0
         assert len(bbin) == 21
 
-        # now the binary struct will be double as big because there is 1 long int in (above 65000)
+        # now the binary struct will be double as big because there is 1 long
+        # int in (above 65000)
         llist2 = [1, 2, 3, 400000, 5, 6, 7, 8, 9, 10]
         bbin2 = self.listint_to_bin(llist2)
         assert len(bbin2) == 41
