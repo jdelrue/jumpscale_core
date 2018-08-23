@@ -61,7 +61,7 @@ class StoreFactory(JSBASE):
         '''
         from Jumpscale.data.key_value_store.redis_store import RedisKeyValueStore
 
-        j.clients.redis.core_get() #will make sure core redis gets started
+        j.clients.redis.core_get()  # will make sure core redis gets started
 
         if not port:
             port = 6379
@@ -187,7 +187,7 @@ class StoreFactory(JSBASE):
                 secret = j.data.hash.hex2bin(secret)
 
             elif len(secret) != 16:
-                raise j.exceptions.Input(message="secret needs to be 16 bytes", level=1, source="", tags="", msgpub="")
+                raise j.exceptions.Input(message="secret needs to be 16 bytes")
 
             nrsecrets += 1
             secrets2 += secret + finalacli
@@ -255,7 +255,7 @@ class StoreFactory(JSBASE):
             # need to deny access if no acl list & is not owner
             return False
 
-        #* means everyone
+        # * means everyone
         if "*" in aclInObj:
             if mode in aclInObj["*"]:
                 return True
@@ -270,9 +270,7 @@ class StoreFactory(JSBASE):
 
         return False
 
-
     def test(self):
-
         '''
         js_shell 'j.data.kvs.test()'
         '''
@@ -367,7 +365,6 @@ class StoreFactory(JSBASE):
 
         self.logger.debug("test ok")
 
-
     # def getLevelDBStore(self, name, namespace='', basedir=None, serializers=[], cache=None, changelog=None, masterdb=None):
     #     '''
     #     Gets a leveldb key value store.
@@ -422,7 +419,6 @@ class StoreFactory(JSBASE):
     #         self._cache[key] = MongoDBKeyValueStore(namespace)
     #     return self._cache[key]
 
-   
     # def getRedisCacheLocal(self):
     #     """
     #     example:

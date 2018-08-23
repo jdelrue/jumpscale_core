@@ -178,8 +178,7 @@ class State(object):
                 return defval
             else:
                 raise self.j.exceptions.Input(
-                    message="could not find config key:%s in executor:%s" %
-                    (key, self), level=1, source="", tags="", msgpub="")
+                    message="could not find config key:%s in executor:%s" % (key, self))
 
     def _set(self, key, val, save=True, config=None, path=""):
         """
@@ -483,7 +482,7 @@ class State(object):
         if self.readonly:
             raise self.j.exceptions.Input(
                 message="cannot write config to '%s', because is readonly" %
-                self, level=1, source="", tags="", msgpub="")
+                self)
         if config and path:
             data = pytoml.dumps(config)
             self.executor.file_write(path, data)

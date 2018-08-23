@@ -557,8 +557,7 @@ class GitFactory(JSBASE):
             j.clients.git.pullGitRepo(repository_url, branch=branch)
         if not j.sal.fs.exists(rpath, followlinks=True):
             raise j.exceptions.Input(
-                message="Did not find path in git:%s" %
-                rpath, level=1, source="", tags="", msgpub="")
+                message="Did not find path in git:%s" % rpath)
 
         return (repository_url, gitpath, relpath)
 

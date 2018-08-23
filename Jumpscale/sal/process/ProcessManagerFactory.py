@@ -11,7 +11,7 @@ def MyMethod(hello):
     ....
     return [something]
 
-You can execute this method in a separate process invoking the process manager 
+You can execute this method in a separate process invoking the process manager
 like this. Please note, arguments need to be passed as dictionary.
 
     p = j.core.processmanager.startProcess(MyMethod, {"hello": 42})
@@ -95,6 +95,7 @@ class StdDuplicate(JSBASE):
     def errors(self):
         return None
 
+
 class Process(JSBASE):
 
     def __init__(self, name="", method=None, timeout=0, args={}):
@@ -153,8 +154,7 @@ class Process(JSBASE):
         """
         if self.method is None:
             msg = "Cannot start process, method not set."
-            raise j.exceptions.Input(
-                message=msg, level=1, source="", tags="", msgpub="")
+            raise j.exceptions.Input(message=msg)
 
         # saving output
         oldout = sys.stdout
@@ -187,7 +187,7 @@ class Process(JSBASE):
 
         except Exception as e:
             eco = j.errorhandler.processPythonExceptionObject(e)
-            print (eco, type(eco), dir(eco))
+            print(eco, type(eco), dir(eco))
             self._setException(eco.json)
 
         finally:
@@ -211,7 +211,7 @@ class Process(JSBASE):
         if self.method is None:
             msg = "Cannot start process, method not set."
             raise j.exceptions.Input(
-                message=msg, level=1, source="", tags="", msgpub="")
+                message=msg)
         self.started_at = datetime.datetime.now()
         rpipe, wpipe = os.pipe()
         self._stdout['read'], self._stdout['write'] = os.pipe()
