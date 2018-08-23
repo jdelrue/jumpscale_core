@@ -13,6 +13,78 @@ import click
 from jumpscale import j
 
 
+def _check():
+    """
+    will check if VM is active, if not will start
+    will get zos client and wait till active e.g. after start
+    :return:
+    """
+    if "builder" not in j.clients.zos.list() or j.clients.zos.get('builder').addr=="localhost":
+        if "builder" not in j.clients.virtualbox.list():
+            _init()
+
+        vb = j.clients.virtualbox.get(instance="builder", interactive=False)
+
+        if not "builder" in vb.vm_list():
+            _init()
+
+        vm = vb.vm_get("builder")
+
+        if vm.is_running==False:
+            print("starting VM for ZOS")
+            vm.start()
+
+    node = j.clients.zos.get('builder')
+
+    print("check & wait for ZOS to be running, when just started can take a while")
+    node.is_running()
+
+    return node
+
+def _init():
+    """
+    had to put it separate so could be used by others
+    """
+    print("init js_builder")
+    j.clients.virtualbox.zero_os_get(name="builder", redis_port=4445)
+    node = j.clients.zos.get('builder')
+    node.zerodbs.partition_and_mount_disks()
+
+def _node(name,addr,port):
+    sshclient = j.clients.ssh.new(addr=addr, port=port, instance=name, die=True, login="root", passwd="rooter",
+                                  stdout=True, allow_agent=False, addr_priv="", port_priv=22, use_paramiko=True)
+
+    print("waiting for ssh to start for container:%s\n    (if the ZOS VM is new, will take a while, OS files are being downloaded)"%name)
+    for i in range(50):
+        try:
+            res = sshclient.connect()
+            rc,out,err=sshclient.execute("which bash")
+            if "bash" in out:
+                break
+        except j.exceptions.RuntimeError as e:
+            if "Could not connect to" in str(e):
+                continue
+            raise e
+
+    print("ssh connected")
+    sshclient.ssh_authorize(user="root", key=j.clients.sshkey.list()[0])
+
+    node = j.tools.nodemgr.set(cat="container", name=name, sshclient=name, selected=True)
+
+    print('container deployed')
+    print("to connect to it do: 'ssh root@%s -p %s' (password: rooter)" % (addr,port))
+    print("can also connect using js_node toolset, recommended: 'js_node ssh -i %s'"%name)
+
+
+    return node
+
+def _zos_node():
+    node = _check()
+    if node.addr == 'localhost':
+        # cf zdb
+        node = j.clients.virtualbox.zero_os_private(node)
+    return node
+
 @click.group()
 def cli():
     pass
@@ -20,7 +92,7 @@ def cli():
 
 @click.command()
 @click.argument('ip', default=None, required=False)
-def configure(ip):
+def configure(ip=None):
     """
     configure the zero-os, also make sure partitions are done for zerodb, need ip addr
 
@@ -28,6 +100,7 @@ def configure(ip):
 
 
     """
+    print("configure on ip:%s"%ip)
     if ip is not None:
         data = {'host': ip}
     else:
@@ -37,6 +110,43 @@ def configure(ip):
     node.zerodbs.partition_and_mount_disks()
     print("zero-os node configured")
 
+@click.command()
+def reset():
+    """
+    will remove all containers from the zero-os
+
+    """
+    if "builder" in j.clients.zos.list():
+        node = j.clients.zos.get('builder')
+        for cont in node.containers.list():
+            if cont.name is not "zrobot":
+                cont.stop()
+        for mount in  node.list_mounts():
+            if "/mnt/zdbs" in mount.mountpoint:
+                print("unmount:%s"%mount.mountpoint)  #TODO:*1
+
+    node.wipedisks()
+    print("zero-os clean")
+
+@click.command()
+def destroy():
+    """
+    will remove the virtualbox vm for ZOS
+    :return:
+    """
+
+    if "builder" not in j.clients.virtualbox.list():
+        return
+
+    vb = j.clients.virtualbox.get(instance="builder", interactive=False)
+
+    if not "builder" in vb.vm_list():
+        return
+
+    vm = vb.vm_get("builder")
+    vm.stop()
+    vm.delete()
+
 
 @click.command()
 def init():
@@ -44,13 +154,13 @@ def init():
     use virtualbox to launch a zero-os on your machine (tested on linux and osx)
     the name of the machine is builder
     """
-    j.clients.virtualbox.zero_os_get(name="builder", redis_port=4445)
+    _init()
 
 
 @click.command()
 @click.option('--name', '-n', default='zdb_builder', help='name of the zdb instance')
 @click.option('--mode', '-m', default='seq', help='seq or user mode')
-@click.option('--port', '-p', default=3333, help='port which will be exposed for the zerodb container, there is no admin passwd!')
+@click.option('--port', '-p', default=4500, help='port which will be exposed for the zerodb container, there is no admin passwd!')
 @click.option('--size', '-s', default=50, help='maximum amount of storage for the zerodb in GiB')
 def zdb(name, mode, port, size):
     """
@@ -71,17 +181,45 @@ def zdb(name, mode, port, size):
     storage_pools = node.storagepools.list()
     storage_pools = sorted(storage_pools, key=lambda sp: sp.info['used'], reverse=True)
     # used the disk with the more space available
-    mountpoint, _ = node.zerodbs.create_and_mount_subvolume(
-        storagepool=storage_pools[0],
-        name="builder_zdb%s " % j.data.idgenerator.generateXCharID(8),
-        size=size)
+
+    zdbs=node.zerodbs.list()
+
+
+    name2 = "builder_zdb_%s" % name
+    mountpoints = [mount.mountpoint for mount in node.list_mounts()]
+    mountpoints = [item for item in mountpoints if item.find(name2)is not -1]
+    if len(mountpoints)==0:
+        mountpoint, _ = node.zerodbs.create_and_mount_subvolume(
+            storagepool=storage_pools[0],
+            name="builder_zdb_%s" % name,
+            size=size)
+    else:
+        mountpoint = mountpoints[0]
 
     zdb = node.zerodbs.create(name=name, path=mountpoint, mode=mode, node_port=port)
     zdb.flist = "https://hub.grid.tf/tf-autobuilder/threefoldtech-0-db-development.flist"
-    print('deploying zdb on %s' % mountpoint)
+    # if zdb.is_running()[0]==True:
+    #     zdb.stop()
     zdb.deploy()
 
+    zdb_cl = j.clients.zdb.configure(instance=name, secrets='',
+                            addr=node.addr, port=zdb.node_port,
+                            adminsecret='', mode=mode,
+                            encryptionkey='')
+
+    # zdb_cl = j.clients.zdb.configure(instance='%s_internal'%name, secrets='',
+    #                         addr=str(zdb.container.default_ip().ip), port=9900,
+    #                         adminsecret='', mode=mode,
+    #                         encryptionkey='')
+
+
+    assert zdb_cl.mode==mode
+    cl = zdb_cl.namespace_get("default")
+    if not cl.redis.ping():
+        raise RuntimeError("could not connect to zdb")
+
     print('zdb deployed')
+    print('in jumpscale use as:\n    j.clients.zdb.get(\'%s\')' % name)
     print('reach it publicly at %s:%s' % (node.addr, zdb.node_port))
     print('reach it internally at %s:9900' % str(zdb.container.default_ip().ip))
 
@@ -91,11 +229,8 @@ def container():
     """
     create a build container in zero-os and launch ubuntu with lots of tools pre-installed to make building easy
     """
-    node = j.clients.zos.get('builder')
 
-    if node.addr == 'localhost':
-        # cf zdb
-        node = j.clients.virtualbox.zero_os_private(node)
+    node = _zos_node()
 
     print('creating builder container...')
     container = node.containers.create(name='builder',
@@ -103,25 +238,7 @@ def container():
                                        nics=[{'type': 'default'}],
                                        ports={2222: 22})
 
-    sshclient = j.clients.ssh.new(addr=node.addr, port=2222, instance="builder", die=True, login="root", passwd="rooter",
-                                  stdout=True, allow_agent=False, addr_priv="", port_priv=22, use_paramiko=True)
-
-    # wait for ssh server to be running
-    for i in range(3):
-        try:
-            sshclient.ssh_authorize(user="root", key=j.clients.sshkey.list()[0])
-            break
-        except j.exceptions.RuntimeError:
-            if i == 2:
-                raise
-            print("waiting for ssh to start")
-            time.sleep(5)
-
-    j.tools.nodemgr.set(cat="container", name="builder", sshclient="builder", selected=True)
-
-    print('builder container deployed')
-    print("to connect to it do: 'ssh root@%s -p 2222' (password: rooter)" % node.addr)
-    print("can also connect using js_node toolset, recommended: 'js_node ssh -i builder'")
+    node = _node(name="builder",addr=node.addr,port=2222)
 
 
 @click.command()
@@ -133,7 +250,7 @@ def digitalme(name, port):
     connect to zerotier network 1d7193940435f485, this is an ipv6 zerotier network which connects all digitalme's
     """
 
-    node = j.clients.zos.get('builder')
+    node = _zos_node()
 
     print('creating digitalme container...')
     name = "dm_"+name
@@ -142,24 +259,16 @@ def digitalme(name, port):
                                        nics=[{'type': 'default'}, {'type': 'zerotier', 'id': '1d7193940435f485'}],
                                        ports={port: 22})
 
-    sshclient = j.clients.ssh.new(addr=node.addr, port=port, instance=name, die=True, login="root", passwd="rooter",
-                                  stdout=True, allow_agent=False, addr_priv="", port_priv=22, use_paramiko=True)
-
-    # wait for ssh server to be running
-    for i in range(3):
-        try:
-            sshclient.ssh_authorize(user="root", key=j.clients.sshkey.list()[0])
-            break
-        except j.exceptions.RuntimeError:
-            if i == 2:
-                raise
-            print("waiting for ssh to start")
-            time.sleep(5)
-
-    j.tools.nodemgr.set(cat="container", name=name, sshclient=name, selected=True)
+    ssh_container_node = _node(name=name, addr=node.addr, port=port)
 
     print('digitalme container deployed (in debug mode)')
     print("can also connect using js_node toolset, recommended: 'js_node ssh -i %s'" % name)
+
+    n = j.tools.nodemgr.get(instance=name)
+
+    n.prefab.jumpscale.jumpscalecore.install(full=False) #full does not seem to be needed
+
+    from IPython import embed; embed()
 
 
 cli.add_command(init)
@@ -167,6 +276,8 @@ cli.add_command(configure)
 cli.add_command(zdb)
 cli.add_command(container)
 cli.add_command(digitalme)
+cli.add_command(reset)
+cli.add_command(destroy)
 
 if __name__ == '__main__':
     cli()
