@@ -13,6 +13,7 @@ class KeyValueStoreBase(JSBASE):  # , metaclass=ABCMeta):
     '''KeyValueStoreBase defines a store interface.'''
 
     def __init__(self, namespace, name="", serializers=[], masterdb=None, cache=None, changelog=None):
+        JSBASE.__init__(self)
         self.namespace = namespace
         self.name = name
         self.serializers = serializers or list()
@@ -22,7 +23,6 @@ class KeyValueStoreBase(JSBASE):  # , metaclass=ABCMeta):
         self._schema = b""
         self.owner = ""  # std empty
         self.inMem = False
-        JSBASE.__init__(self)
 
     def __new__(cls, *args, **kwargs):
         '''
