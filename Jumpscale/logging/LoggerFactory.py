@@ -315,8 +315,6 @@ class LoggerFactory():
 
         logger.info("a test")
 
-        self.enableMemHandler()
-
         def perftest(logger):
             print("start perftest logger")
             start = time.time()
