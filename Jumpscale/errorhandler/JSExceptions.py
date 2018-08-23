@@ -48,6 +48,8 @@ class BaseJSException(Exception, JSBASE):
                  # result in an error being logged.
                  source=None, action=None, eco=None, tags=None):
 
+        JSBASE.__init__(self)
+
         if source is not None or \
            action is not None or \
            eco is not None or \
@@ -55,7 +57,6 @@ class BaseJSException(Exception, JSBASE):
             self.logger.error("Exception called with new API arguments. "
                               "Please update code to new exception API")
 
-        JSBASE.__init__(self)
         if not self.j.data.types.int.check(level):
             level=1
         super().__init__(message)
