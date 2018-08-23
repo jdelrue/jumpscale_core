@@ -21,7 +21,7 @@ class TestUNIX(TestcasesBase):
         """
         self.lg.info(
             " Check that nosetests app is installed, should return true. ")
-        app_name = "nosetests"
+        app_name = "python"
         self.assertTrue(self.j.sal.unix.checkApplicationInstalled(app_name))
 
         self.lg.info(
