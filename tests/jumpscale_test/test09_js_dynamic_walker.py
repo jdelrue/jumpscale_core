@@ -153,6 +153,9 @@ skipproperties = [
 
         # https://github.com/threefoldtech/jumpscale_core/issues/89
         'j.tools.numtools.test',
+
+        # https://github.com/threefoldtech/jumpscale_core/issues/92
+        'j.tools.raml.test',
     ]
 
 compare('j', j, j, j, 3, _listtests, exclude=skipproperties,
