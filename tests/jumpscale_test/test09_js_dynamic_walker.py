@@ -146,7 +146,7 @@ skipproperties = [
         'j.tools.configmanager.test',
 
         # https://github.com/threefoldtech/jumpscale_core/issues/87
-        'j.data.markdown.test',
+        'j.data.markdowndocs.test',
 
         # https://github.com/threefoldtech/jumpscale_core/issues/88
         'j.tools.nodemgr.test',
