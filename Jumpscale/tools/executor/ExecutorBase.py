@@ -315,8 +315,6 @@ echo --TEXT--
 
     def _getDirPathConfig(self):
 
-        print ("_getDirPathConfig")
-
         if self.isContainer:
             T = '''
             BASEDIR = "/opt"

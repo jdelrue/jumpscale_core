@@ -61,6 +61,7 @@ class TestcasesBase(TestCase):
         self.j = j
         JSBase.global_j = j
 
+        self.j.tools.executorLocal.initEnv()
         self.j.dirs.reload()
 
         self._testID = self._testMethodName
