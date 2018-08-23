@@ -15,6 +15,7 @@ time_last = (D)
 count = 0
 """
 
+
 class AlertHandler(JSBASE):
 
     def __init__(self):
@@ -25,73 +26,73 @@ class AlertHandler(JSBASE):
         self.schema_alert = j.data.schema.schema_from_text(SCHEMA_ALERT)
 
         self.db = j.core.db
-        self.serialize_json = False #will be serialized as capnp
+        self.serialize_json = False  # will be serialized as capnp
 
-    def log(self,error,tb_text=""):
-        """        
-        :param error: is python exception (can be from jumpscale_core/Jumpscale/errorhandler/JSExceptions.py) 
-        :return: None
+    def log(self, error, tb_text=""):
+        """
+        :param error: is python exception (can be from jumpscale_core/Jumpscale/errorhandling/JSExceptions.py)
+        :return: jumpscale.alerthandler.alert object
         """
         e = self.schema_alert.new()
         e.time_first = j.data.time.epoch
         if "trace_do" in error.__dict__:
-            #this are exceptions we raised from errorhandler/JSExceptions.py
+            # this are exceptions we raised from errorhandling/JSExceptions.py
             e.message = error.message
             e.message_pub = error.message_pub
             if error.cat is not "":
-                e.cat=error.cat
+                e.cat = error.cat
             else:
                 name = str(error.__class__).split("'")[1].strip()
                 e.cat = "js.error.%s" % name
             e.level = error.level
-            e.trace =  error.trace
+            e.trace = error.trace
         else:
             e.message = "\n".join(error.args)
             name = str(error.__class__).split("'")[1].strip()
-            e.cat = "python.%s"%name
+            e.cat = "python.%s" % name
         e.trace = tb_text
 
-        key_input = j.data.text.pad("%s_%s_%s"%(e.cat,e.level,e.message),150)
+        key_input = j.data.text.pad("%s_%s_%s" % (e.cat, e.level, e.message), 150)
         key_input = key_input.strip()
         key_input = j.data.text.strip_to_ascii_dense(key_input)
-        key = "alerts:%s"%j.data.hash.md5_string(key_input)
+        key = "alerts:%s" % j.data.hash.md5_string(key_input)
 
-        e2= self.get(key,die=False)
+        e2 = self.get(key, die=False)
         if e2 is not None:
-            e = e2 #use the data from DB
+            e = e2  # use the data from DB
 
-        e.count +=1
+        e.count += 1
         e.time_last = j.data.time.epoch
 
-        self.set(key,e)
+        self.set(key, e)
+        return e
 
-    def set(self,key,err):
+    def set(self, key, err):
         if self.serialize_json:
-            self.db.set(key, err.json,ex=24*3600)  #expires in 24h
+            self.db.set(key, err._json, ex=24*3600)  # expires in 24h
         else:
-            self.db.set(key, err.data, ex=24 * 3600)  # expires in 24h
+            self.db.set(key, err._data, ex=24 * 3600)  # expires in 24h
 
-    def get(self,key,new=False,die=True):
+    def get(self, key, new=False, die=True):
         res = self.db.get(key)
         if res is None:
-            if die==False:
+            if die == False:
                 return
             if new:
                 return self.schema_alert.new()
         # now we have unique key only using part of message, cat & level
         else:
-            if res[0]==123: #means is 99999/100000 json, hope goes well (-:
-                res2=j.data.serializer.json.loads(res)
+            if res[0] == 123:  # means is 99999/100000 json, hope goes well (-:
+                res2 = j.data.serializer.json.loads(res)
                 e = self.schema_alert.get(data=res2)
             else:
                 e = self.schema_alert.get(capnpbin=res)
-        return e
+            return e
 
-    def delete(self,key):
+    def delete(self, key):
         self.db.delete(key)
 
-
-    def walk(self,method,args={}):
+    def walk(self, method, args={}):
         """
 
         def method(key,errorobj,args):
@@ -104,23 +105,23 @@ class AlertHandler(JSBASE):
         """
         for key in self.db.keys("alerts:*"):
             obj = self.get(key)
-            args = method(key,obj,args)
+            args = method(key, obj, args)
         return args
 
     def reset(self):
-        def delete(key,err,args):
+        def delete(key, err, args):
             self.db.delete(key)
-        args = self.walk(delete,args={"res":[]})
+        args = self.walk(delete, args={"res": []})
         return args
 
     def list(self):
         """
         :return: list([key,err])
         """
-        def llist(key,err,args):
-            args["res"].append([key,err])
+        def llist(key, err, args):
+            args["res"].append([key, err])
             return args
-        args = self.walk(llist,args={"res":[]})
+        args = self.walk(llist, args={"res": []})
         return args["res"]
 
     def find(self, cat="", message=""):
@@ -129,7 +130,7 @@ class AlertHandler(JSBASE):
         :param message:
         :return: list([key,err])
         """
-        res=[]
+        res = []
         for res0 in self.list():
             key, err = res0
             found = True
@@ -138,7 +139,7 @@ class AlertHandler(JSBASE):
             if cat is not "" and err.cat.find(cat) == -1:
                 found = False
             if found:
-                res.append([key,err])
+                res.append([key, err])
         return res
 
     def count(self):
@@ -148,18 +149,17 @@ class AlertHandler(JSBASE):
         """
         js9 'j.tools.alerthandler.print()'
         """
-        for (key,obj) in self.list():
+        for (key, obj) in self.list():
             tb_text = obj.trace
             j.core.errorhandler._trace_print(tb_text)
-            print(obj.hr_get(exclude=["trace"]))
+            print(obj._hr_get(exclude=["trace"]))
             print("\n############################\n")
 
-    def test(self,delete=True):
+    def test(self, delete=True):
         """
         js_shell 'j.tools.alerthandler.test()'
         :return:
         """
-
 
         if delete:
             self.reset()
@@ -170,25 +170,22 @@ class AlertHandler(JSBASE):
             try:
                 2/0
             except Exception as e:
-                j.errorhandler.try_except_error_process(e,die=False) #if you want to continue
+                j.errorhandler.try_except_error_process(e, die=False)  # if you want to continue
 
+        error = j.exceptions.HaltException("halt test")  # this test will not have nice stacktrace because is not really an exception
 
-        error = j.exceptions.HaltException("halt test") #this test will not have nice stacktrace because is not really an exception
-
-        j.errorhandler.try_except_error_process(error,die=False)
+        j.errorhandler.try_except_error_process(error, die=False)
 
         if delete:
             assert self.count() == 2
 
-        print (j.tools.alerthandler.list())
+        print(j.tools.alerthandler.list())
 
         j.tools.alerthandler.print()
 
-
-
-    #DO NOT REMOVE, can do traicks later with the eco.lua to make faster
+    # DO NOT REMOVE, can do traicks later with the eco.lua to make faster
     # def redis_enable(self):
-    #     luapath = "%s/errorhandler/eco.lua" % j.dirs.JSLIBDIR
+    #     luapath = "%s/errorhandling/eco.lua" % j.dirs.JSLIBDIR
     #     lua = j.sal.fs.fileGetContents(luapath)
     #     self._escalateToRedisFunction = j.core.db.register_script(lua)
     #     self._scriptsInRedis = True
