@@ -4,9 +4,6 @@ from Jumpscale.data.key_value_store.store import KeyValueStoreBase
 
 import re
 
-from jumpscale import j
-
-
 class MemoryKeyValueStore(KeyValueStoreBase):
 
     def __init__(self, name=None, namespace=None):
@@ -30,16 +27,16 @@ class MemoryKeyValueStore(KeyValueStoreBase):
     def get(self, key, secret="", die=False):
         key = str(key)
         if key in self.expire:
-            if self.expire[key] < j.data.time.epoch:
+            if self.expire[key] < self.j.data.time.epoch:
                 # print ("expired")
                 self.delete(key)
                 return None
             # else:
-            #     print ("not expired: %s/%s"%(self.expire[key],j.data.time.epoch))
+            #     print ("not expired: %s/%s"%(self.expire[key],self.j.data.time.epoch))
         if not self.exists(key):
             if not die:
                 return None
-            raise j.exceptions.RuntimeError("Could not find object with category %s key %s" % (self.category, key))
+            raise self.j.exceptions.RuntimeError("Could not find object with category %s key %s" % (self.category, key))
         return self.db[key]
 
     def getraw(self, key, secret="", die=False, modecheck="r"):
@@ -48,7 +45,7 @@ class MemoryKeyValueStore(KeyValueStoreBase):
             if not die:
                 return None
             else:
-                raise j.exceptions.RuntimeError("Could not find object with category %s key %s" % (self.category, key))
+                raise self.j.exceptions.RuntimeError("Could not find object with category %s key %s" % (self.category, key))
         return self.db[key]
 
     def set(self, key, value, secret="", expire=None, acl={}):
@@ -59,8 +56,8 @@ class MemoryKeyValueStore(KeyValueStoreBase):
         # print("Expire0:%s"%expire)
         key = str(key)
         if expire is not None and expire != 0:
-            self.expire[key] = j.data.time.epoch + expire
-            # print("expire:%s:%s now(%s)"%(key,self.expire[key],j.data.time.epoch))
+            self.expire[key] = self.j.data.time.epoch + expire
+            # print("expire:%s:%s now(%s)"%(key,self.expire[key],self.j.data.time.epoch))
         self.db[key] = value
 
     def delete(self, key, secret=""):
