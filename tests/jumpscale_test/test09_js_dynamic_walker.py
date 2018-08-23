@@ -136,6 +136,8 @@ skipproperties = [
         'j.clients.tarantool.test', # destroys files
         'j.clients.tarantool.test_find', # destroys files
 
+        # https://github.com/threefoldtech/jumpscale_core/issues/84
+        'j.tools.team_manager.test',
     ]
 
 compare('j', j, j, j, 3, _listtests, exclude=skipproperties,
