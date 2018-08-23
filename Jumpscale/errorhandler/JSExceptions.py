@@ -46,10 +46,10 @@ class BaseJSException(Exception, JSBASE):
                  # a chance to upgrade to the new API.
                  # use of any of these parameters will
                  # result in an error being logged.
-                 source=None, actionkey=None, eco=None, tags=None):
+                 source=None, action=None, eco=None, tags=None):
 
         if source is not None or \
-           actionkey is not None or \
+           action is not None or \
            eco is not None or \
            tags is not None:
             self.logger.error("Exception called with new API arguments. "
