@@ -87,30 +87,31 @@ class Nodes(JSConfigBase):
 
         i = 9
 
-        self.set("myhost%s" % i, "127.0.0.%s" % i, 22, cat="testcat")
+        self.set("myhost%s" % i, "127.0.0.%s" % i, cat="testcat")
 
         # from IPython import embed;embed(colors='Linux')
 
         for i in range(10):
-            self.set("myhost%s" % i, "127.0.0.%s" % i, 22, cat="testcat")
+            self.set("myhost%s" % i, "127.0.0.%s" % i, cat="testcat")
 
         assert self.exists("myhost1") == True
 
         assert len(self.getall()) == 10 + startnr
 
         for i in range(5):
-            self.set("myhostcat2_%s" % i, "127.0.0.%s" % i, 22, cat="cat2")
+            self.set("myhostcat2_%s" % i, "127.0.0.%s" % i, cat="cat2")
 
         n = self.get("myhost9")
         d2 = {'active': True,
-              'addr': '127.0.0.9',
+              'sshclient': '127.0.0.9',
               'category': 'testcat',
-              'clienttype': '',
+              'clienttype': 'ovc',
               'description': '',
               'name': 'myhost9',
-              'port': 22,
               'secretconfig_': '',
+              'zosclient': '',
               'pubconfig': '""',
+              'installed': False,
               'selected': False}
 
         # from IPython import embed;embed(colors='Linux')
