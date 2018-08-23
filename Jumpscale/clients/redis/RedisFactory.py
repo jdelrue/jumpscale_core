@@ -6,7 +6,7 @@ try:
     # import itertools
     import socket
     redisFound = True
-except:
+except ImportError:
     pass
 import os
 import time
