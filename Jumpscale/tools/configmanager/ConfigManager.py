@@ -293,7 +293,7 @@ class ConfigFactory(object):
                             "like we are not in config directory:'%s'" %
                     self.path)
 
-        obj = eval(location)
+        obj = self.jget(location)
         # If the client is a single item one (i.e itsyouonline), we will always
         # use the default `main` instance
         if obj._single_item:
