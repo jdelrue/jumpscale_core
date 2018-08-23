@@ -39,7 +39,22 @@ class ExceptionsFactory(object):
 
 class BaseJSException(Exception, JSBASE):
 
-    def __init__(self, message="", level=1, cat="", msgpub=""):
+    def __init__(self, message="", level=1, cat="", msgpub="",
+                 # XXX ISSUE #81 - WARNING: it is ESSENTIAL
+                 # that these parameters REMAIN HERE until
+                 # all code including third parties have had
+                 # a chance to upgrade to the new API.
+                 # use of any of these parameters will
+                 # result in an error being logged.
+                 source=None, actionkey=None, eco=None, tags=None):
+
+        if source is not None or \
+           actionkey is not None or \
+           eco is not None or \
+           tags is not None:
+            self.logger.error("Exception called with new API arguments. "
+                              "Please update code to new exception API")
+
         JSBASE.__init__(self)
         if not self.j.data.types.int.check(level):
             level=1
@@ -99,72 +114,92 @@ class BaseJSException(Exception, JSBASE):
 
 
 class HaltException(BaseJSException):
-    def __init__(self, message="", level=1, cat="", msgpub=""):
-        super().__init__(message=message,level=level,cat=cat,msgpub=msgpub)
+    def __init__(self, message="", level=1, cat="", msgpub="",
+                       source=None, action=None, eco=None, tags=None):
+        super().__init__(message=message,level=level,cat=cat,msgpub=msgpub,
+                        source=source, action=action, eco=eco, tags=tags)
         self.trace_do = True
 
 
 class RuntimeError(BaseJSException):
 
-    def __init__(self, message="", level=1, cat="", msgpub=""):
-        super().__init__(message=message,level=level,cat=cat,msgpub=msgpub)
+    def __init__(self, message="", level=1, cat="", msgpub="",
+                       source=None, action=None, eco=None, tags=None):
+        super().__init__(message=message,level=level,cat=cat,msgpub=msgpub,
+                        source=source, action=action, eco=eco, tags=tags)
         self.trace_do = True
 
 
 class Input(BaseJSException):
 
-    def __init__(self, message="", level=1, cat="", msgpub=""):
-        super().__init__(message=message,level=level,cat=cat,msgpub=msgpub)
+    def __init__(self, message="", level=1, cat="", msgpub="",
+                       source=None, action=None, eco=None, tags=None):
+        super().__init__(message=message,level=level,cat=cat,msgpub=msgpub,
+                        source=source, action=action, eco=eco, tags=tags)
         self.trace_do = True
 
 
 class NotImplemented(BaseJSException):
 
-    def __init__(self, message="", level=1, cat="", msgpub=""):
-        super().__init__(message=message,level=level,cat=cat,msgpub=msgpub)
+    def __init__(self, message="", level=1, cat="", msgpub="",
+                       source=None, action=None, eco=None, tags=None):
+        super().__init__(message=message,level=level,cat=cat,msgpub=msgpub,
+                        source=source, action=action, eco=eco, tags=tags)
         self.trace_do = True
 
 
 class BUG(BaseJSException):
 
-    def __init__(self, message="", level=1, cat="", msgpub=""):
-        super().__init__(message=message,level=level,cat=cat,msgpub=msgpub)
+    def __init__(self, message="", level=1, cat="", msgpub="",
+                       source=None, action=None, eco=None, tags=None):
+        super().__init__(message=message,level=level,cat=cat,msgpub=msgpub,
+                        source=source, action=action, eco=eco, tags=tags)
         self.trace_do = True
 
 
 class JSBUG(BaseJSException):
 
-    def __init__(self, message="", level=1, cat="", msgpub=""):
-        super().__init__(message=message,level=level,cat=cat,msgpub=msgpub)
+    def __init__(self, message="", level=1, cat="", msgpub="",
+                       source=None, action=None, eco=None, tags=None):
+        super().__init__(message=message,level=level,cat=cat,msgpub=msgpub,
+                        source=source, action=action, eco=eco, tags=tags)
         self.trace_do = True
 
 
 class OPERATIONS(BaseJSException):
 
-    def __init__(self, message="", level=1, cat="", msgpub=""):
-        super().__init__(message=message,level=level,cat=cat,msgpub=msgpub)
+    def __init__(self, message="", level=1, cat="", msgpub="",
+                       source=None, action=None, eco=None, tags=None):
+        super().__init__(message=message,level=level,cat=cat,msgpub=msgpub,
+                        source=source, action=action, eco=eco, tags=tags)
         self.trace_do = False
 
 
 class IOError(BaseJSException):
 
-    def __init__(self, message="", level=1, cat="", msgpub=""):
-        super().__init__(message=message,level=level,cat=cat,msgpub=msgpub)
+    def __init__(self, message="", level=1, cat="", msgpub="",
+                       source=None, action=None, eco=None, tags=None):
+        super().__init__(message=message,level=level,cat=cat,msgpub=msgpub,
+                        source=source, action=action, eco=eco, tags=tags)
         self.trace_do = True
 
 
 
 class NotFound(BaseJSException):
 
-    def __init__(self, message="", level=1, cat="", msgpub=""):
-        super().__init__(message=message,level=level,cat=cat,msgpub=msgpub)
+    def __init__(self, message="", level=1, cat="", msgpub="",
+                       source=None, action=None, eco=None, tags=None):
+        super().__init__(message=message,level=level,cat=cat,msgpub=msgpub,
+                        source=source, action=action, eco=eco, tags=tags)
         self.trace_do = True
 
 
 class Timeout(BaseJSException):
 
-    def __init__(self, message="", level=1, cat="", msgpub=""):
-        super().__init__(message=message,level=level,cat=cat,msgpub=msgpub)
+    def __init__(self, message="", level=1, cat="", msgpub="",
+                       source=None, action=None, eco=None, tags=None):
+        super().__init__(message=message,level=level,cat=cat,msgpub=msgpub,
+                        source=source, action=action, eco=eco, tags=tags)
         self.trace_do = True
 
 SSHTimeout = pssh.exceptions.Timeout
