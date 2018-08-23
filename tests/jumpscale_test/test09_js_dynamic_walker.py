@@ -131,7 +131,7 @@ skipproperties = [
         'j.tools.testengine.testFile', # not a unit test
 
         # https://github.com/threefoldtech/jumpscale_core/issues/79
-        'j.clients.tarantool.testmodel', # destroys files
+        'j.clients.tarantool.testmodels', # destroys files
         'j.clients.tarantool.test', # destroys files
         'j.clients.tarantool.test_find', # destroys files
     ]
