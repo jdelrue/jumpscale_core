@@ -24,11 +24,12 @@ class JSLogger(logging.Logger):
         j = self.factory.j
         if not self.isEnabledFor(logging.ERROR):
             return
-        eco = j.errorhandler.getErrorConditionObject(
-            ddict={}, msg=msg, msgpub=msg, category=self.name,
-            level=logging.ERROR, type=logging.getLevelName(logging.ERROR),
-            tb=None, tags='')
-        j.errorhandler._send2Redis(eco)
+        # issue #83 and #81 - error API has now changed.  TODO: escalate
+        # eco = j.errorhandler.getErrorConditionObject(
+        #     ddict={}, msg=msg, msgpub=msg, category=self.name,
+        #     level=logging.ERROR, type=logging.getLevelName(logging.ERROR),
+        #     tb=None, tags='')
+        # j.errorhandler._send2Redis(eco)
 
         self._log(logging.ERROR, msg, args, **kwargs)
 
@@ -44,12 +45,13 @@ class JSLogger(logging.Logger):
         j = self.factory.j
         if not self.isEnabledFor(logging.CRITICAL):
             return
-        eco = j.errorhandler.getErrorConditionObject(
-            ddict={}, msg=msg, msgpub=msg, category=self.name,
-            level=logging.CRITICAL, type=logging.getLevelName(
-                logging.CRITICAL),
-            tb=None, tags='')
-        j.errorhandler._send2Redis(eco)
+        # issue #83 and #81 - error API has now changed.  TODO: escalate
+        # eco = j.errorhandler.getErrorConditionObject(
+        #     ddict={}, msg=msg, msgpub=msg, category=self.name,
+        #     level=logging.CRITICAL, type=logging.getLevelName(
+        #         logging.CRITICAL),
+        #     tb=None, tags='')
+        # j.errorhandler._send2Redis(eco)
 
         self._log(logging.CRITICAL, msg, args, **kwargs)
 
