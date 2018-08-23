@@ -205,6 +205,14 @@ class SystemProcess(object):
                 msg+= self.j.data.text.indent(err).rstrip()+"\n\n"
             raise RuntimeError(msg)
 
+        # close the files (otherwise resources get lost),
+        # wait for the process to die, and del the Popen object
+        p.stdin.close()
+        p.stderr.close()
+        p.stdout.close()
+        p.wait()
+        del p
+
         return (rc, out, err)
 
 
