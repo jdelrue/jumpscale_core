@@ -4,6 +4,9 @@ import time
 import socket
 import netaddr
 import re
+import os
+
+
 
 class NetTools:
 
@@ -64,7 +67,7 @@ class NetTools:
         start = self.j.data.time.getTimeEpoch()
         now = start
         while now < start + timeout:
-            if self.j.sal.nettools.tcpPortConnectionTest(ipaddr, port, 1) is False:
+            if self.j.sal.nettools.tcpPortConnectionTest(ipaddr, port, 1) is True:
                 return True
             now = self.j.data.time.getTimeEpoch()
         return False
@@ -234,7 +237,10 @@ class NetTools:
             raise self.j.exceptions.RuntimeError("Not supported on this platform!")
 
     def checkIpAddressIsLocal(self, ipaddr):
-        if ipaddr.strip() in self.getIpAddresses():
+        ips = self.getIpAddresses()
+        if ipaddr.strip() in ips['ip']:
+            return True
+        elif ipaddr.strip() in ips['ip6']:
             return True
         else:
             return False
@@ -434,16 +440,25 @@ class NetTools:
                     return item["name"], ipaddr
 
     def bridgeExists(self, bridgename):
-        cmd = "brctl show"
-        rc, out, err = self.j.sal.process.execute(cmd, showout=False)
-        for line in out.split("\n"):
-            if line.lower().startswith(bridgename):
+        if self.j.core.platformtype.myplatform.isMac:
+            cmd = "ifconfig bridge0"
+            rc, out, err = self.j.sal.process.execute(cmd, showout=False)
+            if bridgename in out:
                 return True
+        else:
+            cmd = "brctl show"
+            rc, out, err = self.j.sal.process.execute(cmd, showout=False)
+            for line in out.split("\n"):
+                if line.lower().startswith(bridgename):
+                    return True
         return False
 
     def resetDefaultGateway(self, gw):
         def gwexists():
-            cmd = "ip r"
+            if self.j.core.platformtype.myplatform.isMac:
+                cmd = "netstat -r"
+            else:
+                cmd = "ip r"
             rc, out, err = self.j.sal.process.execute(cmd, showout=False)
             for line in out.split("\n"):
                 if line.lower().startswith("default"):
@@ -451,9 +466,12 @@ class NetTools:
             return False
 
         def removegw():
-            cmd = "ip route del 0/0"
+            if self.j.core.platformtype.myplatform.isMac:
+                cmd = "route -n delete default"
+            else:
+                cmd = "ip route del 0/0"
             rc, out, err = self.j.sal.process.execute(
-                cmd, showout=False, ignoreErrorOutput=False, die=False)
+                cmd, showout=False, die=False)
 
         removegw()
         couter = 0
@@ -464,14 +482,14 @@ class NetTools:
             counter += 1
             if counter > 10:
                 raise self.j.exceptions.RuntimeError("cannot delete def gw")
-
-        cmd = 'route add default gw %s' % gw
+        if self.j.core.platformtype.myplatform.isMac:
+            cmd = 'route add default %s' % gw
+        else:
+            cmd = 'route add default gw %s' % gw
         self.j.sal.process.execute(cmd)
+        return "added %s default gw" % gw
 
-
-
-
-    def getNetworkInfo(self,device=None,usecache=True):
+    def getNetworkInfo(self,device=None):
         """
         returns network info like
 
@@ -584,14 +602,19 @@ class NetTools:
     def isIpLocal(self, ipaddress):
         if ipaddress == "127.0.0.1" or ipaddress == "localhost":
             return True
-        return ipaddress in self.getIpAddresses()
+        return ipaddress in self.getIpAddresses()['ip']
 
     def isIpInDifferentNetwork(self, ipaddress):
         for netinfo in self.getNetworkInfo():
-            for ip, cidr in zip(netinfo['ip'], netinfo['cidr']):
-                if ipaddress in netaddr.IPNetwork('{}/{}'.format(ip, cidr)):
-                    return True
-        return False
+            if netinfo['ip']:
+                if self.j.core.platformtype.myplatform.isLinux:
+                    if ipaddress in netaddr.IPNetwork('{}/{}'.format(netinfo['ip'][0], netinfo['cidr'])):
+                        return False
+                elif self.j.core.platformtype.myplatform.isMac:
+                    if ipaddress in netaddr.IPNetwork('{}/{}'.format(netinfo['ip'][0], netinfo['cidr'][0])):
+                        return False
+
+        return True
 
     def getMacAddressForIp(self, ipaddress):
         """Search the MAC address of the given IP address in the ARP table
@@ -768,9 +791,9 @@ class NetTools:
             else:
                 # It exists but no checksum is provided so any existence of the local file suffices.
                 return
-
+        path, filename = os.path.split(destination_file_path)
         # If reached here then downloading is inevitable
-        self.download(url, localpath=destination_file_path,
+        self.download(url, localpath=path,
                       username=http_auth_username, passwd=http_auth_password)
 
         # Now check if the downloaded file matches the provided checksum
@@ -885,18 +908,28 @@ class NetTools:
         if inet == 'static' and (not ip or not netmask):
             raise ValueError('ip, and netmask, are required in static inet.')
 
-        file = self.j.tools.path.get('/etc/network/interfaces.d/%s' % device)
-        content = 'auto %s\n' % device
+        if self.j.core.platformtype.myplatform.isLinux:
+            file = self.j.tools.path.get('/etc/network/interfaces.d/%s' % device)
+            content = 'auto %s\n' % device
 
-        if inet == 'dhcp':
-            content += 'iface %s inet dhcp\n' % device
-        else:
-            content += 'iface %s inet static\naddress %s\nnetmask %s\n' % (device, ip, netmask)
-            if gw:
-                content += 'gateway %s\n' % gw
+            if inet == 'dhcp':
+                content += 'iface %s inet dhcp\n' % device
+            else:
+                content += 'iface %s inet static\naddress %s\nnetmask %s\n' % (device, ip, netmask)
+                if gw:
+                    content += 'gateway %s\n' % gw
 
-        file.write_text(content)
+            file.write_text(content)
 
+        elif self.j.core.platformtype.myplatform.isMac:
+
+            if inet == 'dhcp':
+                content = 'ipconfig set %s dhcp' % device
+            else:
+                content = 'ifconfig %s %s netmask %s ' % (device, ip, netmask)
+                if gw:
+                    content += '%s' % gw
+            self.j.sal.process.execute(content)
         if commit:
             self.commit(device)
         else:
@@ -904,13 +937,18 @@ class NetTools:
 
     def commit(self, device=None):
         #- make sure loopback exist
-        content = 'auto lo\niface lo inet loopback\n'
-        self.j.tools.path.get('/etc/network/interfaces.d/lo').write_text(content)
+        if self.j.core.platformtype.myplatform.isMac:
+            if device:
+                self.logger.info('Restarting interface %s' % device)
+                self.j.sal.process.execute('ifconfig %s down && ifconfig %s up' % (device, device))
+        elif self.j.core.platformtype.myplatform.isLinux:
+            content = 'auto lo\niface lo inet loopback\n'
+            self.j.tools.path.get('/etc/network/interfaces.d/lo').write_text(content)
 
-        self.j.sal.process.execute('service networking restart')
-        if device:
-            self.logger.info('Restarting interface %s' % device)
-            self.j.sal.process.execute('ifdown %s && ifup %s' % (device, device))
+            self.j.sal.process.execute('service networking restart')
+            if device:
+                self.logger.info('Restarting interface %s' % device)
+                self.j.sal.process.execute('ifdown %s && ifup %s' % (device, device))
         self.logger.info('DONE')
 
 # XXX TODO: make dynamic-js-based.  doesn't seem to be used anywhere?
