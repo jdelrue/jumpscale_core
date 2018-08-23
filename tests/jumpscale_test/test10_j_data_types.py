@@ -31,9 +31,12 @@ class TestJDataTypes(TestcasesBase):
         self.assertFalse(y.is_valid_ipv4('fred'))
         self.assertTrue (y.is_valid_ipv4('255.255.255.255'))
 
+    @unittest.skip(
+        "https://github.com/threefoldtech/jumpscale_core/issues/90")
     def test002_test_ipv6(self):
         """ JS-003
 
+        Issue reported *actually in python*: https://bugs.python.org/issue34453
         **Test Scenario:**
         check IPv6 addresses.  these look fun!
         https://github.com/gws/ipv6-address-test/blob/master/Tests/Ipv6TestCase.php
