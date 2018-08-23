@@ -48,7 +48,7 @@ class RedisFactory(JSBASE):
             ssl=False,
             ssl_certfile=None,
             ssl_keyfile=None,
-            sec_timeout=2,
+            timeout=4,
             ping=True,
             die=True,
             **args):
@@ -77,11 +77,15 @@ class RedisFactory(JSBASE):
         if key not in self._redis or not fromcache:
             if unixsocket is None:
                 self._redis[key] = Redis(ipaddr, port, password=password, ssl=ssl, ssl_certfile=ssl_certfile, \
-                                         ssl_keyfile=ssl_keyfile, socket_timeout=sec_timeout,**args)
+                                         ssl_keyfile=ssl_keyfile,
+                                         # socket_timeout=timeout,
+                                         **args)
             else:
                 self._redis[key] = Redis(unix_socket_path=unixsocket,
-                                         socket_timeout=sec_timeout, password=password,
-                                         ssl=ssl, ssl_certfile=ssl_certfile, ssl_keyfile=ssl_keyfile, **args)
+                                         # socket_timeout=timeout,
+                                         password=password,
+                                         ssl=ssl, ssl_certfile=ssl_certfile,
+                                         ssl_keyfile=ssl_keyfile, **args)
 
         if ardb_patch:
             self._ardb_patch(self._redis[key])
