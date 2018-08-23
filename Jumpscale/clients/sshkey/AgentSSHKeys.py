@@ -9,10 +9,12 @@ class AgentSSHKeys(AgentSSH, JSBASE):
     """
 
     def __init__(self):
+        JSBASE.__init__(self)
+        if hasattr(self, "_conn"): # resource leak
+            self._conn.close()
         self._conn = None
         self._keys = ()
         super().__init__()
-        JSBASE.__init__(self)
 
     def get_keys(self):
         """
@@ -51,6 +53,6 @@ class AgentKeyWithName(AgentKey, JSBASE):
     """
 
     def __init__(self, agent, blob, keyname):
+        JSBASE.__init__(self)
         self.keyname = keyname.decode()
         super().__init__(agent, blob)
-        JSBASE.__init__(self)
