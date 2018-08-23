@@ -49,7 +49,8 @@ class ErrorHandler:
         try:
             schemas = self.j.application.jget('schemas')
             self.j.tools.alerthandler.log(err, tb_text=tb_text)
-        except AttributeError: # if schemas don't exist, skip the alerthandler
+        except AttributeError as e:
+            # if schemas don't exist, skip the alerthandler
             pass
         return err
 

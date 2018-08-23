@@ -21,18 +21,28 @@ class AlertHandler(JSBASE):
     def __init__(self):
         self.__jslocation__ = "j.tools.alerthandler"
         JSBASE.__init__(self)
-        if not j.application.schemas:
-            raise RuntimeError("cannot use alerthandler because digital me has not been installed")
+
+        # XXX issue #94 - cannot do anything, can't start apps, nothing
+        # unless schemas are installed (through digitalme)
+        self.enabled = hasattr(j.application, 'schemas')
+        if not self.enabled:
+            return
         self.schema_alert = j.data.schema.schema_from_text(SCHEMA_ALERT)
 
         self.db = j.core.db
         self.serialize_json = False  # will be serialized as capnp
+
+    def _check_enabled(self):
+        if not self.enabled:
+            raise RuntimeError("cannot use alerthandler because "
+                               "digital me has not been installed")
 
     def log(self, error, tb_text=""):
         """
         :param error: is python exception (can be from jumpscale_core/Jumpscale/errorhandling/JSExceptions.py)
         :return: jumpscale.alerthandler.alert object
         """
+        self._check_enabled() # issue #94 - remove when sorted out
         e = self.schema_alert.new()
         e.time_first = j.data.time.epoch
         if "trace_do" in error.__dict__:
