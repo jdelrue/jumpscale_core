@@ -10,10 +10,10 @@ from jumpscale import j
 class MemoryKeyValueStore(KeyValueStoreBase):
 
     def __init__(self, name=None, namespace=None):
+        KeyValueStoreBase.__init__(self, namespace=namespace, name=name)
         self.name = name
         self.namespace = namespace
         self.destroy()
-        KeyValueStoreBase.__init__(self, namespace=self.namespace, name=self.name)
 
     def destroy(self):
         self.db = dict()
