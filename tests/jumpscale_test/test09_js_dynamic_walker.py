@@ -140,13 +140,16 @@ skipproperties = [
         'j.tools.team_manager.test',
 
         # https://github.com/threefoldtech/jumpscale_core/issues/85
-        'j.data.markdown.test2'
+        'j.data.markdown.test2',
 
         # https://github.com/threefoldtech/jumpscale_core/issues/86
         'j.tools.configmanager.test',
 
         # https://github.com/threefoldtech/jumpscale_core/issues/87
-        'j.data.markdown.test'
+        'j.data.markdown.test',
+
+        # https://github.com/threefoldtech/jumpscale_core/issues/88
+        'j.tools.nodemgr.test'
     ]
 
 compare('j', j, j, j, 3, _listtests, exclude=skipproperties,
