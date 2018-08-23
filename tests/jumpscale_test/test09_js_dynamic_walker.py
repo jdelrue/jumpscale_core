@@ -149,7 +149,10 @@ skipproperties = [
         'j.data.markdown.test',
 
         # https://github.com/threefoldtech/jumpscale_core/issues/88
-        'j.tools.nodemgr.test'
+        'j.tools.nodemgr.test',
+
+        # https://github.com/threefoldtech/jumpscale_core/issues/89
+        'j.tools.numtools.test',
     ]
 
 compare('j', j, j, j, 3, _listtests, exclude=skipproperties,
