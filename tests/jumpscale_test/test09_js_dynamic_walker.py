@@ -163,6 +163,9 @@ skipproperties = [
 
         # https://github.com/threefoldtech/jumpscale_core/issues/93
         'j.tools.prefab.test',
+
+        # https://github.com/threefoldtech/jumpscale_core/issues/94
+        'j.tools.alerthandler.test',
     ]
 
 # use this for testing of a restricted set of tests
