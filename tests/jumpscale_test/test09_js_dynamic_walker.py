@@ -68,7 +68,8 @@ def compare(tree, j, obj1, obj2, depth, actionfn=None,
             subobj1 = getattr(obj1, subname)
             subobj2 = getattr(obj2, subname)
         compare(fullname, j,
-                subobj1, subobj2, depth-1, actionfn, exclude, errorfn)
+                subobj1, subobj2, depth-1, actionfn, includeonly,
+                exclude, errorfn)
 
 class TestJSDynamicWalker(TestcasesBase):
 
