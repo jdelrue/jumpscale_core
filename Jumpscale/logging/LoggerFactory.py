@@ -9,7 +9,7 @@ import sys
 
 class LoggerFactory():
 
-    __jslocation__ = "j.logging"
+    __jslocation__ = "j.core.logging"
 
     def __init__(self, j=None):
         """ WARNING: JSBase now contains a singleton (global) j and
