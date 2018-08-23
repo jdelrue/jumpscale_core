@@ -42,7 +42,7 @@ class ExecutorSSH(ExecutorBase):
             die=True,
             checkok=False,
             showout=True,
-            timeout=0,
+            timeout=None,
             env={},
             asScript=True,
             sudo=False,

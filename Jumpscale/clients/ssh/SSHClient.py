@@ -52,6 +52,7 @@ class SSHClient(SSHClientBase):
         return self._client
 
     def execute(self, cmd, showout=True, die=True, timeout=None):
+        print ("execute", cmd, showout, die, timeout)
         channel, _, stdout, stderr, _ = self.client.run_command(cmd, timeout=timeout)
         # self._client.wait_finished(channel)
 
