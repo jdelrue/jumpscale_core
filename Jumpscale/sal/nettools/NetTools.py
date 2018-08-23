@@ -107,14 +107,14 @@ class NetTools:
         self.logger.debug(
             'Checking whether a service is running on port %d' % port)
 
-        if self.j.core.platformtype.myplatform.isLinux or self.j.core.platformtype.myplatform.isMac:
+        if self.j.core.platformtype.myplatform.isLinux:
             # netstat: n == numeric, -t == tcp, -u = udp, l= only listening, p = program
             command = "netstat -ntulp | grep ':%s '" % port
             # raise self.j.exceptions.RuntimeError("stop")
             exitcode, output, err = self.j.sal.process.execute(
                 command, die=True, showout=False)
             return exitcode == 0
-        elif self.j.core.platformtype.myplatform.isMac():
+        elif self.j.core.platformtype.myplatform.isMac:
             command = "netstat -an -f inet"
             exitcode, output, err = self.j.sal.process.execute(
                 command, die=True, showout=False)
