@@ -204,7 +204,7 @@ class JSLoader():
 
     @property
     def autopip(self):
-        return self.j.core.state.config["system"]["autopip"] in \
+        return self.j.core.state.configGet("system")["autopip"] in \
             [True, "true", "1", 1]
 
     def _installDevelopmentEnv(self):
