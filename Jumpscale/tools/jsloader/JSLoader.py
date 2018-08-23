@@ -419,7 +419,7 @@ class JSLoader():
                 m = add_dynamic_instance(_j, '', jname, jname, kls)
 
         for jlocationRoot, jlocationRootDict in moduleList:
-            #print (jlocationRoot, jlocationRootDict)
+            #print ("root", jlocationRoot, jlocationRootDict)
             jname = jlocationRoot.split(".")[1].strip()
             #print ("dynamic generate root", jname, jlocationRoot)
             for subname, sublist in jlocationRootDict.items():

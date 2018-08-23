@@ -1,6 +1,6 @@
 import types
 from .testcases_base import TestcasesBase
-from collections import Mapping, Set, Sequence 
+from collections import Mapping, Set, Sequence
 
 def listin(list1, list2):
     isin = []
@@ -12,8 +12,8 @@ def listin(list1, list2):
             notin.append(i)
     return isin, notin
 
-def compare(tree, j, obj1, obj2, depth, actionfn=None, exclude=None,
-            errorfn=None):
+def compare(tree, j, obj1, obj2, depth, actionfn=None,
+            includeonly=None, exclude=None, errorfn=None):
 
     if exclude is None:
         exclude = []
@@ -52,7 +52,10 @@ def compare(tree, j, obj1, obj2, depth, actionfn=None, exclude=None,
         print ("isin", tree, isin)
 
     for subname in isin:
-        if "%s.%s" % (tree, subname) in exclude:
+        fullname = "%s.%s" % (tree, subname)
+        if includeonly and fullname not in includeonly:
+            continue
+        if fullname in exclude:
             continue
         if errorfn:
             try:
@@ -64,7 +67,7 @@ def compare(tree, j, obj1, obj2, depth, actionfn=None, exclude=None,
         else:
             subobj1 = getattr(obj1, subname)
             subobj2 = getattr(obj2, subname)
-        compare("%s.%s" % (tree, subname), j,
+        compare(fullname, j,
                 subobj1, subobj2, depth-1, actionfn, exclude, errorfn)
 
 class TestJSDynamicWalker(TestcasesBase):
@@ -161,6 +164,12 @@ skipproperties = [
         'j.tools.prefab.test',
     ]
 
-compare('j', j, j, j, 3, _listtests, exclude=skipproperties,
+# use this for testing of a restricted set of tests
+onlyproperties = [
+    #'j.clients.zdb.test',
+    ]
+
+compare('j', j, j, j, 3, _listtests, includeonly=onlyproperties,
+        exclude=skipproperties,
         errorfn=_errortest)
 

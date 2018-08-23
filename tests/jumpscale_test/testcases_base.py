@@ -61,6 +61,8 @@ class TestcasesBase(TestCase):
         self.j = j
         JSBase.global_j = j
 
+        self.j.dirs.reload()
+
         self._testID = self._testMethodName
         self._startTime = time.time()
         self.lg.info(
