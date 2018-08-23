@@ -10,6 +10,8 @@ class StoreFactory(JSBASE):
     also caches the stores based on their type, name and namespace.
     '''
 
+    __jslocation__ = 'j.data.kvs'
+
     def __init__(self):
         JSBASE.__init__(self)
         self.__imports__ = "msgpack"
