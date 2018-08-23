@@ -46,8 +46,11 @@ class ErrorHandler:
         self.excepthook(ttype, err, tb, die=die)
 
     def _error_process(self, err, tb_text=""):
-        if j.application.schemas:
-            j.tools.alerthandler.log(err, tb_text=tb_text)
+        try:
+            schemas = self.j.application.jget('schemas'):
+            self.j.tools.alerthandler.log(err, tb_text=tb_text)
+        except AttributeError: # if schemas don't exist, skip the alerthandler
+            pass
         return err
 
     def excepthook(self, ttype, err, tb, die=False):
