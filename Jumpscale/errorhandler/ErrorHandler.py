@@ -47,7 +47,7 @@ class ErrorHandler:
 
     def _error_process(self, err, tb_text=""):
         try:
-            schemas = self.j.application.jget('schemas'):
+            schemas = self.j.application.jget('schemas')
             self.j.tools.alerthandler.log(err, tb_text=tb_text)
         except AttributeError: # if schemas don't exist, skip the alerthandler
             pass
