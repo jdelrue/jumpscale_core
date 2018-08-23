@@ -44,24 +44,23 @@ class TestcasesBase(TestCase):
         super().__init__(*args, **kwargs)
         self.lg = self.logger()
 
-    @classmethod
-    def setUpClass(cls):
-        cls.tempdirpth = tempfile.mkdtemp()
-        tempcfg = os.path.join(cls.tempdirpth, "cfg")
-        os.environ['HOSTDIR'] = cls.tempdirpth
-        os.environ['HOSTCFGDIR'] = os.path.join(cls.tempdirpth, "cfg")
+    def setUp(self):
+
+        self.tempdirpth = tempfile.mkdtemp()
+        tempcfg = os.path.join(self.tempdirpth, "cfg")
+        os.environ['HOSTDIR'] = self.tempdirpth
+        os.environ['HOSTCFGDIR'] = os.path.join(self.tempdirpth, "cfg")
         os.environ['HOSTCFGDIR'] = tempcfg
         os.mkdir(tempcfg)
 
         # record the old global_j, create a new j for use in the test
-        cls.old_global_j = JSBase.global_j
+        self.old_global_j = JSBase.global_j
         JSBase.global_j = None
         from Jumpscale import j
 
-        cls.j = j
+        self.j = j
         JSBase.global_j = j
 
-    def setUp(self):
         self._testID = self._testMethodName
         self._startTime = time.time()
         self.lg.info(
@@ -83,12 +82,10 @@ class TestcasesBase(TestCase):
             'Testcase [{}] is ended, Duration: {} seconds'.format(
                 self._testID, self._duration))
 
-    @classmethod
-    def tearDownClass(cls):
         # delete the old j, restore the previous global_j
-        del cls.j
-        shutil.rmtree(cls.tempdirpth)
-        JSBase.global_j = cls.old_global_j
+        del self.j
+        shutil.rmtree(self.tempdirpth)
+        JSBase.global_j = self.old_global_j
 
     def logger(self):
         logger = logging.getLogger('Jumpscale')

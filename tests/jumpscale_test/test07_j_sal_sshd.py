@@ -6,23 +6,20 @@ from .testcases_base import TestcasesBase
 
 class TestSALLSSHD(TestcasesBase):
 
-    @classmethod
-    def read_authorized_keys_file(cls):
-        path = str(cls.sshd.SSH_AUTHORIZED_KEYS)
+    def setUp(self):
+        super().setUp()
+        self.sshd = self.j.sal.sshd
+        self.authorized_keys = self.sshd.SSH_AUTHORIZED_KEYS.text().splitlines()
+
+    def tearDown(self):
+        self.sshd.SSH_AUTHORIZED_KEYS.write_lines(self.authorized_keys)
+        super().tearDown()
+
+    def read_authorized_keys_file(self):
+        path = str(self.sshd.SSH_AUTHORIZED_KEYS)
         with open(path, 'r') as f:
             lines = [x.strip() for x in f.readlines()]
             return lines
-
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.sshd = cls.j.sal.sshd
-        cls.authorized_keys = cls.sshd.SSH_AUTHORIZED_KEYS.text().splitlines()
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.sshd.SSH_AUTHORIZED_KEYS.write_lines(cls.authorized_keys)
-        super().tearDownClass()
 
     def test01_keys(self):
         """ JS-057

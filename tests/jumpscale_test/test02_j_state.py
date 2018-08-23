@@ -8,39 +8,32 @@ import uuid
 
 class TestJSTATE(TestcasesBase):
 
-    @classmethod
-    def get_state(cls):
-        with open(cls.state_path, 'r') as f:
-            content = pytoml.load(f)
+    def get_state(self):
+        try:
+            with open(self.state_path, 'r') as f:
+                content = pytoml.load(f)
+        except FileNotFoundError:
+            content = {}
+
         return content
 
-    @classmethod
-    def reset_state(cls):
-        with open(cls.state_path, 'w') as f:
-            f.write(pytoml.dumps(cls.state_file_content))
+    def reset_state(self):
+        with open(self.state_path, 'w') as f:
+            f.write(pytoml.dumps(self.state_file_content))
 
-    @classmethod
-    def update_state(cls, data):
-        content = dict(cls.state_file_content)
+    def update_state(self, data):
+        content = dict(self.state_file_content)
         content.update(data)
-        with open(cls.state_path, 'w') as f:
+        with open(self.state_path, 'w') as f:
             f.write(pytoml.dumps(content))
         return content
 
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.client = cls.j.core.state
-        cls.state_path = cls.client.configStatePath
-        cls.state_file_content = cls.get_state()
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.reset_state()
-        super().tearDownClass()
-
     def setUp(self):
         super().setUp()
+        self.client = self.j.core.state
+        self.state_path = self.client.configStatePath
+        self.state_file_content = self.get_state()
+
         self.lg.info('Add test state (setUp)')
         test_state = {
             'key_1': 'value_1',

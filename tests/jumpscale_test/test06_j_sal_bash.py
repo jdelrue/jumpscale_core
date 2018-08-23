@@ -6,12 +6,11 @@ from .testcases_base import TestcasesBase, squash_dictionaries
 
 class TestBASH(TestcasesBase):
 
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.j.tools.executorLocal.env_check_init()
-        cls.j.dirs.reload()
-        cls.bash = cls.j.tools.bash.get()
+    def setUp(self):
+        super().setUp()
+        self.j.tools.executorLocal.env_check_init()
+        self.j.dirs.reload()
+        self.bash = self.j.tools.bash.get()
 
     def test001_env(self):
         """ JS-038
@@ -105,13 +104,12 @@ class TestBASH(TestcasesBase):
 
 
 class TestPROFILEJS(TestcasesBase):
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.j.tools.executorLocal.env_check_init()
-        cls.j.dirs.reload()
-        bash = cls.j.tools.bash.get()
-        cls.profileJS = bash.profileJS
+    def setUp(self):
+        super().setUp()
+        self.j.tools.executorLocal.initEnv()
+        self.j.dirs.reload()
+        self.bash = self.j.tools.bash.get()
+        self.profileJS = self.bash.profileJS
 
     def test01_env_set(self):
         """ JS-044
@@ -236,13 +234,12 @@ class TestPROFILEJS(TestcasesBase):
 
 
 class TestPROFILEDEFAULT(TestcasesBase):
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.j.tools.executorLocal.env_check_init()
-        cls.j.dirs.reload()
-        bash = cls.j.tools.bash.get()
-        cls.profileDefault = bash.profileDefault
+    def setUp(self):
+        super().setUp()
+        self.j.tools.executorLocal.env_check_init()
+        self.j.dirs.reload()
+        bash = self.j.tools.bash.get()
+        self.profileDefault = bash.profileDefault
 
     def test01_env_set(self):
         """ JS-050

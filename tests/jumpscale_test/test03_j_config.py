@@ -8,34 +8,30 @@ import uuid
 
 class TestJCONFIG(TestcasesBase):
 
-    @classmethod
-    def get_config(cls):
-        with open(cls.config_path, 'r') as f:
-            content = pytoml.loads(f.read().strip())
+    def get_config(self):
+        try:
+            with open(self.config_path, 'r') as f:
+                content = pytoml.loads(f.read().strip())
+        except FileNotFoundError:
+            content = {}
         return content
 
-    @classmethod
-    def reset_config(cls):
-        with open(cls.config_path, 'w') as f:
-            f.write(pytoml.dumps(cls.config_file_content).strip())
+    def reset_config(self):
+        with open(self.config_path, 'w') as f:
+            f.write(pytoml.dumps(self.config_file_content).strip())
 
-    @classmethod
-    def update_config(cls, data):
-        content = dict(cls.config_file_content)
+    def update_config(self, data):
+        content = dict(self.config_file_content)
         content.update(data)
-        with open(cls.config_path, 'w') as f:
+        with open(self.config_path, 'w') as f:
             f.write(pytoml.dumps(content).strip())
         return content
 
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.client = cls.j.core.state
-        cls.config_path = cls.client.configJSPath
-        cls.config_file_content = cls.get_config()
-
     def setUp(self):
         super().setUp()
+        self.client = self.j.core.state
+        self.config_path = self.client.configJSPath
+        self.config_file_content = self.get_config()
         self.lg.info('Add test configration (setUp)')
         test_config = {
             'key_1': 'value_1',
@@ -52,11 +48,6 @@ class TestJCONFIG(TestcasesBase):
         self.lg.info('Remove test configration (tearDown)')
         self.reset_config()
         super().tearDown()
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.reset_config()
-        super().tearDownClass()
 
     def test001_config_get(self):
         """ JS-016
