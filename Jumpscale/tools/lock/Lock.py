@@ -42,7 +42,7 @@ def cleanupString(string, replacewith="_", regex="([^A-Za-z0-9])"):
 
 def lock(lockname, locktimeout=60, reentry=False):
     '''Take a system-wide interprocess exclusive lock. Default timeout is 60 seconds'''
-    logger = j.core.logging.get('Jumpscale.core.logger')
+    logger = j.logging.get('Jumpscale.core.logger')
     logger.debug('Lock with name: %s' % lockname)
     try:
         result = lock_(lockname, locktimeout, reentry)

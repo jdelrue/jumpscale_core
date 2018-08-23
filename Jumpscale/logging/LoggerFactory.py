@@ -9,12 +9,12 @@ import sys
 
 class LoggerFactory():
 
-    __jslocation__ = "j.core.logging"
+    __jslocation__ = "j.logging"
 
     def __init__(self, j=None):
         """ WARNING: JSBase now contains a singleton (global) j and
             LoggerFactory can't get at it.
-        
+
             WARNING: self.j must be patched afterwards to point to
             an updated j. JSLogger instances will happily refer back
             to the LoggerFactory that contains them, however for now,
@@ -201,7 +201,7 @@ class LoggerFactory():
     def telegramhandler_enable(self, client, chat_id):
         """
         Enable a telegram handler to forward logs to a telegram group.
-        @param client: A jumpscale telegram_bot client 
+        @param client: A jumpscale telegram_bot client
         @param chat_id: Telegram chat id to which logs need to be forwarded
         """
         self.logger.addHandler(self.handlers.telegramHandler(client, chat_id))
@@ -303,10 +303,15 @@ class LoggerFactory():
     #     self.logger.addHandler(self.handlers.fileRotateHandler)
 
     def test(self):
+        """
+        js_shell 'j.logger.test()'
+        """
+
+
+        self.handlers_reset()
+        self.memhandler_enable()
 
         logger = self.get("loggerTest")
-
-        self.enableConsoleMemHandler()
 
         logger.info("a test")
 
@@ -324,5 +329,3 @@ class LoggerFactory():
 
         perftest(logger)
 
-        # FOLLOWING PROVES THAT THE LOOKING FOR FILE & PATH INFO IS THE SLOWING DOWN FACTOR
-        # self.j.tools.performancetrace.profile("perftest(logger)", globals=locals())  # {"perftest": perftest}
