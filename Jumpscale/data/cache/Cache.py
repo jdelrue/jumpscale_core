@@ -33,80 +33,90 @@ class Cache(object):
             if id in self._cache:
                 self._cache[id].reset()
 
+    def _testAll(self, c):
+        c.set("something", "OK")
+        assert "something" in c.list()
+        assert c.exists("something")
+        c.reset()
+        assert c.exists("something") == False
+        c.set("something", "OK")
+        self.logger.debug("RESET ALL")
+        self.reset()
+        assert c.exists("something") == False
+
+        c.set("something", "OK")
+        assert "OK" == c.get("something")
+
+        def return1():
+            return 1
+
+        def return2():
+            return 2
+
+        def return3():
+            return 3
+
+        assert c.get("somethingElse", return1) == 1
+        assert c.get("somethingElse") == 1
+
+        c.reset()
+
+        try:
+            c.get("somethingElse")
+        except Exception as e:
+            if "Cannot get 'somethingElse' from cache" not in str(e):
+                raise RuntimeError("error in test. non expected output")
+
+        self.logger.debug("expiration test")
+        time.sleep(2)
+
+        assert c.get("somethingElse", return2, expire=1) == 2
+        # still needs to be 2
+        assert c.get("somethingElse", return3, expire=1) == 2
+        time.sleep(2)
+        assert c.get("somethingElse", return3,
+                     expire=1) == 3  # now needs to be 3
+
+        assert c.get(
+            "somethingElse",
+            return2,
+            expire=100,
+            refresh=True) == 2
+        assert c.exists("somethingElse")
+        time.sleep(2)
+        assert c.exists("somethingElse")
+        assert "somethingElse" in c.list()
+        self.reset()
+        assert c.exists("somethingElse") == False
+        assert "somethingElse" not in c.list()
+
     def test(self):
+        """ js_shell 'j.data.cache.test()'
         """
-        js_shell 'j.data.cache.test()'
-        """
-        def testAll(c):
-            c.set("something", "OK")
-            assert "something" in c.list()
-            assert c.exists("something")
-            c.reset()
-            assert c.exists("something") == False
-            c.set("something", "OK")
-            self.logger.debug("RESET ALL")
-            self.reset()
-            assert c.exists("something") == False
-
-            c.set("something", "OK")
-            assert "OK" == c.get("something")
-
-            def return1():
-                return 1
-
-            def return2():
-                return 2
-
-            def return3():
-                return 3
-
-            assert c.get("somethingElse", return1) == 1
-            assert c.get("somethingElse") == 1
-
-            c.reset()
-
-            try:
-                c.get("somethingElse")
-            except Exception as e:
-                if "Cannot get 'somethingElse' from cache" not in str(e):
-                    raise RuntimeError("error in test. non expected output")
-
-            self.logger.debug("expiration test")
-            time.sleep(2)
-
-            assert c.get("somethingElse", return2, expire=1) == 2
-            # still needs to be 2
-            assert c.get("somethingElse", return3, expire=1) == 2
-            time.sleep(2)
-            assert c.get("somethingElse", return3,
-                         expire=1) == 3  # now needs to be 3
-
-            assert c.get(
-                "somethingElse",
-                return2,
-                expire=100,
-                refresh=True) == 2
-            assert c.exists("somethingElse")
-            time.sleep(2)
-            assert c.exists("somethingElse")
-            assert "somethingElse" in c.list()
-            self.reset()
-            assert c.exists("somethingElse") == False
-            assert "somethingElse" not in c.list()
 
         self.logger.debug("REDIS CACHE TEST")
         # make sure its redis
         self.j.clients.redis.core_get()
         self.j.core.db_reset()
         c = self.get("test", expiration=1)
-        testAll(c)
+        self._testAll(c)
+        self.logger.debug("TESTOK")
 
-        # now stop redis
+    def test_without_redis(self):
+        """ js_shell 'j.data.cache.test_without_redis()'
+
+            NOTE: this test actually stops the redis server
+            (and restarts it afterwards).  be careful!
+        """
+
+        # now stop redis...
         self.j.clients.redis.kill()
         self.j.core.db_reset()
         self.logger.debug("MEM CACHE TEST")
         c = self.get("test", expiration=1)
-        testAll(c)
+        self._testAll(c)
+        # ... and restart it again
+        self.j.clients.redis.start()
         self.logger.debug("TESTOK")
 
 

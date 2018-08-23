@@ -148,14 +148,18 @@ class RedisFactory:
         return db
 
     def kill(self):
-        """
-        kill all running redis instances
+        """ kill all running redis instances
         """
         self.j.sal.process.execute("redis-cli -s %s/redis.sock shutdown" %
                               self.j.dirs.TMPDIR, die=False, showout=False)
         self.j.sal.process.execute("redis-cli shutdown", die=False, showout=False)
-        self.j.sal.process.killall("redis")
-        self.j.sal.process.killall("redis-server")
+        # XXX absolutely cannot and must not do this! it kills off everything:
+        # editors that happen to be open with a filename or pathname "redis"
+        # in them, which might also happen to include editing of the
+        # config file to fix a problem, and more.
+        # all sorts of things go badly wrong.
+        # XXX far too drastic self.j.sal.process.killall("redis")
+        # XXX far too drastic self.j.sal.process.killall("redis-server")
 
     def core_running(self):
         if self._running==None:
@@ -168,9 +172,8 @@ class RedisFactory:
         return self._running        
 
     def core_start(self, timeout=20):
-        """
-        starts a redis instance in separate ProcessLookupError
-        standard on $tmpdir/redis.sock
+        """ installs and starts a redis instance in separate ProcessLookupError
+            standard on $tmpdir/redis.sock
         """
         if self.j.core.platformtype.myplatform.isMac:
             if not self.j.sal.process.checkInstalled("redis-server"):
@@ -190,7 +193,17 @@ class RedisFactory:
         else:
             raise RuntimeError("platform not supported for start redis")
 
-        # cmd = "redis-server --port 6379 --unixsocket %s/redis.sock --maxmemory 100000000 --daemonize yes" % tmpdir  # 100MB
+        self.start(timeout)
+
+    def start(self, timeout=20):
+        """ starts a redis instance in separate ProcessLookupError
+            standard on $tmpdir/redis.sock.
+
+            if installation is required as well, use core_start.
+        """
+
+        # cmd = "redis-server --port 6379 --unixsocket %s/redis.sock "
+        #       "--maxmemory 100000000 --daemonize yes" % tmpdir  # 100MB
         # self.logger.info("start redis in background (osx)")
         # os.system(cmd)
         # self.logger.info("started")
@@ -211,7 +224,8 @@ class RedisFactory:
             tmpdir = os.environ["TMPDIR"]
         else:
             tmpdir = "/tmp"
-        cmd = "redis-server --port 6379 --unixsocket %s/redis.sock --maxmemory 100000000 --daemonize yes" % tmpdir
+        cmd = "redis-server --port 6379 --unixsocket %s/redis.sock " \
+              "--maxmemory 100000000 --daemonize yes" % tmpdir
         self.logger.info(cmd)
         self.j.sal.process.execute(cmd)
         limit_timeout = time.time() + timeout
@@ -221,3 +235,4 @@ class RedisFactory:
             time.sleep(2)
         else:
             raise self.j.exceptions.Timeout("Couldn't start redis server")
+
