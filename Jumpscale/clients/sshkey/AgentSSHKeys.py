@@ -16,6 +16,12 @@ class AgentSSHKeys(AgentSSH, JSBASE):
         self._keys = ()
         super().__init__()
 
+    def __del__(self):
+        if self._conn is None:
+            return
+        self._conn.close()
+        self._conn = None
+
     def get_keys(self):
         """
         Return the list of keys available through the SSH agent, if any.  If
