@@ -27,5 +27,6 @@ else:
     if global_j is None:
         j = bootstrap_j(config_dir=options.config)
         j.logging.init() # initialise logging here to stop recursive import
+        j.data.serializer = j.data.serializers # YUK! SPEW, HURL....
     else:
         j = global_j

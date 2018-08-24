@@ -44,7 +44,6 @@ bootstrap = [
     ('', 'errorhandler', 'core.errorhandler', None),
     ('', 'exceptions', 'core.exceptions', None),
     ('', 'errorhandler.exceptions', 'exceptions', None),
-    #('', 'data.serializers', 'data.serializer', None), # YUK!
 ]
 
 
