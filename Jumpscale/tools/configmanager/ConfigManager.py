@@ -136,7 +136,7 @@ class ConfigFactory(object):
         # paths)
         path = ""
         if not sshkeyname:
-            sshkeyname = self.j.sal.fs.getBaseName(j.sal.fs.getcwd())
+            sshkeyname = self.j.sal.fs.getBaseName(self.j.sal.fs.getcwd())
 
         cpath = "secureconfig"
         self.j.sal.fs.createDir(cpath)
@@ -328,9 +328,9 @@ class ConfigFactory(object):
     #     """
     #     # create the config directory and file, so we don't trigger the form
     #     # when creating a SercretConfig object
-    #     path = self.j.sal.fs.joinPaths(j.tools.configmanager.path, 
+    #     path = self.j.sal.fs.joinPaths(self.j.tools.configmanager.path, 
     #                               location, instance + '.toml')
-    #     self.j.sal.fs.createDir(j.sal.fs.getParent(path))
+    #     self.j.sal.fs.createDir(self.j.sal.fs.getParent(path))
     #     self.j.sal.fs.writeFile(path, "")
 
     #     jsclient_object = eval(location)
@@ -651,7 +651,7 @@ class ConfigFactory(object):
                     self.j.data.serializers.toml.fancydumps(data)
 
         self.delete("j.tools.myconfig")  # should remove all
-        assert len(j.sal.fs.listFilesInDir(tdir)) == 0
+        assert len(self.j.sal.fs.listFilesInDir(tdir)) == 0
 
         # self.j.tools.configmanager.reset()
         self.j.tools.myconfig.reset()  # will remove data from mem
@@ -665,7 +665,7 @@ class ConfigFactory(object):
             'email': '', 'fullname': '', 'login_name': ''}
         self.j.tools.myconfig.config.data = data
         self.j.tools.myconfig.config.save()
-        assert len(j.sal.fs.listFilesInDir(tdir)) == 1
+        assert len(self.j.sal.fs.listFilesInDir(tdir)) == 1
 
         # clean the env
         # self.j.tools.configmanager.reset()
@@ -686,7 +686,7 @@ class ConfigFactory(object):
 
         # delete
         self.delete("j.tools.myconfig", "main")
-        assert len(j.sal.fs.listFilesInDir(tdir)) == 0
+        assert len(self.j.sal.fs.listFilesInDir(tdir)) == 0
 
     def _test_myconfig_multiitem(self):
 
@@ -720,7 +720,7 @@ class ConfigFactory(object):
         assert obj.config.data["secretconfig_"] == "my secret config"
 
         tdir = "/tmp/tests/secretconfig/j.tools.nodemgr"
-        assert len(j.sal.fs.listFilesInDir(tdir)) == 10
+        assert len(self.j.sal.fs.listFilesInDir(tdir)) == 10
 
         obj.config.data = {"secretconfig_": "test1"}
         assert obj.config.data["secretconfig_"] == "test1"
@@ -729,4 +729,4 @@ class ConfigFactory(object):
         assert i.name == "test1"
 
         # self.j.tools.nodemgr.reset()
-        # assert len(j.sal.fs.listFilesInDir(tdir)) == 0
+        # assert len(self.j.sal.fs.listFilesInDir(tdir)) == 0
