@@ -49,6 +49,7 @@ where it is documented that applications should use the following pattern:
     JSBASE = j.application.jsbase_get_class()
 
     class myclass(JSBASE):
+	__jslocation__ = 'j.somewhere.myinstance' # REQUIRED
         def __init__(self):
             JSBASE.__init__(self)
             ...
@@ -68,7 +69,7 @@ directly.  The paradigm above is replaced with the following:
 
     class Application:
 
-        __jslocation__ = "j.core.application"
+        __jslocation__ = "j.core.application" # REQUIRED
 
         @property
         def JSBase(self):
@@ -103,6 +104,14 @@ created has to be set up manually, and from that point onwards
 *all* classes and instances can and must use self.\_jsbase for this
 pattern to work.
 
+Fourthly: the declaration of an \_\_jslocation\_\_ is an absolutely
+essential and critical requirement.  Without this, the JSLoader system
+will fail to recognise the existence of the module.  The dynamic loader
+system will do its best to cope if it is missing, however it should
+in no way be relied on (for reasons best left out of this document).
+It is always, always best to declare the jslocation, and to do so
+at the *class* level, *not* as an instance in the class constructor.
+
 The other very very important aspect of this process, behind the
 scenes, is that because of this third point, the entire import system
 can now be "hooked" to *specifically* load *only* from the most efficient
@@ -111,9 +120,9 @@ and known filesystem location *specifically* for that requested module
 
 Also, note that, again, in the following example, there are *no imports*:
 
-    class Core:
+    class Core: # does not import from JSBase
 
-        __jslocation__ = 'j.core'
+        __jslocation__ = 'j.core' # AGAIN THIS IS REQUIRED
 
         def __init__(self):
         self._db = None
@@ -122,13 +131,13 @@ Also, note that, again, in the following example, there are *no imports*:
         @property
         def db(self):
         if not self._db:
-            self._db = self.j.clients.redis.core_get()
+            self._db = self.j.clients.redis.core_get() # self.j not j...
         return self._db
 
         @property
         def state(self):
         if self._state is None:
-            return self.j.tools.executorLocal.state
+            return self.j.tools.executorLocal.state # self.j not j
         return self._state
 
 "from Jumpscale import j" is not present.  "JSBase" is not present.
@@ -147,8 +156,12 @@ moved to the top of the \_\_init\_\_ function, otherwise things break.
     JSBASE = j.application.jsbase_get_class()
 
     class KeyValueStoreBase(JSBASE):
+
         def __init__(self, namespace, name="", serializers=[],
              	 	   masterdb=None, cache=None, changelog=None):
+
+	# JSBASE.__init__ absolutely must be moved to here
+
         self.namespace = namespace
         self.name = name
         self.serializers = serializers or list()
@@ -159,5 +172,5 @@ moved to the top of the \_\_init\_\_ function, otherwise things break.
         self.owner = ""  # std empty
         self.inMem = False
 
-        JSBASE.__init__(self) # this absolutely must be moved to start
+        JSBASE.__init__(self) # this absolutely must be moved
 

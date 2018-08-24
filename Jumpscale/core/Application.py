@@ -47,13 +47,11 @@ class Application(object):
         """ DEEPRECATED.  dynamic loader now auto-creates a multiple
             inherited (dynamic) class which *includes* JSBase
             automatically.  Use the following pattern instead:
+            do NOT import the class using python import: pass it
+            in to the JSBase._jsbase function as follows:
 
-            # import class from somewhere, do NOT inherit from JSBase
-            from .core import SomeClass
-
-            DSomeClass = self._jsbase(('SomeClass', 'SomeModule'))
+            DSomeClass = self._jsbase(('SomeClass', 'Jumpscale.SomeModule'))
             instance = DSomeClass(self, path, otherargs)
-
         """
         return self.JSBase
 
