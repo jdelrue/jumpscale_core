@@ -387,7 +387,7 @@ class ConfigFactory(object):
             if self.j.sal.fs.exists(path):
                 self.j.sal.fs.remove(path)
         else:
-            path = self.j.sal.fs.joinPaths(j.tools.configmanager.path, location)
+            path = self.j.sal.fs.joinPaths(self.j.tools.configmanager.path, location)
             if self.j.sal.fs.exists(path):
                 for item in self.j.sal.fs.listFilesInDir(path):
                     self.j.sal.fs.remove(item)
