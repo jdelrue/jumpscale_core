@@ -1,6 +1,5 @@
 import yaml
 from collections import OrderedDict
-from Jumpscale import j  # J due to recursive import issue with Configmanager
 from .SerializerBase import SerializerBase
 
 testtoml = """
@@ -34,22 +33,22 @@ class SerializerYAML(SerializerBase):
         except Exception as e:
             error = "error:%s\n" % e
             error += "\nyaml could not parse:\n%s\n" % s
-            raise j.exceptions.Input(message=error)
+            raise self.j.exceptions.Input(message=error)
 
     def load(self, path):
         try:
-            s = j.sal.fs.readFile(path)
+            s = self.j.sal.fs.readFile(path)
         except Exception as e:
             error = "error:%s\n" % e
             error += '\npath:%s\n' % path
-            raise j.exceptions.Input(message=error)
+            raise self.j.exceptions.Input(message=error)
 
         try:
             return yaml.load(s)
         except Exception as e:
             error = "error:%s\n" % e
             error += "\nyaml could not parse:\n%s\n" % s
-            raise j.exceptions.Input(message=error)
+            raise self.j.exceptions.Input(message=error)
 
     def ordered_load(self, stream, Loader=yaml.Loader,
                      object_pairs_hook=OrderedDict):
@@ -83,7 +82,7 @@ class SerializerYAML(SerializerBase):
         return yaml.dump(data, stream, OrderedDumper, **kwds)
 
     def test(self):
-        ddict = j.data.serializer.toml.loads(testtoml)
+        ddict = self.j.data.serializer.toml.loads(testtoml)
         # TODO:*3 write some test
 
 # from Jumpscale import j # J due to recursive import issue

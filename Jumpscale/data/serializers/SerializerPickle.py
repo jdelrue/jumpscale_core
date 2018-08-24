@@ -1,9 +1,6 @@
-
 import pickle
 
 from .SerializerBase import SerializerBase
-from Jumpscale import j # J due to recursive import issue
-
 
 class SerializerPickle(SerializerBase):
 

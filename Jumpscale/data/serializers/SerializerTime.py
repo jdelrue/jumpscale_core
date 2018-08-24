@@ -1,13 +1,6 @@
-
 import struct
-from Jumpscale import j # J due to recursive import issue in ConfigManager
 
-JSBASE = j.application.jsbase_get_class()
-
-
-class SerializerTime(JSBASE):
-    def __init__(self):
-        JSBASE.__init__(self)
+class SerializerTime:
 
     def dumps(self, obj):
         obj = struct.pack('<i', j.data.time.getTimeEpoch())

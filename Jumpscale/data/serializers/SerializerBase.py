@@ -1,26 +1,18 @@
-from Jumpscale import j  # J due to recursive impoort error in ConfigManager
-
-JSBASE = j.application.jsbase_get_class()
-
-
-class SerializerBase(JSBASE):
-
-    def __init__(self):
-        JSBASE.__init__(self)
+class SerializerBase:
 
     def dump(self, filepath, obj):
         data = self.dumps(obj)
-        j.sal.fs.writeFile(filepath, data)
+        self.j.sal.fs.writeFile(filepath, data)
 
     def load(self, path):
-        b = j.sal.fs.readFile(path)
+        b = self.j.sal.fs.readFile(path)
         try:
             r = self.loads(b)
         except Exception as e:
             error = "error:%s\n" % e
             error += r"\could not parse:\n%s\n" % b
             error += '\npath:%s\n' % path
-            raise j.exceptions.Input(message=error)
+            raise self.j.exceptions.Input(message=error)
         return r
 
     def dumps(self, val):
@@ -28,7 +20,7 @@ class SerializerBase(JSBASE):
             return val
         for key in self.serializationstr:
             # print "dumps:%s"%key
-            val = j.data.serializer.serializers.types[key].dumps(val)
+            val = self.j.data.serializer.serializers.types[key].dumps(val)
         return val
 
     def loads(self, data):
@@ -37,14 +29,11 @@ class SerializerBase(JSBASE):
 
         for key in reversed(self.serializationstr):
             # print "loads:%s"%key
-            data = j.data.serializer.serializers.types[key].loads(data)
+            data = self.j.data.serializer.serializers.types[key].loads(data)
         return data
 
 
-class SerializerHalt(JSBASE):
-
-    def __init__(self):
-        JSBASE.__init__(self)
+class SerializerHalt:
 
     def dump(self, filepath, obj):
         raise RuntimeError("should not come here")

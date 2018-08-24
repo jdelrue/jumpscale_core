@@ -1,11 +1,4 @@
-from Jumpscale import j # J due to recursive import issue with ConfigManager
-JSBASE = j.application.jsbase_get_class()
-
-
-class SerializerInt(JSBASE):
-
-    def __init__(self):
-        JSBASE.__init__(self)
+class SerializerInt:
 
     def dumps(self, obj):
         return str(obj)
