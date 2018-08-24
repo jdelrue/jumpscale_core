@@ -18,7 +18,7 @@ class Cache(object):
         """
         if id not in self._cache:
             DC = self._jsbase('CacheCategory',
-                ['Jumpscale.data.cache.Cache.CacheCategory'])
+                ['Jumpscale.data.cache.Cache'])
             self._cache[id] = DC( id=id, expiration=expiration, reset=reset)
         return self._cache[id]
 

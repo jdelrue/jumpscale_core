@@ -34,7 +34,7 @@ class ConfigFactory(object):
         self._init = False
 
         self.Config = self._jsbase("Config",
-            ['Jumpscale.tools.configmanager.Config.Config'])
+            ['Jumpscale.tools.configmanager.Config'])
 
     def reset(self, location=None, instance=None, force=False):
         """

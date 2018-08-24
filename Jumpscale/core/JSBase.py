@@ -58,6 +58,35 @@ def jspath_import(modulepath, fullpath):
 
     return module
 
+def lookup_kls(__jsfullpath__, kls):
+    # ok we assume it's a jumpscale class, FOR NOW
+    # we assume it's in the same plugin as the parent
+    # (don't use this for pulling in classes from other plugins!)
+    # so, from the parent, get a fixed path
+    #module = __import__(modulename)
+    #mpathname, _, objectname = kls.rpartition('.')
+    mpathname = kls
+    parent_path = os.path.split(__jsfullpath__)[0]
+
+    # ok first we count the number of dots in the parent module
+    # and walk back that number of path entries
+    dotcount = len(mpathname.split(".")) - 1
+    parent_path = parent_path.split('/')[:-dotcount]
+    parent_path = "/".join(parent_path)
+
+    #print ("parent_path", __jsfullpath__, parent_path)
+    # now drop in the filename, replacing . with /, and
+    # add .py on the end
+    fullpath = mpathname.replace(".", "/") + ".py"
+    fullpath = os.path.join(parent_path, fullpath)
+
+    # XXX TODO, check plugin directory matches...
+    #plugins = basej.tools.executorLocal.state.configGet('plugins')
+
+    #print ("mpath", mpathname, fullpath)
+    module = jspath_import(mpathname, fullpath)
+
+    return fullpath, module
 
 class BaseGetter(object):
     """ this is a rather.. um... ugly class that has a list of module names
@@ -456,36 +485,12 @@ class JSBase(BaseGetter):
             derived_classes = []
         for idx, kls in enumerate(derived_classes):
             if isinstance(kls, str):
-                # ok we assume it's a jumpscale class, FOR NOW
-                # we assume it's in the same plugin as the parent
-                # (don't use this for pulling in classes from other plugins!)
-                # so, from the parent, get a fixed path
-                #module = __import__(modulename)
-                mpathname, _, objectname = kls.rpartition('.')
-                parent_path = os.path.split(self.__jsfullpath__)[0]
-
-                # ok first we count the number of dots in the parent module
-                # and walk back that number of path entries
-                dotcount = len(mpathname.split(".")) - 1
-                parent_path = parent_path.split('/')[:-dotcount]
-                parent_path = "/".join(parent_path)
-
-                # now drop in the filename, replacing . with /, and
-                # add .py on the end
-                fullpath = mpathname.replace(".", "/") + ".py"
-                fullpath = os.path.join(parent_path, fullpath)
-
-                # XXX TODO, check plugin directory matches...
-                #plugins = basej.tools.executorLocal.state.configGet('plugins')
-
                 # ok finally get the module (and the class)
-                module = jspath_import(mpathname, fullpath)
-                kls = getattr(module, objectname)
-                kls.__jsfullpath__ = fullpath
-                kls.__jsmodulepath__ = mpathname
-
-                # aaaand replace the string with the actual class. wheww.
-                derived_classes[idx] = kls
+                fullpath, module = lookup_kls(self.__jsfullpath__, kls)
+                nkls = getattr(module, jname)
+                nkls.__jsfullpath__ = fullpath
+                nkls.__jsmodulepath__ = kls
+                derived_classes[idx] = nkls
 
         classes = [JSBase] + copy(derived_classes)
 

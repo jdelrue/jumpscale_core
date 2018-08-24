@@ -129,8 +129,7 @@ def bootstrap_j(j, logging_enabled=False, filter=None, config_dir=None):
     j.j.__dynamic_ready__ = False  # set global dynamic loading OFF
 
     DLoggerFactory = j._jsbase(
-        'LoggerFactory',
-        ['Jumpscale.logging.LoggerFactory.LoggerFactory'],
+        'LoggerFactory', ['Jumpscale.logging.LoggerFactory'],
         basej=j)
     l = DLoggerFactory()
     l.enabled = logging_enabled

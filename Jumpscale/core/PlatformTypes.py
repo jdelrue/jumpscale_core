@@ -69,8 +69,7 @@ class PlatformTypes(object):
     @property
     def myplatform(self):
         if self._myplatform is None:
-            DP = self._jsbase('PlatformType',
-                    ['Jumpscale.core.PlatformTypes.PlatformType'])
+            DP = self._jsbase('PlatformType', ['Jumpscale.core.PlatformTypes'])
             self._myplatform = DP()
         return self._myplatform
 
@@ -94,7 +93,7 @@ class PlatformTypes(object):
         """
         key = executor.id
         if key not in self._cache:
-            DP = self._jsbase('PlatformType', [PlatformType])
+            DP = self._jsbase('PlatformType', ['Jumpscale.core.PlatformTypes'])
             self._cache[key] = DP(executor=executor)
         return self._cache[key]
 

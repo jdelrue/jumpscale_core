@@ -248,8 +248,7 @@ class BashFactory(object):
     @property
     def local(self):
         if not self._local:
-            DBash = self._jsbase('Bash',
-                    ['Jumpscale.tools.bash.BashFactory.Bash'])
+            DBash = self._jsbase('Bash', ['Jumpscale.tools.bash.BashFactory'])
             self._local = DBash()
         return self._local
 
@@ -257,8 +256,7 @@ class BashFactory(object):
         """
         if executor==None then will be local
         """
-        DBash = self._jsbase('Bash',
-                    ['Jumpscale.tools.bash.BashFactory.Bash'])
+        DBash = self._jsbase('Bash', ['Jumpscale.tools.bash.BashFactory'])
         b = DBash(executor=executor)
         return b
 
@@ -318,8 +316,7 @@ class Bash(object):
         path = path.replace("~", self.home)
         if not self.executor.exists(path):
             self.executor.file_write(path, "")
-        DProfile = self._jsbase('Profile',
-                    ['Jumpscale.tools.bash.BashFactory.Profile'])
+        DProfile = self._jsbase('Profile', ['Jumpscale.tools.bash.BashFactory'])
         return DProfile(self, path)
 
     @property
