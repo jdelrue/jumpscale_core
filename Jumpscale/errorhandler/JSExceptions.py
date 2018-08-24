@@ -1,13 +1,9 @@
 import pssh.exceptions
 import copy
 import unicodedata
-from Jumpscale import j
 import sys
 
 LEVELMAP = {1: 'CRITICAL', 2: 'WARNING', 3: 'INFO', 4: 'DEBUG'}
-
-JSBASE = j.application.jsbase_get_class()
-
 
 class JSExceptions(object):
     """ create a series of dynamic JSBase-patched Exceptions
