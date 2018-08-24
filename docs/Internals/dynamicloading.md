@@ -27,7 +27,7 @@ What is happening here is that python can potentially have a pre-compiled
 c-based module (optimised for cpython)... and it goes downhill rapidly
 from there.  *This occurs on every single import*.
 
-With jumpscale plugins, a single import "Jumsccale.core.Application" can
+With jumpscale plugins, a single import "Jumpscale.core.Application" can
 potentially hit the (distributed) filesystem well over *24 times* before the
 right module is actually found.
 
