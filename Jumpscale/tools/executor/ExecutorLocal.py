@@ -37,9 +37,11 @@ class ExecutorLocal(ExecutorBase):
         def do():
             # print ("INFO: stateonsystem for local")
 
-            if "HOMEDIR" in os.environ.keys():
-                homedir = os.environ["HOMEDIR"]
+            if self.isBuildEnv:
+                homedir = os.environ["PBASE"]
+                cfgdir = "%s/cfg" % homedir
             else:
+<<<<<<< HEAD
                 # if os.path.exists("/root/.iscontainer"):
                 #     homedir = "/host"
                 # else:
@@ -55,6 +57,16 @@ class ExecutorLocal(ExecutorBase):
             else:
                 cfgdir = "%s/jumpscale/cfg" % homedir
 
+=======
+                if "HOMEDIR" in os.environ.keys():
+                    homedir = os.environ["HOMEDIR"]
+                else:
+                    # if os.path.exists("/root/.iscontainer"):
+                    #     homedir = "/host"
+                    # else:
+                    homedir = os.environ["HOME"]
+                cfgdir = "%s/jumpscale/cfg" % homedir
+>>>>>>> 51d4dc1... cleanup of some left over in install
             res = {}
 
             def load(name):
@@ -187,6 +199,7 @@ class ExecutorLocal(ExecutorBase):
                 ssh=False)
 
     def file_read(self, path):
+<<<<<<< HEAD
         return self.j.sal.fs.readFile(path)
 
     def file_write(
@@ -200,6 +213,13 @@ class ExecutorLocal(ExecutorBase):
             sudo=False):
         self.j.sal.fs.createDir(self.j.sal.fs.getDirName(path))
         self.j.sal.fs.writeFile(path, content, append=append)
+=======
+        return j.sal.fs.readFile(path)
+
+    def file_write(self, path, content, mode=None, owner=None, group=None, append=False, sudo=False,showout=True):
+        j.sal.fs.createDir(j.sal.fs.getDirName(path))
+        j.sal.fs.writeFile(path, content, append=append)
+>>>>>>> 51d4dc1... cleanup of some left over in install
         if owner is not None or group is not None:
             self.j.sal.fs.chown(path, owner, group)
         if mode is not None:

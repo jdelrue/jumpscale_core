@@ -207,8 +207,7 @@ class Node(JSConfigBase):
         if repo is not None:
             res.append(j.tools.develop.codedirs.get(repo.type, repo.account, repo.name))
             done.append(repo.BASEDIR)
-        # ddirs = j.tools.develop.codedirs.getActiveCodeDirs(): #TODO: *1 broken
-        ddirs = j.clients.git.getGitReposListLocal(account="jumpscale")  # took predefined list
+        ddirs = j.clients.git.getGitReposListLocal(account="threefoldtech")  # took predefined list
         for key, path in ddirs.items():
             self.logger.debug("try to find git dir for:%s" % path)
             try:

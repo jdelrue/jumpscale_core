@@ -144,20 +144,11 @@ class ExecutorSSH(ExecutorBase):
         self.sshclient.sftp.unlink(path2)
         return rc, out, err
 
-    def upload(
-            self,
-            source,
-            dest,
-            dest_prefix="",
-            recursive=True,
-            createdir=True,
-            rsyncdelete=True,
-            ignoredir=[
-                '.egg-info',
-                '.dist-info',
-                '__pycache__',
-                ".git"],
-            keepsymlinks=False):
+    def upload(self, source, dest, dest_prefix="", recursive=True,
+               createdir=True,
+               rsyncdelete=True,
+               ignoredir=['.egg-info', '.dist-info', '__pycache__', ".git"], 
+               keepsymlinks=False,showout=False):
 
         if dest_prefix != "":
             dest = j.sal.fs.joinPaths(dest_prefix, dest)

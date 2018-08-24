@@ -210,7 +210,7 @@ class SSHClientParamiko(SSHClientBase):
                               "%s:%s - %s",
                               local_file, self.host, remote_file, error)
             raise error
-        self.logger.info("Copied local file %s to remote destination %s",
+        self.logger.debug("Copied local file %s to remote destination %s",
                          local_file, remote_file)
 
     @property

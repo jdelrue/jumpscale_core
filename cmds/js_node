@@ -25,11 +25,14 @@ def sync(instance, monitor):
     """
     will get a node & sync
     """
+    if instance is None:
+        raise RuntimeError("instance needs to be specified")
+
     if monitor:
-        if instance is not None:
-            for node in j.tools.nodemgr.getall():
-                if node.name != instance:
-                    node.selected = False
+
+        for node in j.tools.nodemgr.getall():
+            if node.name != instance:
+                node.selected = False
 
         curdir = j.sal.fs.getcwd()
         cmd = "cd %s;js_node monitor -i %s" % (curdir, instance)
