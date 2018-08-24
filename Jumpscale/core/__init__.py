@@ -20,15 +20,6 @@ def tcpPortConnectionTest(ipaddr, port, timeout=None):
 class Core(object):
 
     __jslocation__ = 'j.core'
-    __jsdeps__ = {
-        'application': 'Application',
-        'dirs': 'Dirs',
-        'logging': ('Jumpscale.logging.LoggerFactory', 'LoggerFactory'),
-        'events': ('Jumpscale.errorhandler.EventHandler', 'EventHandler'),
-        'platformtype': 'PlatformTypes',
-        'errorhandler': ('Jumpscale.errorhandler.ErrorHandler', 'ErrorHandler'),
-        'jsbase': 'JSBase',
-              }
 
     def __init__(self):
         self._db = None
