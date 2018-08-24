@@ -49,7 +49,7 @@ where it is documented that applications should use the following pattern:
     JSBASE = j.application.jsbase_get_class()
 
     class myclass(JSBASE):
-	__jslocation__ = 'j.somewhere.myinstance' # REQUIRED
+        __jslocation__ = 'j.somewhere.myinstance' # REQUIRED
         def __init__(self):
             JSBASE.__init__(self)
             ...
@@ -80,11 +80,11 @@ directly.  The paradigm above is replaced with the following:
 
 and class instantiation replaced with this:
 
-    DSomeClass = self._jsbase(('SomeClass', 'SomeModule'))
+    DSomeClass = self._jsbase( ('SomeClass', 'Jumpscale.subpath.SomeModule'))
     instance = DSomeClass(self, path, otherargs)
 
 Note three things here: firstly, JSBase is now a property, and specifically
-it is *not* imported: it is taken *from* the Application class's
+it is *not* imported: it is taken *from* the Application class
 "method resolution order" (i.e. one of its base classes).  This reduces
 file-system hits through not having to import JSBase.
 
@@ -99,8 +99,9 @@ on-demand, and its only real absolute top priority and task is to
 *transparently add JSBase to the list of classes to derive from*.
 
 Thirdly: for this to work, the entire "j" object tree *must* remain within
-the dynamic framework.  The very first (and only) JSBase object ever
-created has to be set up manually, and from that point onwards
+the dynamic framework / pattern.  The very first (and only) JSBase object ever
+created has to be set up manually (and this is done in the bootstrap:
+it is *not* to be done by developers), and from that point onwards
 *all* classes and instances can and must use self.\_jsbase for this
 pattern to work.
 
