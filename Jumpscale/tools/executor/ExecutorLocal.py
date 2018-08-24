@@ -194,7 +194,7 @@ class ExecutorLocal(ExecutorBase):
 
     def file_write(self, path, content, mode=None, owner=None,
                    group=None, append=False, sudo=False,showout=True):
-        self.j.sal.fs.createDir(j.sal.fs.getDirName(path))
+        self.j.sal.fs.createDir(self.j.sal.fs.getDirName(path))
         self.j.sal.fs.writeFile(path, content, append=append)
         if owner is not None or group is not None:
             self.j.sal.fs.chown(path, owner, group)
