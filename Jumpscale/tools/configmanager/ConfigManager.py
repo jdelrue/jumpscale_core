@@ -643,7 +643,7 @@ class ConfigFactory(object):
 
         tdir = "/tmp/tests/secretconfig/j.tools.myconfig"
         # there should be 1 file
-        assert len(j.sal.fs.listFilesInDir(tdir)) == 1
+        assert len(self.j.sal.fs.listFilesInDir(tdir)) == 1
 
         # check that the saved data is ok
         assert self.j.data.serializers.toml.fancydumps(
