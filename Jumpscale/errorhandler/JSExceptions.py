@@ -9,7 +9,7 @@ LEVELMAP = {1: 'CRITICAL', 2: 'WARNING', 3: 'INFO', 4: 'DEBUG'}
 JSBASE = j.application.jsbase_get_class()
 
 
-class ExceptionsFactory(object):
+class JSExceptions(object):
     """ create a series of dynamic JSBase-patched Exceptions
         that are then added to both the module (via globals())
         and also to the ExceptionsFactory (using setattr),
@@ -19,7 +19,7 @@ class ExceptionsFactory(object):
         TODO: work out how to drop them into the j.exceptions namespace,
         without having to move this module
     """
-    #__nojslocation__ = 'j.errorhandling.exceptions'
+    __jslocation__ = 'j.core.exceptions'
     def __init__(self):
         self._add_late_init(self.register_exceptions)
 
@@ -31,13 +31,15 @@ class ExceptionsFactory(object):
             ]
         for e in exceptions:
             ename = e.__name__[1:]
-            ekls = self._jsbase(ename, ["Jumpscale.errorhandling.%s" % e])
+            print ("register", ename)
+            ekls = self._jsbase(ename,
+                    ["Jumpscale.errorhandler.JSExceptions._%s" % ename])
             globals()[ename] = ekls
             setattr(self, ename, ekls)
 
 
 
-class BaseJSException(Exception, JSBASE):
+class BaseJSException(Exception):
 
     def __init__(self, message="", level=1, cat="", msgpub="",
                  # XXX ISSUE #81 - WARNING: it is ESSENTIAL
@@ -47,8 +49,6 @@ class BaseJSException(Exception, JSBASE):
                  # use of any of these parameters will
                  # result in an error being logged.
                  source=None, action=None, eco=None, tags=None):
-
-        JSBASE.__init__(self)
 
         if source is not None or \
            action is not None or \
@@ -114,7 +114,7 @@ class BaseJSException(Exception, JSBASE):
 
 
 
-class HaltException(BaseJSException):
+class _HaltException(BaseJSException):
     def __init__(self, message="", level=1, cat="", msgpub="",
                        source=None, action=None, eco=None, tags=None):
         super().__init__(message=message,level=level,cat=cat,msgpub=msgpub,
@@ -122,16 +122,7 @@ class HaltException(BaseJSException):
         self.trace_do = True
 
 
-class RuntimeError(BaseJSException):
-
-    def __init__(self, message="", level=1, cat="", msgpub="",
-                       source=None, action=None, eco=None, tags=None):
-        super().__init__(message=message,level=level,cat=cat,msgpub=msgpub,
-                        source=source, action=action, eco=eco, tags=tags)
-        self.trace_do = True
-
-
-class Input(BaseJSException):
+class _RuntimeError(BaseJSException):
 
     def __init__(self, message="", level=1, cat="", msgpub="",
                        source=None, action=None, eco=None, tags=None):
@@ -140,7 +131,7 @@ class Input(BaseJSException):
         self.trace_do = True
 
 
-class NotImplemented(BaseJSException):
+class _Input(BaseJSException):
 
     def __init__(self, message="", level=1, cat="", msgpub="",
                        source=None, action=None, eco=None, tags=None):
@@ -149,7 +140,7 @@ class NotImplemented(BaseJSException):
         self.trace_do = True
 
 
-class BUG(BaseJSException):
+class _NotImplemented(BaseJSException):
 
     def __init__(self, message="", level=1, cat="", msgpub="",
                        source=None, action=None, eco=None, tags=None):
@@ -158,7 +149,7 @@ class BUG(BaseJSException):
         self.trace_do = True
 
 
-class JSBUG(BaseJSException):
+class _BUG(BaseJSException):
 
     def __init__(self, message="", level=1, cat="", msgpub="",
                        source=None, action=None, eco=None, tags=None):
@@ -167,7 +158,16 @@ class JSBUG(BaseJSException):
         self.trace_do = True
 
 
-class OPERATIONS(BaseJSException):
+class _JSBUG(BaseJSException):
+
+    def __init__(self, message="", level=1, cat="", msgpub="",
+                       source=None, action=None, eco=None, tags=None):
+        super().__init__(message=message,level=level,cat=cat,msgpub=msgpub,
+                        source=source, action=action, eco=eco, tags=tags)
+        self.trace_do = True
+
+
+class _OPERATIONS(BaseJSException):
 
     def __init__(self, message="", level=1, cat="", msgpub="",
                        source=None, action=None, eco=None, tags=None):
@@ -176,7 +176,7 @@ class OPERATIONS(BaseJSException):
         self.trace_do = False
 
 
-class IOError(BaseJSException):
+class _IOError(BaseJSException):
 
     def __init__(self, message="", level=1, cat="", msgpub="",
                        source=None, action=None, eco=None, tags=None):
@@ -186,7 +186,7 @@ class IOError(BaseJSException):
 
 
 
-class NotFound(BaseJSException):
+class _NotFound(BaseJSException):
 
     def __init__(self, message="", level=1, cat="", msgpub="",
                        source=None, action=None, eco=None, tags=None):
@@ -195,7 +195,7 @@ class NotFound(BaseJSException):
         self.trace_do = True
 
 
-class Timeout(BaseJSException):
+class _Timeout(BaseJSException):
 
     def __init__(self, message="", level=1, cat="", msgpub="",
                        source=None, action=None, eco=None, tags=None):
@@ -203,4 +203,5 @@ class Timeout(BaseJSException):
                         source=source, action=action, eco=eco, tags=tags)
         self.trace_do = True
 
-SSHTimeout = pssh.exceptions.Timeout
+class _SSHTimeout(pssh.exceptions.Timeout):
+    pass

@@ -11,15 +11,6 @@ import types
 
 # for monkey-patching the j instance to add namespace... "things"
 patchers = [
-    {'from': 'application', 'to': 'core.application'},
-    {'from': 'dirs', 'to': 'core.dirs'},
-    {'from': 'errorhandler', 'to': 'core.errorhandler'},
-    {'from': 'exceptions', 'to': 'core.errorhandler.exceptions'},
-    {'from': 'events', 'to': 'core.events'},
-    {'from': 'data.datacache', 'to': 'data.cache'},
-    {'from': 'data.serializer', 'to': 'data.serializers'},  # YUK!
-    {'from': 'logging', 'to': 'core.logging'},
-    {'from': 'core.state', 'to': 'tools.executorLocal.state'},
 ]
 
 bootstrap = [
@@ -41,8 +32,8 @@ bootstrap = [
     ('tools', 'jsloader', 'tools.jsloader.JSLoader', 'JSLoader'),
     ('tools', 'executorLocal', 'tools.executor.ExecutorLocal',
      'ExecutorLocal'),
-    # ('', 'errorhandling', 'errorhandling.JSExceptions',
-    #                        'ExceptionsFactory'),
+    ('core', 'exceptions', 'errorhandler.JSExceptions',
+                            'JSExceptions'),
     ('', 'dirs', 'core.Dirs', 'Dirs'),
     ('core', 'platformtype', 'core.PlatformTypes', 'PlatformTypes'),
     ('sal', 'process', 'sal.process.SystemProcess', 'SystemProcess'),
@@ -51,7 +42,9 @@ bootstrap = [
     #('core', 'state', 'tools.executorLocal.state', None),
     ('core', 'dirs', 'dirs', None),
     ('', 'errorhandler', 'core.errorhandler', None),
-    ('', 'exceptions', 'core.errorhandler.exceptions', None),
+    ('', 'exceptions', 'core.exceptions', None),
+    ('', 'errorhandler.exceptions', 'exceptions', None),
+    #('', 'data.serializers', 'data.serializer', None), # YUK!
 ]
 
 
@@ -90,7 +83,7 @@ def add_dynamic_instance(j, parent, child, module, kls):
     """ very similar to dynamic_generate, needs work
         to morph into using same code
     """
-    #print ("adding", parent, child, module, kls)
+    print ("adding", parent, child, module, kls)
     if not parent:
         parent = j
     else:
@@ -114,7 +107,9 @@ def add_dynamic_instance(j, parent, child, module, kls):
         walkfrom = j
         for subname in module.split('.'):
             walkfrom = getattr(walkfrom, subname)
-        parent.__aliases__[child] = walkfrom
+        childlast = child.split('.')[-1]
+        pj = parent.jget(child, stealth=True, end=-1)
+        pj.__aliases__[childlast] = walkfrom
 
 
 def bootstrap_j(j, logging_enabled=False, filter=None, config_dir=None):
