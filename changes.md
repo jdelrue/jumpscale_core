@@ -278,3 +278,23 @@ twelve files which do not exist.
     $ grep -E "^stat|^open" log.txt.* | grep -i jumpscale |wc
         248    1548   30775
 
+## 24aug2018
+
+* A previously unsuccessful effort to create a dynamic JSExceptionsFactory
+  was this time successful, and with a little morphing of the aliases
+  in the bootstrap loader, now works.  Exceptions are now automatically
+  derived from JSBase (without needing to import the global Jumpscale j),
+  set up in bootstrap_j, and patched into j.exceptions,
+  j.errorhandler.exceptions and j.core.exceptions where they are used
+  frequently (by different names).
+* JSBase._jsbase still needs a little work: it was very cumbersome to
+  have to specify the full import path.  Previously, the name of the
+  class was patched (with a dot) onto the end of the module (full path)
+  from which it was to be imported.  This being the case for *all*
+  instances where _jsbase was used, it was decided to remove the class
+  name, because it was identical (in all cases) to the class name.
+  The next phase will be to support "relative" imports, which will
+  begin to make _jsbase effectively an identical API to the standard
+  python "import" system... just without the terrible massive filesystem
+  hits.
+
