@@ -175,3 +175,64 @@ moved to the top of the \_\_init\_\_ function, otherwise things break.
 
         JSBASE.__init__(self) # this absolutely must be moved
 
+# Slightly more advanced dynamic loading
+
+The above will create an instance for immediate use.  The import
+of the module, and the instantiation of the object, takes place
+immediately that JSBase._jsbase is called.  This may not be
+desirable, and the bootstrap system in particular relies heavily
+on "lazy loading" through overloading \_\_dir\_\_ and \_\_getattribute\_\_
+to make absolutely sure that it *appears* that everything is
+present and correct, when in fact only when things are actually
+accessed does the filesystem get a "hit" with an actual import.
+
+Two functions exist called BaseGetter.\_add\_instance and
+BaseGetter.\_\_add_kls which do *not* do immediate importing.
+These will add a (dynamically created) instance of a class or
+an *actual* class to a parent object, on-demand.
+
+This is (partly) a work-in-progress: therefore the name of the
+module (in full) must be created, and the name of the actual
+python file (its full, absolute path) must also be created:
+see module and mfullpath parameters, below, respectively.
+
+    class SerializersFactory:
+
+        __jslocation__ = "j.data.serializers"
+
+        serialisers = [
+            ['int', 'SerializerInt'],
+            ['base64', 'SerializerBase64'],
+            ...
+            ...
+            ['snappy', 'SerializerSnappy'],
+            ['toml', 'SerializerTOML'],
+        ]
+
+        def __init__(self):
+
+            fullpath = os.path.dirname(self.__jsfullpath__)
+            for s in self.serialisers:
+                [attr, kls, packtype] = s
+                module = 'Jumpscale.data.serializers.%s' % kls # same name
+                mfullpath = os.path.join(fullpath, "%s.py" % kls)
+                mod = self._add_instance(attr, module, kls, mfullpath, self.j)
+
+Whilst this will be reworked to do relative imports (automatically
+taking the name of the module path from the *parent* object
+self.\_\_jsfullpath\_\_
+later, it is quite straightforward and basically adds lazy-instances
+named after the field "attr" to the current SerializersFactory instance
+(self.snappy which will appear as j.data.serializers.snappy or better
+self.j.data.serializers.snappy), of a class named "kls", imported from
+the module named "Jumpscale.data.serializers.<INSERT SAME CLASS NAME kls>".
+
+However bear in mind that these are **NOT** actual instances, they are
+*lazy* instances inserted into the SerializersFactory BaseGetter
+"hidden" dictionary, which, *only* if that *specific* attribute named
+"attr" is accessed, will the instance (or the class, if \_add\_kls
+is used instead), actually get instantiated.
+
+Functionality-wise this code works.  It is just not very pretty.  Hence
+this documentation, as it is also indicative of the direction that is
+being taken.
