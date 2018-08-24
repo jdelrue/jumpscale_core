@@ -44,6 +44,11 @@ bootstrap = [
     ('', 'errorhandler', 'core.errorhandler', None),
     ('', 'exceptions', 'core.exceptions', None),
     ('', 'errorhandler.exceptions', 'exceptions', None),
+    # XXX recursive imports prevent this at the moment
+    # TODO: must convert SerializersFactory to j-less
+    #('data', 'serializers', 'data.serializers.SerializersFactory',
+    #                        'SerializersFactory'),
+    #('data', 'serializer', 'data.serializers', None),
 ]
 
 
