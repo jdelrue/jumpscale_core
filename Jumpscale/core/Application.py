@@ -51,7 +51,7 @@ class Application(object):
             # import class from somewhere, do NOT inherit from JSBase
             from .core import SomeClass
 
-            DSomeClass = self._jsbase('SomeClass', [SomeClass])
+            DSomeClass = self._jsbase(('SomeClass', 'SomeModule'))
             instance = DSomeClass(self, path, otherargs)
 
         """
