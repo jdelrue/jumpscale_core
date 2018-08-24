@@ -17,8 +17,7 @@ class Cache(object):
         db = when none then will be in memory
         """
         if id not in self._cache:
-            DC = self._jsbase('CacheCategory',
-                ['Jumpscale.data.cache.Cache'])
+            DC = self._jsbase(('CacheCategory', 'Jumpscale.data.cache.Cache'))
             self._cache[id] = DC( id=id, expiration=expiration, reset=reset)
         return self._cache[id]
 

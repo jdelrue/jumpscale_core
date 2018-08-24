@@ -83,7 +83,7 @@ def add_dynamic_instance(j, parent, child, module, kls):
     """ very similar to dynamic_generate, needs work
         to morph into using same code
     """
-    print ("adding", parent, child, module, kls)
+    #print ("adding", parent, child, module, kls)
     if not parent:
         parent = j
     else:
@@ -112,7 +112,7 @@ def add_dynamic_instance(j, parent, child, module, kls):
         pj.__aliases__[childlast] = walkfrom
 
 
-def bootstrap_j(j, logging_enabled=False, filter=None, config_dir=None):
+def bootstrap_j(logging_enabled=False, filter=None, config_dir=None):
 
     # LoggerFactory isn't instantiated from JSBase so there has to
     # be a little bit of a dance to get it established and pointing
@@ -122,14 +122,22 @@ def bootstrap_j(j, logging_enabled=False, filter=None, config_dir=None):
     if config_dir:
         os.environ['HOSTCFGDIR'] = config_dir
 
-    j.j = j  # sets up the global singleton
+    #print ("toplevelpth", top_level_path)
+
+    bj = JSBase()
+    bj.j = bj
+    bj.__jsfullpath__ = os.path.dirname(plugin_path)
+    bj.__jsmodulepath__ = ''
+    j = bj._create_jsbase_instance("Jumpscale", bj)
+    #j.__jsfullpath__ = os.path.join(bj.__jsfullpath__, '__init__.py')
     j.__jsfullpath__ = os.path.join(plugin_path, "Jumpscale.py")
     j.__jsmodulepath__ = 'Jumpscale'
     j.__jsmodbase__ = [({}, {})]
+    j.j = j  # sets up the global singleton
     j.j.__dynamic_ready__ = False  # set global dynamic loading OFF
 
     DLoggerFactory = j._jsbase(
-        'LoggerFactory', ['Jumpscale.logging.LoggerFactory'],
+        ('LoggerFactory', 'Jumpscale.logging.LoggerFactory'),
         basej=j)
     l = DLoggerFactory()
     l.enabled = logging_enabled
@@ -142,7 +150,8 @@ def bootstrap_j(j, logging_enabled=False, filter=None, config_dir=None):
     # initialise
     j.tools.executorLocal.env_check_init()  # no config file -> make one!
     j.dirs.reload()  # ... and the directories got recreated (possibly)...
-    j.logging.init()  # will reconfigure the logging to use the config file
+    # will reconfigure the logging to use the config file
+    #j.logging.init() # NNOPE - there's a recursive import, do in Jumpscale
 
     # now load the json files
     loader = j.tools.jsloader

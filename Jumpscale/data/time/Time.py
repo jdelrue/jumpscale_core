@@ -20,8 +20,8 @@ class Time_(object):
     __jslocation__ = "j.data.time"
 
     def __init__(self):
-        self.timeinterval = self._jsbase('TimeInterval',
-                    ['Jumpscale.data.time.TimeInterval'])
+        self.timeinterval = self._jsbase(('TimeInterval',
+                    'Jumpscale.data.time.TimeInterval'))
 
     @property
     def epoch(self):

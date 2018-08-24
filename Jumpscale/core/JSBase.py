@@ -58,14 +58,31 @@ def jspath_import(modulepath, fullpath):
 
     return module
 
-def lookup_kls(__jsfullpath__, kls):
+def resolve_klsmodule(__jsfullpath__, __jsmodulepath__, kls):
+    #print ("resolve_klsmodule", __jsfullpath__, __jsmodulepath__, kls)
     # ok we assume it's a jumpscale class, FOR NOW
     # we assume it's in the same plugin as the parent
     # (don't use this for pulling in classes from other plugins!)
     # so, from the parent, get a fixed path
     #module = __import__(modulename)
     #mpathname, _, objectname = kls.rpartition('.')
-    mpathname = kls
+    if not isinstance(kls, str): # either "classname" or "module.classname"
+        return kls
+    if '.' not in kls: # classname: must be relative
+        return (__jsmodulepath__, kls)
+    # module.classname
+    mpathname, _, objectname = kls.rpartition('.')
+    return (objectname, mpathname)
+
+def lookup_kls(__jsfullpath__, __jsmodulepath__, kls):
+    #print ("lookup_kls", __jsfullpath__, __jsmodulepath__, kls)
+    kls = resolve_klsmodule(__jsfullpath__, __jsmodulepath__, kls)
+    if not isinstance(kls, tuple):
+        #print ("lookup was not a tuple", kls)
+        return kls # it was a class already: just return it
+
+    #print ("lookup_kls", kls)
+    (objectname, mpathname) = kls
     parent_path = os.path.split(__jsfullpath__)[0]
 
     # ok first we count the number of dots in the parent module
@@ -85,8 +102,12 @@ def lookup_kls(__jsfullpath__, kls):
 
     #print ("mpath", mpathname, fullpath)
     module = jspath_import(mpathname, fullpath)
+    # ok finally get the module (and the class)
+    nkls = getattr(module, objectname)
+    nkls.__jsfullpath__ = fullpath
+    nkls.__jsmodulepath__ = mpathname
 
-    return fullpath, module
+    return nkls
 
 class BaseGetter(object):
     """ this is a rather.. um... ugly class that has a list of module names
@@ -238,8 +259,8 @@ class ModuleSetup(object):
     @property
     def kls(self):
         if self._kls is None:
-            # print ("about to get modulepath %s object %s path %s basej %s" % \
-            #     (self.modulepath, self.objectname, self.fullpath, self.basej))
+            #print ("about to get modulepath %s object %s path %s basej %s" % \
+            #    (self.modulepath, self.objectname, self.fullpath, self.basej))
 
             module = jspath_import(self.modulepath, self.fullpath)
             kls = getattr(module, self.objectname)
@@ -477,20 +498,25 @@ class JSBase(BaseGetter):
             if the derived class list contains a string, see comments
             below: full path is created for importing of the format:
             Jumpscale.submod.submod.Module.CLASSNAME
+
+            by default the class will be given the name "JSBased<jname>".
+            to over-ride this, set dynamicname.
         """
         if basej is None:
             basej = self.j
         #print ("_jsbase", basej, jname, derived_classes)
         if derived_classes is None:
             derived_classes = []
+        if self.__jsmodulepath__ and isinstance(jname, tuple):
+            extrakls = resolve_klsmodule(self.__jsfullpath__,
+                                      self.__jsmodulepath__, jname)
+            #print ("resolved jname to", jname)
+            derived_classes = [extrakls] + derived_classes
+            jname = jname[0]
         for idx, kls in enumerate(derived_classes):
-            if isinstance(kls, str):
-                # ok finally get the module (and the class)
-                fullpath, module = lookup_kls(self.__jsfullpath__, kls)
-                nkls = getattr(module, jname)
-                nkls.__jsfullpath__ = fullpath
-                nkls.__jsmodulepath__ = kls
-                derived_classes[idx] = nkls
+            nkls = lookup_kls(self.__jsfullpath__,
+                             self.__jsmodulepath__, kls)
+            derived_classes[idx] = nkls
 
         classes = [JSBase] + copy(derived_classes)
 
@@ -524,6 +550,7 @@ class JSBase(BaseGetter):
             newname = "JSBased" + jname
         else:
             newname = dynamicname
+        #print (newname, classes)
         memberkls = type(newname, tuple(classes), inits)
         return memberkls
 

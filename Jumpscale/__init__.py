@@ -25,9 +25,7 @@ else:
     options, args = parser.parse_known_args()
 
     if global_j is None:
-        bj = JSBase() # start with dummy (more initialisation done in bootstrap)
-        bj.j = bj
-        j = bj.j._create_jsbase_instance('Jumpscale', bj)
-        j = bootstrap_j(j, config_dir=options.config)
+        j = bootstrap_j(config_dir=options.config)
+        j.logging.init() # initialise logging here to stop recursive import
     else:
         j = global_j

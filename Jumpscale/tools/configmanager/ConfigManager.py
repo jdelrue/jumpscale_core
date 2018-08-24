@@ -33,8 +33,8 @@ class ConfigFactory(object):
         self._keyname = ""  # if set will overrule from the main js config file
         self._init = False
 
-        self.Config = self._jsbase("Config",
-            ['Jumpscale.tools.configmanager.Config'])
+        self.Config = self._jsbase(("Config",
+            'Jumpscale.tools.configmanager.Config'))
 
     def reset(self, location=None, instance=None, force=False):
         """

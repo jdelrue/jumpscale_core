@@ -22,8 +22,8 @@ class RegexMatches:
 
     def __init__(self):
         self.matches = []
-        self.RegexMatch = self._jsbase('RegexMatch',
-            ['Jumpscale.data.regex.RegexTools'])
+        self.RegexMatch = self._jsbase(('RegexMatch',
+            'Jumpscale.data.regex.RegexTools'))
 
     def addMatch(self, match):
         if match is not None or match != "":
@@ -67,12 +67,12 @@ class RegexTools:
     __jslocation__ = "j.data.regex"
 
     def __init__(self):
-        self.templates = self._jsbase('Empty',
-                        ['Jumpscale.data.regex.RegexTools'])()
-        self.templates.lines = self._jsbase('RegexTemplates_FindLines',
-                ['Jumpscale.data.regex.RegexTools'])()
-        self.RegexMatches = self._jsbase('RegexMatches',
-            ['Jumpscale.data.regex.RegexTools'])
+        self.templates = self._jsbase(('Empty',
+                        'Jumpscale.data.regex.RegexTools'))()
+        self.templates.lines = self._jsbase(('RegexTemplates_FindLines',
+                'Jumpscale.data.regex.RegexTools'))()
+        self.RegexMatches = self._jsbase(('RegexMatches',
+            'Jumpscale.data.regex.RegexTools'))
 
     def findHtmlElement(self, subject, tofind, path, dieIfNotFound=True):
         match = re.search(r"< *%s *>" % tofind, subject, re.IGNORECASE)

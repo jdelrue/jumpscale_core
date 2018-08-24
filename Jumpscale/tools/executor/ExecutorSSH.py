@@ -2,8 +2,6 @@ from jumpscale import j
 from .ExecutorBase import *
 import os
 
-JSBASE = j.application.jsbase_get_class()
-
 
 class ExecutorSSH(ExecutorBase):
 

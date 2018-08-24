@@ -17,8 +17,8 @@ class ExecutorFactory(object):
 
         """
         if 'localhost' not in self._executors:
-            DL = self._jsbase("ExecutorLocal",
-                    ['Jumpscale.tools.executor.ExecutorLocal'])
+            DL = self._jsbase(("ExecutorLocal",
+                    'Jumpscale.tools.executor.ExecutorLocal'))
             self._executors['localhost'] = DL()
         return self._executors['localhost']
 
@@ -32,15 +32,15 @@ class ExecutorFactory(object):
                 sshclient.config.data['login'])
             if key not in self._executors or \
                     self._executors[key].sshclient is None:
-                DS = self._jsbase("ExecutorSSH",
-                    ['Jumpscale.tools.executor.ExecutorSSH'])
+                DS = self._jsbase(("ExecutorSSH",
+                    'Jumpscale.tools.executor.ExecutorSSH'))
                 self._executors[key] = DS(sshclient=sshclient)
             return self._executors[key]
 
     def serial_get(self, device, baudrate=9600, type="serial", parity="N",
                     stopbits=1, bytesize=8, timeout=1):
-        DS = self._jsbase("ExecutorSerial",
-            ['Jumpscale.tools.executor.ExecutorSerial'])
+        DS = self._jsbase(("ExecutorSerial",
+            'Jumpscale.tools.executor.ExecutorSerial'))
         return DS(device, baudrate=baudrate, type=type, parity=parity,
                    stopbits=stopbits, bytesize=bytesize, timeout=timeout)
 
@@ -61,9 +61,8 @@ class ExecutorFactory(object):
         with self._lock:
             key = '%s:%s:%s' % (addr, port, login)
             if key not in self._executors_async or usecache is False:
-                D = self._jsbase(
-                    "ExecutorAsyncSSH",
-                ['Jumpscale.tools.executor.ExecutorAsyncSSH'])
+                D = self._jsbase(("ExecutorAsyncSSH",
+                        'Jumpscale.tools.executor.ExecutorAsyncSSH'))
                 self._executors_async[key] = D(
                     addr=addr, port=port, login=login, passwd=passwd,
                     debug=debug, allow_agent=allow_agent,
@@ -73,8 +72,8 @@ class ExecutorFactory(object):
             return self._executors_async[key]
 
     def getLocalDocker(self, container_id_or_name):
-        D = self._jsbase("ExecutorDocker", 
-                ['Jumpscale.tools.executor.ExecutorDocker'])
+        D = self._jsbase(("ExecutorDocker", 
+                'Jumpscale.tools.executor.ExecutorDocker'))
         return D.from_local_container(container_id_or_name)
 
     def reset(self, executor=None):
