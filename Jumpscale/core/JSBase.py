@@ -2,6 +2,7 @@ from copy import copy
 import os
 import sys
 import importlib.util
+import inspect
 
 
 def jwalk(instance, name, start=None, end=None, stealth=False):
@@ -127,10 +128,10 @@ class BaseGetter(object):
         self.__subgetters__ = {}
         self.__aliases__ = {}
 
-    def _add_instance(self, subname, modulepath, objectname,
-                      fullpath=None, basej=None):
-        """ adds an instance to the __subgetters__ dictionary. When
-            __getattribute__ is called, the instance will be created
+    def _add_instorkls(self, subname, modulepath, objectname,
+                      fullpath=None, basej=None, ask=False):
+        """ adds an instance (or class) to the __subgetters__ dictionary.
+            When __getattribute__ is called, the instance will be created
             ON DEMAND based on the information passed in, and for the
             instance created to AUTOMATICALLY include a derivation
             from JSBase if it isn't already a base class
@@ -154,12 +155,28 @@ class BaseGetter(object):
             note the inclusion of the automatic "JSBased" prefix on the
             original class named "Application".
         """
-        #print ("add instance", self, subname, modulepath, objectname, basej)
-        ms = ModuleSetup(subname, modulepath, objectname, fullpath, basej)
+        #print ("instorkls", self, subname, modulepath, objectname, basej, ask)
+        ms = ModuleSetup(self, subname, modulepath, objectname,
+                         fullpath, basej, ask)
         #print (dir(self))
         d = object.__getattribute__(self, '__subgetters__')
         d[subname] = ms
         return ms
+
+    def _add_kls(self, subname, modulepath, objectname,
+                      fullpath=None, basej=None):
+        """ adds a kls to the __subgetters__ dictionary.  this is a
+            quite complex lazy-loading system.
+        """
+        return self._add_instorkls(subname, modulepath, objectname,
+                                   fullpath, basej, True)
+
+    def _add_instance(self, subname, modulepath, objectname,
+                      fullpath=None, basej=None):
+        """ adds an instance to the __subgetters__ dictionary.
+        """
+        return self._add_instorkls(subname, modulepath, objectname,
+                                   fullpath, basej, False)
 
     def __dir__(self):
         d = object.__getattribute__(self, '__subgetters__')
@@ -246,14 +263,17 @@ class BaseGetter(object):
 
 
 class ModuleSetup(object):
-    def __init__(self, subname, modulepath, objectname, fullpath, basej):
+    def __init__(self, parentj, subname, modulepath, objectname,
+                       fullpath, basej, ask):
+        self.parentj = parentj
         self.subname = subname
-        self.modulepath = modulepath
+        self.modulepath = modulepath # TODO or parentj.__jsmodulepath__
         self.objectname = objectname
-        self.fullpath = fullpath
+        self.fullpath = fullpath # TODO or parentj.__jsfullpath__
         self.basej = basej
         self._obj = None
         self._kls = None
+        self.as_kls = ask # if True, a class will be returned.
         self._child_props = {}  # to be added after class is instantiated
 
     @property
@@ -285,6 +305,12 @@ class ModuleSetup(object):
         return self._kls
 
     def getter(self):
+        if self.as_kls:
+            return self.kls
+        return self.obj
+
+    @property
+    def obj(self):
         if self._obj is None:
             #print ("getter", self.kls)
             self._obj = self.kls()
@@ -519,8 +545,6 @@ class JSBase(BaseGetter):
             derived_classes[idx] = nkls
 
         classes = [JSBase] + copy(derived_classes)
-
-        import inspect
 
         def initfn(self, *args, **kwargs):
             JSBase.__init__(self, _logger=basej and basej._logger or None)
