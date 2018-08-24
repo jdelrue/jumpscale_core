@@ -46,9 +46,9 @@ bootstrap = [
     ('', 'errorhandler.exceptions', 'exceptions', None),
     # XXX recursive imports prevent this at the moment
     # TODO: must convert SerializersFactory to j-less
-    #('data', 'serializers', 'data.serializers.SerializersFactory',
-    #                        'SerializersFactory'),
-    #('data', 'serializer', 'data.serializers', None),
+    ('data', 'serializers', 'data.serializers.SerializersFactory',
+                            'SerializersFactory'),
+    ('data', 'serializer', 'data.serializers', None),
 ]
 
 
@@ -158,11 +158,11 @@ def bootstrap_j(logging_enabled=False, filter=None, config_dir=None):
     #j.logging.init() # NNOPE - there's a recursive import, do in Jumpscale
 
     # now load the json files
-    j.loader = j.tools.jsloader
-    j.loader.load_json()
+    loader = j.tools.jsloader
+    loader.load_json()
     for pluginname, (modlist, baselist) in j.__jsmodbase__.items():
         #print (pluginname, modlist.keys())
-        j.loader._dynamic_merge(j, modlist, baselist, {})
+        loader._dynamic_merge(j, modlist, baselist, {})
 
     # now finally set dynamic on.  if the json loader was empty
     # or if ever something is requested that's not *in* the json
