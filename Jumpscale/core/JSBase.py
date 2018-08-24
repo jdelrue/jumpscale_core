@@ -75,6 +75,14 @@ def resolve_klsmodule(__jsfullpath__, __jsmodulepath__, kls):
     mpathname, _, objectname = kls.rpartition('.')
     return (objectname, mpathname)
 
+def mpath_to_pyfile(mp):
+    if mp[-1].lower() == mp[-1]:
+        mp.append('__init__.py')
+        mp = mp[1:] # plugin name is duplicated: cut one of them...
+    else:
+        mp[-1] += ".py"
+    return mp
+
 def lookup_kls(__jsfullpath__, __jsmodulepath__, kls):
     #print ("lookup_kls", __jsfullpath__, __jsmodulepath__, kls)
     kls = resolve_klsmodule(__jsfullpath__, __jsmodulepath__, kls)
@@ -92,10 +100,13 @@ def lookup_kls(__jsfullpath__, __jsmodulepath__, kls):
     parent_path = parent_path.split('/')[:-dotcount]
     parent_path = "/".join(parent_path)
 
-    #print ("parent_path", __jsfullpath__, parent_path)
-    # now drop in the filename, replacing . with /, and
-    # add .py on the end
-    fullpath = mpathname.replace(".", "/") + ".py"
+    # detect whether the full module path is an __init__.py
+    # or a standard module: if the last path is all lower-case it's
+    # __init__.py
+    #print ("parent_path", __jsfullpath__, parent_path, mpathname)
+    mp = mpathname.split('.')
+    mp = mpath_to_pyfile(mp)
+    fullpath = os.path.join(*mp)
     fullpath = os.path.join(parent_path, fullpath)
 
     # XXX TODO, check plugin directory matches...
@@ -128,6 +139,27 @@ class BaseGetter(object):
         self.__subgetters__ = {}
         self.__aliases__ = {}
 
+    def find_jsmodule(self, modulepath, objectname):
+        """ finds the absolute module path if it exists, otherwise
+            does a best guess based on the plugin match.
+            search here.
+        """
+        if modulepath in self.j.__jsmodlookup__:
+            return self.j.__jsmodlookup__[modulepath]
+        if not hasattr(self.j, 'loader'):
+            return None
+        # ok, not in the json file, so make a best guess.
+        mpath = modulepath.split('.')
+        plugin = mpath[0]
+        plugins = self.j.loader.plugins
+        assert plugin in plugins
+        pluginpath = plugins[plugin]
+        modname = [pluginpath] + mpath_to_pyfile(mpath)
+        modulename = os.path.join(*modname)
+        fullchildname = ''
+        info = (modulename, objectname, plugin, fullchildname)
+        return info
+
     def _add_instorkls(self, subname, modulepath, objectname,
                       fullpath=None, basej=None, ask=False):
         """ adds an instance (or class) to the __subgetters__ dictionary.
@@ -155,7 +187,17 @@ class BaseGetter(object):
             note the inclusion of the automatic "JSBased" prefix on the
             original class named "Application".
         """
+        basej = basej or self.j
         #print ("instorkls", self, subname, modulepath, objectname, basej, ask)
+
+        if fullpath is None:
+            info = self.find_jsmodule(modulepath, objectname)
+            assert info
+            (modulename, classname, plugin, fullchildname) = info
+            fullpath = modulename
+        #print ("self.fullpath1", fullpath)
+        #print ("self.modpath/1", modulepath)
+
         ms = ModuleSetup(self, subname, modulepath, objectname,
                          fullpath, basej, ask)
         #print (dir(self))
@@ -282,10 +324,14 @@ class ModuleSetup(object):
             #print ("about to get modulepath %s object %s path %s basej %s" % \
             #    (self.modulepath, self.objectname, self.fullpath, self.basej))
 
-            module = jspath_import(self.modulepath, self.fullpath)
-            kls = getattr(module, self.objectname)
-            kls.__jsfullpath__ = self.fullpath
-            kls.__jsmodulepath__ = self.modulepath
+            #module = jspath_import(self.modulepath, self.fullpath)
+            #kls = getattr(module, self.objectname)
+            #kls.__jsfullpath__ = self.fullpath
+            #kls.__jsmodulepath__ = self.modulepath
+
+            _kls = (self.objectname, self.modulepath)
+            kls = lookup_kls(self.fullpath, self.modulepath, _kls)
+
             # check if kls has JSBase in it: if not, patch it in
             if hasattr(kls, 'mro'):
                 mro = kls.mro()

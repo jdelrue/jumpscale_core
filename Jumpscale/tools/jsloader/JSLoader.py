@@ -82,12 +82,11 @@ plugin_path = os.path.dirname(os.path.abspath(__file__))
 plugin_path = os.path.dirname(plugin_path)
 top_level_path = os.path.dirname(plugin_path)
 
-
 def add_dynamic_instance(j, parent, child, module, kls):
     """ very similar to dynamic_generate, needs work
         to morph into using same code
     """
-    #print ("adding", parent, child, module, kls)
+    print ("adding", parent, child, module, kls)
     if not parent:
         parent = j
     else:
@@ -103,7 +102,7 @@ def add_dynamic_instance(j, parent, child, module, kls):
         else:
             mname = "%s/__init__.py" % module.replace(".", "/")
             fullpath = os.path.join(top_level_path, mname)
-        #print ("fullpath", fullpath)
+        print ("fullpath", fullpath)
         return parent._add_instance(child, "Jumpscale." + module, kls,
                                     fullpath, basej=j)
         #print ("added", parent, child)
@@ -136,7 +135,8 @@ def bootstrap_j(logging_enabled=False, filter=None, config_dir=None):
     #j.__jsfullpath__ = os.path.join(bj.__jsfullpath__, '__init__.py')
     j.__jsfullpath__ = os.path.join(plugin_path, "Jumpscale.py")
     j.__jsmodulepath__ = 'Jumpscale'
-    j.__jsmodbase__ = [({}, {})]
+    j.__jsmodbase__ = {}
+    j.__jsmodlookup__ = {}
     j.j = j  # sets up the global singleton
     j.j.__dynamic_ready__ = False  # set global dynamic loading OFF
 
@@ -158,11 +158,11 @@ def bootstrap_j(logging_enabled=False, filter=None, config_dir=None):
     #j.logging.init() # NNOPE - there's a recursive import, do in Jumpscale
 
     # now load the json files
-    loader = j.tools.jsloader
-    loader.load_json()
+    j.loader = j.tools.jsloader
+    j.loader.load_json()
     for pluginname, (modlist, baselist) in j.__jsmodbase__.items():
         #print (pluginname, modlist.keys())
-        loader._dynamic_merge(j, modlist, baselist, {})
+        j.loader._dynamic_merge(j, modlist, baselist, {})
 
     # now finally set dynamic on.  if the json loader was empty
     # or if ever something is requested that's not *in* the json
@@ -452,20 +452,58 @@ class JSLoader():
 
         return _j
 
+    def find_jsmodule(self, modulepath):
+        """ returns nearest module in the table.  could really use a range
+            search here.
+        """
+        if modulepath in self.j.__jsmodlookup__:
+            return self.j.__jsmodlookup__[modulepath]
+        for k, info in self.j.__jsmodlookup__.items():
+            if not k.startswith(modulepath):
+                continue
+            print ("match", modulepath, info)
+            (modulename, classname, plugin, fullchildname) = info
+            return info
+
+    def reset_jsonmodules(self):
+        self.j.__jsmodlookup__ = {} # table that turns module to path
+        self.j.__jsmodbase__ = {}
+
+    def manage_jsonmodules(self, plugin, modbase):
+        self.j.__jsmodbase__[plugin] = modbase
+        pluginpath = os.path.dirname(self.plugins[plugin]) # strip library name
+        (modlist, baselist) = modbase
+        for jlocationRoot, jlocationRootDict in modlist.items():
+            #print ("root", jlocationRoot, jlocationRootDict)
+            jname = jlocationRoot.split(".")[1].strip()
+            print ("dynamic generate root", jname, jlocationRoot)
+            for subname, sublist in jlocationRootDict.items():
+                fullchildname = "j.%s.%s" % (jname, subname)
+                modulename, classname, imports = sublist
+                plen = len(pluginpath)
+                assert modulename[:plen] == pluginpath
+                pmodname = modulename[plen+1:-3] # strip plugpath and ".py"
+                pmodname = '.'.join(pmodname.split('/'))
+                info = (modulename, classname, plugin, fullchildname)
+                self.j.__jsmodlookup__[pmodname] = info
+                #print ("child", pluginpath, fullchildname, pmodname, info)
+
+
     def load_json(self):
         """ read the jumpscale json files
         """
 
-        self.j.__jsmodbase__ = {}
+        self.reset_jsonmodules()
         failed = False
         for plugin, outJSON in self.jsonfiles.items():
             self.logger.debug("* jumpscale json path:%s" % outJSON)
             try:
                 outJSON = self.j.sal.fs.readFile(outJSON)
-                self.j.__jsmodbase__[plugin] = json.loads(outJSON)
+                modbase = json.loads(outJSON)
             except ValueError as e:
-                self.j.__jsmodbase__[plugin] = ({}, {})
+                modbase = ({}, {})
                 failed = True
+            self.manage_jsonmodules(plugin, modbase)
 
         return not failed
 
@@ -481,7 +519,7 @@ class JSLoader():
         """
 
         if pluginsearch is None:  # reset the plugins, redoing them all
-            self.j.__jsmodbase__ = {}
+            self.reset_jsonmodules()
 
         for plugin, outJSON in self.jsonfiles.items():
             if pluginsearch and pluginsearch != plugin:
@@ -494,10 +532,9 @@ class JSLoader():
 
             self.logger.info("* jumpscale json path:%s" % outJSON)
 
-            print (modbase)
             modlistout_json = json.dumps(modbase, sort_keys=True, indent=4)
             self.j.sal.fs.writeFile(outJSON, modlistout_json)
-            self.j.__jsmodbase__[plugin] = modbase
+            self.manage_jsonmodules(plugin, modbase)
 
     def _pip_installed(self):
         """ return the list of all installed pip packages
