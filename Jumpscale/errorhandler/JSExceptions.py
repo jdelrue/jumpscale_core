@@ -28,11 +28,11 @@ class JSExceptions(object):
         for e in exceptions:
             ename = e.__name__[1:]
             #print ("register", ename)
-            ekls = self._jsbase(("_%s" % ename,
-                                "Jumpscale.errorhandler.JSExceptions"),
-                    dynamicname=ename)
+            ekls = self._add_kls(ename,
+                                "Jumpscale.errorhandler.JSExceptions",
+                                "_%s" % ename,
+                                dynamicname=ename)
             globals()[ename] = ekls
-            setattr(self, ename, ekls)
 
 
 

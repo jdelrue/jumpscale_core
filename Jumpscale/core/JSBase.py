@@ -146,22 +146,21 @@ class BaseGetter(object):
         """
         if modulepath in self.j.__jsmodlookup__:
             return self.j.__jsmodlookup__[modulepath]
-        if not hasattr(self.j, 'loader'):
-            return None
         # ok, not in the json file, so make a best guess.
         mpath = modulepath.split('.')
         plugin = mpath[0]
-        plugins = self.j.loader.plugins
+        plugins = self.j.tools.jsloader.plugins
         assert plugin in plugins
         pluginpath = plugins[plugin]
-        modname = [pluginpath] + mpath_to_pyfile(mpath)
+        modname = [pluginpath] + mpath_to_pyfile(mpath[1:])
         modulename = os.path.join(*modname)
         fullchildname = ''
         info = (modulename, objectname, plugin, fullchildname)
         return info
 
     def _add_instorkls(self, subname, modulepath, objectname,
-                      fullpath=None, basej=None, ask=False):
+                      fullpath=None, basej=None, ask=False,
+                      dynamicname=None):
         """ adds an instance (or class) to the __subgetters__ dictionary.
             When __getattribute__ is called, the instance will be created
             ON DEMAND based on the information passed in, and for the
@@ -199,26 +198,26 @@ class BaseGetter(object):
         #print ("self.modpath/1", modulepath)
 
         ms = ModuleSetup(self, subname, modulepath, objectname,
-                         fullpath, basej, ask)
+                         fullpath, basej, ask, dynamicname)
         #print (dir(self))
         d = object.__getattribute__(self, '__subgetters__')
         d[subname] = ms
         return ms
 
     def _add_kls(self, subname, modulepath, objectname,
-                      fullpath=None, basej=None):
+                      fullpath=None, basej=None, dynamicname=None):
         """ adds a kls to the __subgetters__ dictionary.  this is a
             quite complex lazy-loading system.
         """
         return self._add_instorkls(subname, modulepath, objectname,
-                                   fullpath, basej, True)
+                                   fullpath, basej, True, dynamicname)
 
     def _add_instance(self, subname, modulepath, objectname,
-                      fullpath=None, basej=None):
+                      fullpath=None, basej=None, dynamicname=None):
         """ adds an instance to the __subgetters__ dictionary.
         """
         return self._add_instorkls(subname, modulepath, objectname,
-                                   fullpath, basej, False)
+                                   fullpath, basej, False, dynamicname)
 
     def __dir__(self):
         d = object.__getattribute__(self, '__subgetters__')
@@ -306,13 +305,14 @@ class BaseGetter(object):
 
 class ModuleSetup(object):
     def __init__(self, parentj, subname, modulepath, objectname,
-                       fullpath, basej, ask):
+                       fullpath, basej, ask, dynamicname):
         self.parentj = parentj
         self.subname = subname
         self.modulepath = modulepath # TODO or parentj.__jsmodulepath__
         self.objectname = objectname
         self.fullpath = fullpath # TODO or parentj.__jsfullpath__
         self.basej = basej
+        self.dynamicname = dynamicname
         self._obj = None
         self._kls = None
         self.as_kls = ask # if True, a class will be returned.
@@ -321,8 +321,8 @@ class ModuleSetup(object):
     @property
     def kls(self):
         if self._kls is None:
-            #print ("about to get modulepath %s object %s path %s basej %s" % \
-            #    (self.modulepath, self.objectname, self.fullpath, self.basej))
+            print ("about to get modulepath %s object %s path %s basej %s" % \
+                (self.modulepath, self.objectname, self.fullpath, self.basej))
 
             #module = jspath_import(self.modulepath, self.fullpath)
             #kls = getattr(module, self.objectname)
@@ -346,12 +346,14 @@ class ModuleSetup(object):
             if not jsbased:
                 #klsname = "%s.%s" % (self.modulepath, self.objectname)
                 kls = self.basej._jsbase(self.objectname, [kls],
-                                         basej=self.basej)
+                                         basej=self.basej,
+                                         dynamicname=self.dynamicname)
             self._kls = kls
         return self._kls
 
     def getter(self):
         if self.as_kls:
+            print ("getter kls")
             return self.kls
         return self.obj
 

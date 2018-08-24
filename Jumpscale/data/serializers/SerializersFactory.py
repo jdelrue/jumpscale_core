@@ -26,13 +26,10 @@ class SerializersFactory:
         self.packtypes = {}
         self._cache = {}
 
-        fullpath = os.path.dirname(self.__jsfullpath__)
-        print ("fullpath", fullpath)
         for s in self.serialisers:
             [attr, kls, packtype] = s
             module = 'Jumpscale.data.serializers.%s' % kls # same name
-            mfullpath = os.path.join(fullpath, "%s.py" % kls)
-            mod = self._add_instance(attr, module, kls, mfullpath)
+            mod = self._add_instance(attr, module, kls)
             if packtype:
                 self.packtypes[packtype] = attr # replaced in getSerializerType
                 self.types[attr] = attr # replaced in getSerializerType
