@@ -1,18 +1,28 @@
 # JSLoader
 
-#### Introduction
+Please note: this document has been partly superceded by 
+[Dynamic Jumscale Loading](../Internals/dynamicloading.md)
+
+"j.tools.jsloader.generate()" has now been replaced with
+"j.tools.jsloader.generate\_json()", which can also take an
+extra argument to generate *only* the JSON file for a specific
+plugin.  This is best exclusively used in the setup.py script.
+The concept mirrors that of the standard python ".pth" scheme,
+found in each location of sys.path
+
+## Introduction
 
 **j** namespace was made to provide jumpscale modules with no need to import anything or to know how does these modules comunicate,
 It also make it much easyer to add new module from your own repo  
 what JSLoader provides is a service to collect all modules and plugins needed and make it available through **j**
 
-##### Example
+### Example
 
 ```python
 j.secondary_namespace.module...
 ```
 
-#### How to
+### How to
 
 To add new module to be loaded by the JSLoader:
 
@@ -29,11 +39,12 @@ To add new module to be loaded by the JSLoader:
   **Note:** plugin name should contain "_Jumpscale_"
 * run `js_init` or from jumpscale call `j.tools.JSloader.generate()`
 
-#### Add new secondary namespace
+### Add new secondary namespace
 
 to add new secondary namespace like `j.secondary_namespace` you will need to add new field to Jumpsacle9 class in `core/Jumpscale/__init__.py`
 
-#### Restrictions
+### Restrictions
 
 * Module path should contain "_jumpscale_"
-* Class file name can't start with '\_', lower case letter, 'jsloader' or 'actioncontroller'
+* Class file name can't start with '\_', lower case letter, 'jsloader' or
+  'actioncontroller'
