@@ -281,7 +281,7 @@ class ConfigFactory(object):
             if self.j.sal.fs.getcwd().startswith(self.path):
                 # means we are in subdir of current config  repo, so we can be
                 # in location
-                location = self.j.sal.fs.getBaseName(j.sal.fs.getcwd())
+                location = self.j.sal.fs.getBaseName(self.j.sal.fs.getcwd())
                 if not location.startswith("j."):
                     raise RuntimeError(
                         "Cannot find location, are you in right " + \
