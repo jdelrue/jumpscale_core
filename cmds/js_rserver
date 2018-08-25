@@ -19,10 +19,29 @@ import os
 from rpyc.utils.server import ForkingServer
 from rpyc.core.service import SlaveService
 from rpyc.lib import setup_logger
+from Jumpscale import Jumpscale
 
 server = None
 cur_dir = os.getcwd()
 bin_dir = os.path.dirname(__file__)
+
+class JumpscaleService(SlaveService):
+    _j = None
+    def on_connect(self, conn):
+        super(JumpscaleService, self).on_connect(conn)
+        print ("connection", conn)
+
+    def on_disconnect(self, conn):
+        super(JumpscaleService, self).on_disconnect(conn)
+        print ("disconnect", conn)
+
+    @property
+    def j(self):
+        if self._j is None:
+            # deliberately put this in the local class scope
+            j = Jumpscale()
+            self._j = j
+        return self._j
 
 def start():
     global server
@@ -31,7 +50,7 @@ def start():
     logfile = os.path.join(cur_dir, "rjumpscale.log")
     setup_logger(True, logfile)
 
-    server = factory(SlaveService, port=18861, reuse_addr = True,
+    server = factory(JumpscaleService, port=18861, reuse_addr = True,
                      authenticator=None)
     server.start()
 
@@ -44,6 +63,9 @@ def stop(*args):
     sys.exit()
 
 if __name__ == "__main__":
+    if len(sys.argv) > 1: # quick hack to run in foreground
+        start()
+        exit(0)
     pid_file = os.path.join(cur_dir, 'rjumpscale.pid')
     with daemon.DaemonContext(
             pidfile = PIDLockFile(pid_file),
