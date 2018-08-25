@@ -201,6 +201,7 @@ class JSLoader():
     def __init__(self):
         self.tryimport = False
         self._logger = None
+        self._plugins = None
 
     @property
     def logger(self):
@@ -263,13 +264,15 @@ class JSLoader():
         #
         # related to issue #71
         #
-        defaultplugins = {'Jumpscale': top_level_path}
+        if self._plugins is None:
+            defaultplugins = {'Jumpscale': top_level_path}
 
-        state = self.j.tools.executorLocal.state
-        plugins = state.configGet('plugins', defaultplugins)
-        if 'Jumpscale' not in plugins:
-            plugins['Jumpscale'] = defaultplugins['Jumpscale']
-        return plugins
+            state = self.j.tools.executorLocal.state
+            plugins = state.configGet('plugins', defaultplugins)
+            if 'Jumpscale' not in plugins:
+                plugins['Jumpscale'] = defaultplugins['Jumpscale']
+            self._plugins = plugins
+        return self._plugins
 
     @property
     def jsonfiles(self):
@@ -449,6 +452,7 @@ class JSLoader():
             return info
 
     def reset_jsonmodules(self):
+        self._plugins = None
         self.j.__jsmodlookup__ = {} # table that turns module to path
         self.j.__jsmodbase__ = {}
 
