@@ -107,5 +107,5 @@ class DevelopToolsFactory(JSBASE):
 
     def test_js_quick(self):
         j.data.kvs.test()
-        j.data.cache.test()
+        j.data.datacache.test()
         j.tools.nodemgr.test()
