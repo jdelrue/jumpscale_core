@@ -4,6 +4,29 @@ import IPython
 import rpyc
 
 import sys
+import time
+
+import hexdump
+
+# monkey-patch the socket stream so that it's possible to
+# see what traffic is going back and forth
+class LogStream(rpyc.core.stream.SocketStream):
+    isLoggingOn = True
+    _logFile = open("/tmp/log.txt", "w")
+    def read(self, count):
+        data = super(LogStream, self).read(count)
+        if self.isLoggingOn:
+            hd = '\n'.join(hexdump.dumpgen(data or b''))
+            self._logFile.write("\n" + time.asctime() + " RECV\n" + hd)
+        return data
+    def write(self, data):
+        if self.isLoggingOn:
+            hd = '\n'.join(hexdump.dumpgen(data or b''))
+            self._logFile.write("\n" + time.asctime() + " SEND\n" + hd)
+        return super(LogStream, self).write(data)
+
+rpyc.core.stream.SocketStream = LogStream
+rpyc.utils.factory.SocketStream = LogStream
 
 if len(sys.argv) == 2:
     host = sys.argv[1]
