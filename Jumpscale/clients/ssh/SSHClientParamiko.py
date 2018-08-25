@@ -231,7 +231,6 @@ class SSHClientParamiko(SSHClientBase):
             return None
 
         self.pkey = None
-        # import ipdb; ipdb.set_trace()
         if self.key_filename is not None and self.key_filename != '':
             self.pkey = paramiko.RSAKey.from_private_key_file(
                 self.sshkey.path, password=self.sshkey.passphrase)

@@ -125,8 +125,10 @@ def path_check(**arguments):
                             kwargs[parameter.name] = value
                     validators = arguments[parameter.name]
                     if value and validators.intersection({"exists", "file", "dir", "pureFile", "pureDir"}) and not os.path.exists(value):
-                        raise ValueError("Argument %s in %s%s expects an existing path value! %s does not exist." % (
-                            parameter.name, jslocation(), func.__name__, value))
+                        msg = "Argument %s in %s%s expects an existing path value! %s does not exist." % (
+                            parameter.name, jslocation(), func.__name__, value)
+                        print(msg)
+                        raise ValueError(msg)
                     if "required" in validators and (value is None or value.strip() == ""):
                         raise ValueError("Argument %s in %s%s should not be None or empty string!" % (
                             parameter.name, jslocation(), func.__name__))

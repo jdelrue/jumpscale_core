@@ -17,6 +17,7 @@ class DevelopToolsFactory(JSBASE):
         JSBASE.__init__(self)
         self.__imports__ = "watchdog"
         self.nodes = j.tools.nodemgr
+        self.node_active = None
         self._codedirs = None
 
     def run(self):
@@ -47,46 +48,65 @@ class DevelopToolsFactory(JSBASE):
     #     j.actions.reset()
     #     self.init()
 
+    def getActiveCodeDirs(self):
+        res = []
+        done = []
+        repo = j.clients.git.currentDirGitRepo()
+        if repo is not None:
+            res.append(j.tools.develop.codedirs.get(repo.type, repo.account, repo.name))
+            done.append(repo.BASEDIR)
+        ddirs = j.clients.git.getGitReposListLocal(account="threefoldtech")  # took predefined list
+        for key, path in ddirs.items():
+            if j.sal.fs.getBaseName(path)[0]=="_":
+                continue
+            self.logger.debug("try to find git dir for:%s" % path)
+            try:
+                repo = j.clients.git.get(path)
+                if path not in done:
+                    res.append(j.tools.develop.codedirs.get(repo.type, repo.account, repo.name))
+            except Exception as e:
+                self.logger.error(e)
+
+        return res
+
+
     def sync(self):
         """
         sync all code to the remote destinations, uses config as set in jumpscale.toml
 
 
         """
-        if self.nodes.getall() == []:
-            self.logger.debug(
-                "NOTHING TO DO, THERE ARE NO NODES DEFINED PLEASE USE  j.tools.develop.run()")
-            return
-        did = False
-        for node in self.nodes.getall():
-            if node.selected:
-                node.sync()
-                did = True
-        if did == False:
-            self.logger.debug("nodes are defined but not selected, please use j.tools.develop.run()")
+        if self.node_active is not None:
+            self.node_active.sync()
+        else:
+            if self.nodes.getall() == []  :
+                self.logger.debug(
+                    "NOTHING TO DO, THERE ARE NO NODES DEFINED PLEASE USE  j.tools.develop.run()")
+                return
+            did = False
+            for node in self.nodes.getall():
+                if node.selected:
+                    node.sync()
+                    did = True
+            if did == False:
+                self.logger.debug("nodes are defined but not selected, please use j.tools.develop.run()")
 
     def monitor(self):
         """
         look for changes in directories which are being pushed & if found push to remote nodes
-        """
 
-        self.sync()
-        nodes = self.nodes.getall()
-        paths = j.tools.develop.codedirs.getActiveCodeDirs()
-        self.sync_active(paths, nodes)
-
-    def sync_active(self, paths):
-        """
-
-        sync changes to destination nodes
-        Arguments:
-            paths list of paths -- existing folders on system
+        js_shell 'j.tools.develop.monitor()'
 
         """
+
+        # self.sync()
+        # nodes = self.nodes.getall()
+        # paths = j.tools.develop.codedirs.getActiveCodeDirs()
+
         event_handler = MyFileSystemEventHandler()
         observer = Observer()
-        for source in paths:
-            self.logger.debug("monitor:%s" % source)
+        for source in self.getActiveCodeDirs():
+            self.logger.info("monitor:%s" % source)
             observer.schedule(event_handler, source.path, recursive=True)
         observer.start()
         try:

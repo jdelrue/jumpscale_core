@@ -200,28 +200,9 @@ class Node(JSConfigBase):
     def test_executor(self):
         self.executor.test()
 
-    def getActiveCodeDirs(self):
-        res = []
-        done = []
-        repo = j.clients.git.currentDirGitRepo()
-        if repo is not None:
-            res.append(j.tools.develop.codedirs.get(repo.type, repo.account, repo.name))
-            done.append(repo.BASEDIR)
-        ddirs = j.clients.git.getGitReposListLocal(account="threefoldtech")  # took predefined list
-        for key, path in ddirs.items():
-            self.logger.debug("try to find git dir for:%s" % path)
-            try:
-                repo = j.clients.git.get(path)
-                if path not in done:
-                    res.append(j.tools.develop.codedirs.get(repo.type, repo.account, repo.name))
-            except Exception as e:
-                self.logger.error(e)
-        return res
 
     def sync(self, monitor=False):
-        if not self.selected:
-            self.selected = True
-        ddirs = self.getActiveCodeDirs()
+        ddirs = j.tools.develop.getActiveCodeDirs()
         for ddir in ddirs:
             dest = "%s/%s/%s/%s" % (
                 self.executor.dir_paths["CODEDIR"], ddir.type, ddir.account, ddir.name)
@@ -238,11 +219,10 @@ class Node(JSConfigBase):
         """
         will sync all active core dirs
         """
-        if not self.selected:
-            self.selected = True
-        # paths = [item.path for item in self.getActiveCodeDirs()]
-        paths = self.getActiveCodeDirs()
-        j.tools.develop.sync_active(paths)
+        # if not self.selected:
+        #     self.selected = True
+        j.tools.develop.node_active = self
+        j.tools.develop.monitor()
 
     def saveToHostfile(self):
         j.tools.prefab.local.system.ns.hostfile_set(self.name, self.addr)

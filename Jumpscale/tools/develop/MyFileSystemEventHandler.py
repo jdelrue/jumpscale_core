@@ -10,7 +10,10 @@ class MyFileSystemEventHandler(FileSystemEventHandler, JSBASE):
     def __init__(self):
         JSBASE.__init__(self)
         self.logger_enable()
-        self.nodes = j.tools.develop.nodes.getall()
+        if j.tools.develop.node_active is not None:
+            self.nodes = [j.tools.develop.node_active]
+        else:
+            self.nodes = j.tools.develop.nodes.getall()
 
     def handler(self, event, action="copy"):
         self.logger.debug("%s:%s" % (event, action))
@@ -19,6 +22,8 @@ class MyFileSystemEventHandler(FileSystemEventHandler, JSBASE):
             if changedfile.find("/.git") != -1:
                 return
             elif changedfile.find("/__pycache__/") != -1:
+                return
+            elif changedfile.find(".egg-info") != -1:
                 return
             if event.event_type == "modified":
                 return
