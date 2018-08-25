@@ -41,8 +41,8 @@ class Guid(String):
     def fromString(self, v):
         if not self.j.data.types.string.check(v):
             raise ValueError("Input needs to be string:%s" % v)
-        if self.check(s):
-            return s
+        if self.check(v):
+            return v
         else:
             raise ValueError("%s not properly formatted: '%s'" %
                              (Guid.NAME, v))
