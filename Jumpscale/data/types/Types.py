@@ -1,10 +1,12 @@
-
-
-'''Definition of several primitive type properties (integer, string,...)'''
-
-from .CustomTypes import *
-from .CollectionTypes import *
-from .PrimitiveTypes import *
+"""Definition of several primitive type properties (integer, string,...)
+"""
+# XXX do not use import wildcard
+# https://github.com/quentinsf/dewildcard
+from .CustomTypes import (Guid, Email, Path, Url, Tel, IPRange,
+                          IPAddress, IPPort, Numeric, Date)
+from .CollectionTypes import (YAML, JSON, Dictionary, List, Hash, Set)
+from .PrimitiveTypes import (String, StringMultiLine, Bytes, Boolean, Integer,
+                             Float, Percent, Object, JSObject)
 
 
 class Types(object):
