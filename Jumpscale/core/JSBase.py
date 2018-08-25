@@ -321,8 +321,8 @@ class ModuleSetup(object):
     @property
     def kls(self):
         if self._kls is None:
-            print ("about to get modulepath %s object %s path %s basej %s" % \
-                (self.modulepath, self.objectname, self.fullpath, self.basej))
+            #print ("about to get modulepath %s object %s path %s basej %s" % \
+                #(self.modulepath, self.objectname, self.fullpath, self.basej))
 
             #module = jspath_import(self.modulepath, self.fullpath)
             #kls = getattr(module, self.objectname)
@@ -353,7 +353,6 @@ class ModuleSetup(object):
 
     def getter(self):
         if self.as_kls:
-            print ("getter kls")
             return self.kls
         return self.obj
 

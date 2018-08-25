@@ -219,22 +219,6 @@ class JSLoader():
         self.j.sal.process.execute(cmd)
         self.j.sal.process.execute("pip3 install pudb")
 
-    def _findSitePath(self):
-        res = ""
-        for item in sys.path:
-            if "/site-packages" in item:
-                if res == "" or len(item) < len(res):
-                    res = item
-        if res != "":
-            return res
-        for item in sys.path:
-            if "/dist-packages" in item:
-                if res == "" or len(item) < len(res):
-                    res = item
-        if res == "":
-            raise RuntimeError("Could not find sitepath")
-        return res
-
     def _pip(self, item):
         rc, out, err = self.j.sal.process.execute(
             "pip3 install %s" %
