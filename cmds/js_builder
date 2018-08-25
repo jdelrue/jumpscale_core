@@ -11,6 +11,7 @@ import time
 
 import click
 from jumpscale import j
+import time
 
 
 def _check():
@@ -145,6 +146,7 @@ def destroy():
 
     vm = vb.vm_get("builder")
     vm.stop()
+    time.sleep(1)
     vm.delete()
 
 
@@ -242,18 +244,18 @@ def container():
 
 
 @click.command()
-@click.option('--name', '-n', default='main', help='name of the digitalme container')
+@click.option('--name', '-n', default='main', help='name of the tfbot container')
 @click.option('--port', '-p', default=3333, help='port which will be exposed for ssh')
-def digitalme(name, port):
+def tfbot_build(name, port):
     """
     create a digital me container
-    connect to zerotier network 1d7193940435f485, this is an ipv6 zerotier network which connects all digitalme's
+    connect to zerotier network 1d7193940435f485, this is an ipv6 zerotier network which connects all tfbot's
     """
 
     node = _zos_node()
 
-    print('creating digitalme container...')
-    name = "dm_"+name
+    print('creating tfbot container...')
+    name = "tfbot_"+name
     container = node.containers.create(name=name,
                                        flist='https://hub.grid.tf/tf-official-apps/ubuntu-bionic-build.flist',
                                        nics=[{'type': 'default'}, {'type': 'zerotier', 'id': '1d7193940435f485'}],
@@ -261,21 +263,24 @@ def digitalme(name, port):
 
     ssh_container_node = _node(name=name, addr=node.addr, port=port)
 
-    print('digitalme container deployed (in debug mode)')
+    print('tfbot container deployed (in debug mode)')
     print("can also connect using js_node toolset, recommended: 'js_node ssh -i %s'" % name)
 
     n = j.tools.nodemgr.get(instance=name)
 
     n.prefab.jumpscale.jumpscalecore.install(full=False) #full does not seem to be needed
 
-    from IPython import embed; embed()
+    #will update the code
+    n.sync()
+
+    print ("OK: digital me is installed")
 
 
 cli.add_command(init)
 cli.add_command(configure)
 cli.add_command(zdb)
 cli.add_command(container)
-cli.add_command(digitalme)
+cli.add_command(tfbot)
 cli.add_command(reset)
 cli.add_command(destroy)
 

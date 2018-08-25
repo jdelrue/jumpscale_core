@@ -28,20 +28,20 @@ def sync(instance, monitor):
     if instance is None:
         raise RuntimeError("instance needs to be specified")
 
-    if monitor:
-
-        for node in j.tools.nodemgr.getall():
-            if node.name != instance:
-                node.selected = False
-
-        curdir = j.sal.fs.getcwd()
-        cmd = "cd %s;js_node monitor -i %s" % (curdir, instance)
-        j.tools.tmux.execute(cmd, session='main', window='main', pane='sync')
-        node = get_node(instance)
-        node.ssh()
-    else:
-        node = get_node(instance)
-        node.sync(monitor=monitor)
+    # if monitor:
+    #
+    #     for node in j.tools.nodemgr.getall():
+    #         if node.name != instance:
+    #             node.selected = False
+    #
+    #     curdir = j.sal.fs.getcwd()
+    #     cmd = "cd %s;js_node monitor -i %s" % (curdir, instance)
+    #     j.tools.tmux.execute(cmd, session='main', window='main', pane='sync')
+    #     node = get_node(instance)
+    #     node.ssh()
+    # else:
+    node = get_node(instance)
+    node.sync(monitor=monitor)
 
 
 def get_node(name=""):
@@ -132,6 +132,15 @@ def delete(instance):
 
 
 @click.command()
+def deleteall():
+    """
+    delete all nodes
+    """
+    for node in j.tools.nodemgr.getall():
+        node.config.delete()
+
+
+@click.command()
 @click.option('--instance', '-i', default=None, help=get_help)
 def info(instance):
     """
@@ -147,6 +156,7 @@ cli.add_command(list)
 cli.add_command(ssh)
 cli.add_command(sync)
 cli.add_command(info)
+cli.add_command(deleteall)
 cli.add_command(delete)
 cli.add_command(monitor)
 cli.add_command(forward)

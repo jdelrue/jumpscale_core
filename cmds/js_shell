@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 
-from Jumpscale import j
-
+from jumpscale import j
 import argparse
-j.application.start("jsshell")
+# j.application.start("jsshell")
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-q', '--quiet', default=False,
@@ -12,11 +11,12 @@ options, args = parser.parse_known_args()
 
 
 if len(args) == 1:
-    toexec = args[0]
-    toexec = toexec.strip("'\" ").strip("'\" ")
-    exec(toexec)
+    if j.sal.fs.exists(args[0]):
+        from importlib.machinery import SourceFileLoader
+        mymodule = SourceFileLoader('main', args[0]).load_module()
+    else:
+        toexec = args[0]
+        toexec = toexec.strip("'\" ").strip("'\" ")
+        exec(toexec)
 else:
-    from IPython import embed
-    embed()  # colors='Linux')
-
-    j.application.stop()
+    j.shell(loc=False)
