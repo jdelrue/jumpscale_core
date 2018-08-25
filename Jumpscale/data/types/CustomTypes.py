@@ -1,7 +1,5 @@
-# from jumpscale import j
-from Jumpscale import j
-
-'''Definition of several custom types (paths, ipaddress, guid,...)'''
+""" Definition of several custom types (paths, ipaddress, guid,...)
+"""
 
 import re
 import struct
@@ -38,10 +36,10 @@ class Guid(String):
         return val.hex == value.replace('-', '')
 
     def get_default(self):
-        return j.data.idgenerator.generateGUID()
+        return self.j.data.idgenerator.generateGUID()
 
     def fromString(self, v):
-        if not j.data.types.string.check(v):
+        if not self.j.data.types.string.check(v):
             raise ValueError("Input needs to be string:%s" % v)
         if self.check(s):
             return s
@@ -68,13 +66,13 @@ class Email(String):
         '''
         Check whether provided value is a valid tel nr
         '''
-        if not j.data.types.string.check(value):
+        if not self.j.data.types.string.check(value):
             return False
         value = self.clean(value)
         return self._RE.fullmatch(value) is not None
 
     def clean(self, v):
-        if not j.data.types.string.check(v):
+        if not self.j.data.types.string.check(v):
             raise ValueError("Input needs to be string:%s" % v)
         v = v.lower()
         v.strip()
@@ -132,7 +130,7 @@ class Tel(String):
         self._RE = re.compile('^\+?[0-9]{6,15}(?:x[0-9]+)?$')
 
     def clean(self, v):
-        if not j.data.types.string.check(v):
+        if not self.j.data.types.string.check(v):
             raise ValueError("Input needs to be string:%s" % v)
         v = v.replace(".", "")
         v = v.replace(",", "")
@@ -250,7 +248,7 @@ class Numeric(String):
 
     def bytes2cur(self, bindata, curcode="usd", roundnr=None):
         if len(bindata) not in [6, 10]:
-            raise j.exceptions.Input("len of data needs to be 6 or 10")
+            raise self.j.exceptions.Input("len of data needs to be 6 or 10")
 
         ttype = struct.unpack("B", builtins.bytes([bindata[0]]))[0]
         curtype0 = struct.unpack("B", builtins.bytes([bindata[1]]))[0]
@@ -275,13 +273,13 @@ class Numeric(String):
             if int(float(val)) == val:
                 val = int(val)
 
-        # if curtype0 not in j.clients.currencylayer.id2cur:
+        # if curtype0 not in self.j.clients.currencylayer.id2cur:
         #     raise RuntimeError("need to specify valid curtype, was:%s"%curtype)
 
-        curcode0 = j.clients.currencylayer.id2cur[curtype0]
+        curcode0 = self.j.clients.currencylayer.id2cur[curtype0]
         if not curcode0 == curcode:
-            val = val / j.clients.currencylayer.cur2usd[curcode0]  # val now in usd
-            val = val * j.clients.currencylayer.cur2usd[curcode]
+            val = val / self.j.clients.currencylayer.cur2usd[curcode0]  # val now in usd
+            val = val * self.j.clients.currencylayer.cur2usd[curcode]
 
         if negative:
             val = -val
@@ -296,7 +294,7 @@ class Numeric(String):
             bindata = self.get_default()
 
         elif len(bindata) not in [6, 10]:
-            raise j.exceptions.Input("len of data needs to be 6 or 10")
+            raise self.j.exceptions.Input("len of data needs to be 6 or 10")
 
         ttype = struct.unpack("B", builtins.bytes([bindata[0]]))[0]
         curtype = struct.unpack("B", builtins.bytes([bindata[1]]))[0]
@@ -324,8 +322,8 @@ class Numeric(String):
         else:
             mult = ""
 
-        if curtype is not j.clients.currencylayer.cur2id["usd"]:
-            curcode = j.clients.currencylayer.id2cur[curtype]
+        if curtype is not self.j.clients.currencylayer.cur2id["usd"]:
+            curcode = self.j.clients.currencylayer.id2cur[curtype]
         else:
             curcode = ""
 
@@ -349,7 +347,7 @@ class Numeric(String):
         
     def getCur(self, value):
             value = value.lower()
-            for cur2 in list(j.clients.currencylayer.cur2usd.keys()):
+            for cur2 in list(self.j.clients.currencylayer.cur2usd.keys()):
                 # print(cur2)
                 if value.find(cur2) != -1:
                     # print("FOUND:%s"%cur2)
@@ -397,8 +395,8 @@ class Numeric(String):
 
         """
 
-        if not j.data.types.string.check(value):
-            raise j.exceptions.RuntimeError("value needs to be string in text2val, here: %s" % value)
+        if not self.j.data.types.string.check(value):
+            raise self.j.exceptions.RuntimeError("value needs to be string in text2val, here: %s" % value)
 
         if "," in value:  # is only formatting in US
             value = value.replace(",", "").lstrip(",").strip()
@@ -451,7 +449,7 @@ class Numeric(String):
                     ttype = 3
                 else:
                     ttype = 1
-        curcat = j.clients.currencylayer.cur2id[cur2]
+        curcat = self.j.clients.currencylayer.cur2id[cur2]
 
         if negative:
             ttype += 128
@@ -514,10 +512,10 @@ class Numeric(String):
 
     def clean(self, data):
         # print("num:clean:%s"%data)
-        if j.data.types.string.check(data):
+        if self.j.data.types.string.check(data):
             data = data.strip().strip("'").strip("\"").strip()
             return self.str2bytes(data)
-        elif j.data.types.bytes.check(data):
+        elif self.j.data.types.bytes.check(data):
             return data
         else:
             return self.str2bytes("%s USD" % data)
@@ -531,9 +529,9 @@ class Numeric(String):
     def toString(self, val):
         if val == 0:
             return ""
-        if j.data.types.string.check(val):
+        if self.j.data.types.string.check(val):
             return val
-        elif j.data.types.bytes.check(val):
+        elif self.j.data.types.bytes.check(val):
             return self.bytes2str(val)
         else:
             return "%s USD" % val
@@ -581,7 +579,7 @@ class Date(String):
 
     def toString(self, val, local=True):
         val = self.clean(val)
-        return j.data.time.epoch2HRDateTime(val, local=local)
+        return self.j.data.time.epoch2HRDateTime(val, local=local)
 
     def toHR(self, v):
         return self.toString(v)
@@ -604,11 +602,11 @@ class Date(String):
         """
         def date_process(dd):
             if "/" not in dd:
-                raise j.exceptions.Input("date needs to have:/, now:%s" % v)
+                raise self.j.exceptions.Input("date needs to have:/, now:%s" % v)
             splitted = dd.split("/")
             if len(splitted) == 2:
                 dfstr = "%Y/%m/%d"
-                dd = "%s/%s" % (j.data.time.epoch2HRDate(j.data.time.epoch).split("/")[0], dd.strip())
+                dd = "%s/%s" % (self.j.data.time.epoch2HRDate(self.j.data.time.epoch).split("/")[0], dd.strip())
             elif len(splitted) == 3:
                 s0 = splitted[0].strip()
                 s1 = splitted[1].strip()
@@ -623,9 +621,9 @@ class Date(String):
                     # year at start but small
                     dfstr = "%y/%m/%d"
                 else:
-                    raise j.exceptions.Input("date wrongly formatted, now:%s" % v)
+                    raise self.j.exceptions.Input("date wrongly formatted, now:%s" % v)
             else:
-                raise j.exceptions.Input("date needs to have 2 or 3 /, now:%s" % v)
+                raise self.j.exceptions.Input("date needs to have 2 or 3 /, now:%s" % v)
             return (dd, dfstr)
 
         def time_process(v):
@@ -645,13 +643,13 @@ class Date(String):
                     fstr = "%H:%M:%S"
             return (v, fstr)
 
-        if j.data.types.string.check(v):
+        if self.j.data.types.string.check(v):
 
             if v.strip() in ["0", ""]:
                 return 0
 
             if "+" in v or "-" in v:
-                return j.data.time.getEpochDeltaTime(v)
+                return self.j.data.time.getEpochDeltaTime(v)
 
             if ":" in v:
                 # have time inside the representation
@@ -667,7 +665,7 @@ class Date(String):
             hrdatetime = dd + " " + tt
             epoch = int(time.mktime(time.strptime(hrdatetime, fstr)))
             return epoch
-        elif j.data.types.int.check(v):
+        elif self.j.data.types.int.check(v):
             return v
         else:
             raise ValueError("Input needs to be string:%s" % v)
@@ -689,7 +687,7 @@ class Date(String):
         30/11/1990
         30/11/1990 10pm:50
         """
-        c = j.data.text.strip(c)
+        c = self.j.data.text.strip(c)
         out = ""
         for line in c.split("\n"):
             if line.strip() == "":
@@ -707,6 +705,6 @@ class Date(String):
         30/11/1990 10pm:50 -> 1990/11/30 22:50:00
         """
         print(out)
-        out = j.data.text.strip(out)
-        out_compare = j.data.text.strip(out_compare)
+        out = self.j.data.text.strip(out)
+        out_compare = self.j.data.text.strip(out_compare)
         assert out == out_compare
