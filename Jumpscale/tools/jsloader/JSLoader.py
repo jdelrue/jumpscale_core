@@ -85,7 +85,7 @@ def add_dynamic_instance(j, parent, child, module, kls):
     """ very similar to dynamic_generate, needs work
         to morph into using same code
     """
-    print ("adding", parent, child, module, kls)
+    #print ("adding", parent, child, module, kls)
     if not parent:
         parent = j
     else:
@@ -101,7 +101,7 @@ def add_dynamic_instance(j, parent, child, module, kls):
         else:
             mname = "%s/__init__.py" % module.replace(".", "/")
             fullpath = os.path.join(top_level_path, mname)
-        print ("fullpath", fullpath)
+        #print ("fullpath", fullpath)
         return parent._add_instance(child, "Jumpscale." + module, kls,
                                     fullpath, basej=j)
         #print ("added", parent, child)
@@ -447,7 +447,7 @@ class JSLoader():
         for k, info in self.j.__jsmodlookup__.items():
             if not k.startswith(modulepath):
                 continue
-            print ("match", modulepath, info)
+            #print ("match", modulepath, info)
             (modulename, classname, plugin, fullchildname) = info
             return info
 
@@ -463,7 +463,7 @@ class JSLoader():
         for jlocationRoot, jlocationRootDict in modlist.items():
             #print ("root", jlocationRoot, jlocationRootDict)
             jname = jlocationRoot.split(".")[1].strip()
-            print ("dynamic generate root", jname, jlocationRoot)
+            #print ("dynamic generate root", jname, jlocationRoot)
             for subname, sublist in jlocationRootDict.items():
                 fullchildname = "j.%s.%s" % (jname, subname)
                 modulename, classname, imports = sublist

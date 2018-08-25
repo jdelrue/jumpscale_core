@@ -34,8 +34,8 @@ class SerializersFactory:
                 self.packtypes[packtype] = attr # replaced in getSerializerType
                 self.types[attr] = attr # replaced in getSerializerType
 
-        for s in self.serialisers:
-            print ("serializers", s)
+        #for s in self.serialisers:
+        #    print ("serializers", s)
 
     def get(self, serializationstr, key=""):
         """
