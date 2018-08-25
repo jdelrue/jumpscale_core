@@ -91,6 +91,9 @@ else:
             self.bootstrap(logging_enabled, filter, config_dir)
 
         def shell(self,name="",loc=True):
+            """ runs an embedded IPython shell - do not use remotely
+                (rpyc) as the terminal (stdout.isatty()) will fail.
+            """
             if self._shell == None:
                 from IPython.terminal.embed import InteractiveShellEmbed
                 if name is not "":
