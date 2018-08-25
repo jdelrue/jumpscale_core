@@ -87,12 +87,10 @@ else:
 
         def __init__(self, logging_enabled=False, filter=None, config_dir=None):
             JSBase.__init__(self)
+            self._shell = None
             self.bootstrap(logging_enabled, filter, config_dir)
 
         def shell(self,name="",loc=True):
-            """ runs an embedded IPython shell - do not use remotely
-                (rpyc) as the terminal (stdout.isatty()) will fail.
-            """
             if self._shell == None:
                 from IPython.terminal.embed import InteractiveShellEmbed
                 if name is not "":

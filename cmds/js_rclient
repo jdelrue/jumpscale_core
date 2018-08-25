@@ -14,4 +14,6 @@ c = rpyc.classic.connect(host, 18861)
 
 with rpyc.classic.redirected_stdio(c):
     j = c.modules.Jumpscale.Jumpscale()
-    j.embed("jsshell@%s" % host)
+    j.core.application.start("jsshell@%s" % host)
+    IPython.embed()  
+    j.core.application.stop()
