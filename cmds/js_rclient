@@ -13,8 +13,7 @@ else:
 c = rpyc.classic.connect(host, 18861)
 
 with rpyc.classic.redirected_stdio(c):
-    bootstrap_j = c.modules.Jumpscale.bootstrap_j
-    j = bootstrap_j()
+    j = c.modules.Jumpscale.Jumpscale()
     j.core.application.start("jsshell@%s" % host)
     IPython.embed()  
     j.core.application.stop()

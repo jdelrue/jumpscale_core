@@ -23,7 +23,7 @@ server = DeployedServer(mach)
 c = server.classic_connect()
 
 with rpyc.classic.redirected_stdio(c):
-    j = c.modules.Jumpscale.bootstrap_j()
+    j = c.modules.Jumpscale.Jumpscale()
     j.core.application.start("jsshell@%s" % host)
     IPython.embed()  
     j.core.application.stop()

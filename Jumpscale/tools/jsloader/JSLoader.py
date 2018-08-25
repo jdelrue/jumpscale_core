@@ -13,44 +13,6 @@ import types
 patchers = [
 ]
 
-bootstrap = [
-    ('', 'core', 'core', 'Core'),
-    ('', 'tools', 'tools', 'Tools'),
-    ('', 'sal', 'sal', 'Sal'),
-    ('', 'data', 'data', 'Data'),
-    ('', 'clients', 'clients', 'Clients'),
-    ('', 'servers', 'servers', 'Servers'),
-    #('', 'errorhandling', 'errorhandling', 'Exceptions'),
-    ('data', 'types', 'data.types.Types', 'Types'),
-    ('data', 'text', 'data.text.Text', 'Text'),
-    # idgen not strictly needed for bootstrap but for error reporting
-    ('data', 'idgenerator', 'data.idgenerator.IDGenerator', 'IDGenerator'),
-    ('sal', 'fs', 'fs.SystemFS', 'SystemFS'),
-    ('core', 'application', 'core.Application', 'Application'),
-    ('core', 'errorhandler', 'errorhandler.ErrorHandler', 'ErrorHandler'),
-    ('data', 'datacache', 'data.cache.Cache', 'Cache'),
-    ('tools', 'jsloader', 'tools.jsloader.JSLoader', 'JSLoader'),
-    ('tools', 'executorLocal', 'tools.executor.ExecutorLocal',
-     'ExecutorLocal'),
-    ('core', 'exceptions', 'errorhandler.JSExceptions',
-                            'JSExceptions'),
-    ('', 'dirs', 'core.Dirs', 'Dirs'),
-    ('core', 'platformtype', 'core.PlatformTypes', 'PlatformTypes'),
-    ('sal', 'process', 'sal.process.SystemProcess', 'SystemProcess'),
-    ('', 'application', 'core.application', None),
-    ('', 'cache', 'data.cache', None),
-    #('core', 'state', 'tools.executorLocal.state', None),
-    ('core', 'dirs', 'dirs', None),
-    ('', 'errorhandler', 'core.errorhandler', None),
-    ('', 'exceptions', 'core.exceptions', None),
-    ('', 'errorhandler.exceptions', 'exceptions', None),
-    # annoyingly needed due to name confusion (not for bootstrap)
-    ('data', 'serializers', 'data.serializers.SerializersFactory',
-                            'SerializersFactory'),
-    ('data', 'serializer', 'data.serializers', None),
-]
-
-
 def find_jslocation(line):
     """ finds self.__jslocation__ for class-instance declaration version
         OR __jslocation__ with whitespace in front of it, indicating
@@ -113,65 +75,6 @@ def add_dynamic_instance(j, parent, child, module, kls):
         pj = parent.jget(child, stealth=True, end=-1)
         pj.__aliases__[childlast] = walkfrom
 
-
-def bootstrap_j(logging_enabled=False, filter=None, config_dir=None):
-
-    # LoggerFactory isn't instantiated from JSBase so there has to
-    # be a little bit of a dance to get it established and pointing
-    # to the right global j.  JSBase now contains a property "j"
-    # which is actually a singleton (global)
-
-    if config_dir:
-        os.environ['HOSTCFGDIR'] = config_dir
-
-    #print ("toplevelpth", top_level_path)
-
-    bj = JSBase()
-    bj.j = bj
-    bj.__jsfullpath__ = os.path.dirname(plugin_path)
-    bj.__jsmodulepath__ = ''
-    j = bj._create_jsbase_instance("Jumpscale", bj)
-    #j.__jsfullpath__ = os.path.join(bj.__jsfullpath__, '__init__.py')
-    j.__jsfullpath__ = os.path.join(plugin_path, "Jumpscale.py")
-    j.__jsmodulepath__ = 'Jumpscale'
-    j.__jsmodbase__ = {}
-    j.__jsmodlookup__ = {}
-    j.j = j  # sets up the global singleton
-    j.j.__dynamic_ready__ = False  # set global dynamic loading OFF
-
-    DLoggerFactory = j._jsbase(
-        ('LoggerFactory', 'Jumpscale.logging.LoggerFactory'),
-        basej=j)
-    l = DLoggerFactory()
-    l.enabled = logging_enabled
-    l.filter = filter or []  # default filter which captures all is *
-    j.logging = l
-
-    for (parent, child, module, kls) in bootstrap:
-        add_dynamic_instance(j, parent, child, module, kls)
-
-    # initialise
-    j.tools.executorLocal.env_check_init()  # no config file -> make one!
-    j.dirs.reload()  # ... and the directories got recreated (possibly)...
-    # will reconfigure the logging to use the config file
-    #j.logging.init() # NNOPE - there's a recursive import, do in Jumpscale
-
-    # now load the json files
-    loader = j.tools.jsloader
-    loader.load_json()
-    for pluginname, (modlist, baselist) in j.__jsmodbase__.items():
-        #print (pluginname, modlist.keys())
-        loader._dynamic_merge(j, modlist, baselist, {})
-
-    # now finally set dynamic on.  if the json loader was empty
-    # or if ever something is requested that's not *in* the json
-    # file, dynamic checking kicks in.
-    j.__dynamic_ready__ = True  # set global dynamic loading ON
-
-    # used fake redis up to now: move to real redis (if it exists)
-    j.core.db_reset()
-
-    return j
 
 
 def remove_dir_part(path):
