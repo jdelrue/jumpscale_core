@@ -1,0 +1,29 @@
+#!/usr/bin/env python3
+""" zero-deploy running of jumpscale over ssh.
+
+    TODO: actually pip3 install jumpscale if it's not already there.
+"""
+
+import sys
+import IPython
+import rpyc
+from rpyc.utils.zerodeploy import DeployedServer
+from plumbum import SshMachine
+
+# simple test for getting the hostname to connect to.  integrate
+# properly later
+if len(sys.argv) != 2:
+    host = '127.0.0.1'
+else:
+    host = sys.argv[1]
+
+mach = SshMachine(host, user="root", keyfile="~/.ssh/id_rsa.pub",
+                  port=122)
+server = DeployedServer(mach)
+c = server.classic_connect()
+
+with rpyc.classic.redirected_stdio(c):
+    j = c.modules.Jumpscale.bootstrap_j()
+    j.core.application.start("jsshell@%s" % host)
+    IPython.embed()  
+    j.core.application.stop()

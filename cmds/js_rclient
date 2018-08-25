@@ -1,0 +1,20 @@
+#!/usr/bin/env python3
+
+import IPython
+import rpyc
+
+import sys
+
+if len(sys.argv) == 2:
+    host = sys.argv[1]
+else:
+    host = "localhost"
+
+c = rpyc.classic.connect(host, 18861)
+
+with rpyc.classic.redirected_stdio(c):
+    bootstrap_j = c.modules.Jumpscale.bootstrap_j
+    j = bootstrap_j()
+    j.core.application.start("jsshell@%s" % host)
+    IPython.embed()  
+    j.core.application.stop()
