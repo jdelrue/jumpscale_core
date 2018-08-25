@@ -1,104 +1,69 @@
 """Definition of several primitive type properties (integer, string,...)
 """
-# XXX do not use import wildcard
-# https://github.com/quentinsf/dewildcard
-from .CustomTypes import (Guid, Email, Path, Url, Tel, IPRange,
-                          IPAddress, IPPort, Numeric, Date)
-from .CollectionTypes import (YAML, JSON, Dictionary, List, Hash, Set)
-from .PrimitiveTypes import (String, StringMultiLine, Bytes, Boolean, Integer,
-                             Float, Percent, Object, JSObject)
-
 
 class Types(object):
     __jslocation__ = "j.data.types"
 
+    types = [ \
+    # CustomTypes
+    ('CustomTypes', 'Guid', ('guid',), True, ()),
+    ('CustomTypes', 'Email', ('email',), False, ()),
+    ('CustomTypes', 'Path', ('path',), False, ()),
+    ('CustomTypes', 'Url', ('url',), True, ('u',)),
+    ('CustomTypes', 'Tel', ('tel',), False, ('mobile',)),
+    ('CustomTypes', 'IPRange', ('iprange',), False, ('ipaddressrange',)),
+    ('CustomTypes', 'IPAddress', ('ipaddr', 'ipaddress'), False, ()),
+    ('CustomTypes', 'IPPort', ('ipport',), False, ()),
+    ('CustomTypes', 'Numeric', ('numeric',), False, ('n', 'num',)),
+    ('CustomTypes', 'Date', ('date',), False, ('d')),
+    # CollectionTypes
+    ('CollectionTypes', 'YAML', ('yaml',), False, ()),
+    ('CollectionTypes', 'JSON', ('json',), False, ()),
+    ('CollectionTypes', 'Dictionary', ('dict',), True, ()),
+    ('CollectionTypes', 'List', ('list',), True, ('l',)),
+    ('CollectionTypes', 'Hash', ('hash',), True, ('h',)),
+    ('CollectionTypes', 'Set', ('set',), False, ()),
+    # PrimitiveTypes
+    ('PrimitiveTypes', 'String', ('string', 'str'), True, ('s',)),
+    ('PrimitiveTypes', 'StringMultiLine', ('multiline'), True, ()),
+    ('PrimitiveTypes', 'Bytes', ('bytes',), True, ()),
+    ('PrimitiveTypes', 'Boolean', ('bool', 'boolean',), True, ('b',)),
+    ('PrimitiveTypes', 'Integer', ('int', 'integer',), True, ('i',)),
+    ('PrimitiveTypes', 'Float', ('float',), True, ('f',)),
+    ('PrimitiveTypes', 'Percent', ('percent',), True, ('p', 'perc',)),
+    ('PrimitiveTypes', 'Object', ('object',), True, ('o',)),
+    ('PrimitiveTypes', 'JSObject', ('jsobject',), True, ('jo',)),
+    ]
+
     def __init__(self):
-        self.dict = Dictionary()
-        self.list = List()
-        self.guid = Guid()
-        self.path = Path()
-        self.bool = Boolean()
-        self.boolean = Boolean()
-        self.int = Integer()
-        self.integer = self.int
-        self.float = Float()
-        self.string = String()
-        self.str = self.string
-        self.bytes = Bytes()
-        self.multiline = StringMultiLine()
-        self.set = Set()
-        self.ipaddr = IPAddress()
-        self.ipaddress = IPAddress()
-        self.iprange = IPRange()
-        self.ipport = IPPort()
-        self.tel = Tel()
-        self.yaml = YAML()
-        self.json = JSON()
-        self.email = Email()
-        self.date = Date()
-        self.numeric = Numeric()
-        self.percent = Percent()
-        self.hash = Hash()
-        self.object = Object()
-        self.jsobject = JSObject()
-        self.url = Url()
-
-        self._dict = Dictionary
-        self._list = List
-        self._guid = Guid
-        self._path = Path
-        self._bool = Boolean
-        self._int = Integer
-        self._float = Float
-        self._string = String
-        self._bytes = Bytes
-        self._multiline = StringMultiLine
-        self._set = Set
-        self._ipaddr = IPAddress
-        self._iprange = IPRange
-        self._ipport = IPPort
-        self._tel = Tel
-        self._yaml = YAML
-        self._json = JSON
-        self._email = Email
-        self._date = Date
-        self._numeric = Numeric
-        self._percent = Percent
-        self._hash = Hash
-        self._object = Object
-        self._jsobject = JSObject
-        self._url = Url
-
-        self.types_list = [
-            self.bool,
-            self.dict,
-            self.list,
-            self.bytes,
-            self.guid,
-            self.float,
-            self.int,
-            self.multiline,
-            self.string,
-            self.date,
-            self.numeric,
-            self.percent,
-            self.hash,
-            self.object,
-            self.jsobject,
-            self.url]
+        self.types_list = []
+        self._ttypes = {}
+        for (module, kls, attrlist, in_list, aliases) in self.types:
+            #print ("register", ename)
+            module = "Jumpscale.data.types.%s" % module
+            for (idx, attr) in enumerate(attrlist):
+                _attr = "_%s" % attr
+                ekls = self._add_kls(_attr, module, kls, dynamicname=attr)
+                self._add_instance(attr, module, kls, dynamicname=attr)
+                # store first instance of type in types_list
+                if idx == 0 and in_list:
+                    self.types_list.append(attr)
+            for aattr in aliases:
+                self._ttypes[aattr] = "_%s" % attrlist[0]
 
     def type_detect(self, val):
         """
         check for most common types
         """
-        for ttype in self.types_list:
+        for ttypename in self.types_list:
+            ttype = getattr(self, ttypename)
             if ttype.check(val):
                 return ttype
         raise RuntimeError("did not detect val for :%s" % val)
 
     def get(self, ttype, return_class=False):
         """
-        type is one of following
+        type is one of following: see Types.types for canonical list
         - s, str, string
         - i, int, integer
         - f, float
@@ -122,39 +87,10 @@ class Types(object):
         - url, u
         """
         ttype = ttype.lower().strip()
-        if ttype in ["s", "str", "string"]:
-            res = self._string
-        elif ttype in ["i", "int", "integer"]:
-            res = self._int
-        elif ttype in ["f", "float"]:
-            res = self._float
-        elif ttype in ["o", "obj", "object"]:
-            res = self._object
-        elif ttype in ["b", "bool", "boolean"]:
-            res = self._bool
-        elif ttype in ["tel", "mobile"]:
-            res = self._tel
-        elif ttype in ["ipaddr", "ipaddress"]:
-            res = self._ipaddr
-        elif ttype in ["iprange", "ipaddressrange"]:
-            res = self._iprange
-        elif ttype in ["ipport", "ipport"]:
-            res = self._ipport
-        elif ttype in ["jo", "jsobject"]:
-            res = self._jsobject
-        elif ttype == "email":
-            res = self._email
-        elif ttype == "multiline":
-            res = self._multiline
-        elif ttype in ["d", "date"]:
-            res = self._date
-        elif ttype in ["h", "hash"]:
-            res = self._hash
-        elif ttype in ["p", "perc", "percent"]:
-            res = self._percent
-        elif ttype in ["n", "num", "numeric"]:
-            res = self._numeric
-        elif ttype.startswith("l"):
+
+        # special-case for list, have to create a new instance
+        # and there are several sub-types (TODO: list them properly in ttype)
+        if ttype.startswith("l"):
             tt = self._list()  # need to create new instance
             if return_class:
                 raise RuntimeError("cannot return class if subtype specified")
@@ -166,22 +102,15 @@ class Types(object):
                 return tt
             else:
                 raise RuntimeError("list type len needs to be 1 or 2")
-        elif ttype == "dict":
-            res = self._dict
-        elif ttype == "yaml":
-            res = self._yaml
-        elif ttype == "json":
-            res = self._json
-        elif ttype == "set":
-            res = self._set
-        elif ttype == "guid":
-            res = self._guid
-        elif ttype == "url" or ttype == "u":
-            res = self._url
-        else:
+
+        # straight check, is it in the self._ttypes dict
+        try:
+            res = getattr(self, self._ttypes[ttype])
+        except KeyError:
             raise self.j.exceptions.RuntimeError(
                 "did not find type:'%s'" % ttype)
 
+        # returns either instance or class
         if return_class:
             return res
         else:

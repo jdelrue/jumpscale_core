@@ -1,6 +1,8 @@
 '''Definition of several collection types (list, dict, set,...)'''
 
-from .PrimitiveTypes import *
+from .PrimitiveTypes import (String, StringMultiLine, Bytes, Boolean, Integer,
+                             Float, Percent, Object, JSObject)
+
 import struct
 
 
@@ -21,15 +23,15 @@ class YAML(String):
         """
         return string from a dict
         """
-        if j.data.types.dict.check(s):
+        if self.j.data.types.dict.check(s):
             return s
         else:
             # s = s.replace("''", '"')
-            j.data.serializers.yaml.loads(s)
+            self.j.data.serializers.yaml.loads(s)
             return s
 
     def toString(self, v):
-        return j.data.serializers.yaml.dumps(v)
+        return self.j.data.serializers.yaml.dumps(v)
 
 
 class JSON(String):
@@ -58,15 +60,15 @@ class Dictionary():
         """
         return string from a dict
         """
-        if j.data.types.dict.check(s):
+        if self.j.data.types.dict.check(s):
             return s
         else:
             s = s.replace("''", '"')
-            j.data.serializers.json.loads(s)
+            self.j.data.serializers.json.loads(s)
             return s
 
     def toString(self, v):
-        return j.data.serializers.json.dumps(v, True, True)
+        return self.j.data.serializers.json.dumps(v, True, True)
 
     def capnp_schema_get(self, name, nr):
         raise RuntimeError("not implemented")
@@ -91,7 +93,7 @@ class List():
     def list_check_1type(self, llist, die=True):
         if len(llist) == 0:
             return True
-        ttype = j.data.types.type_detect(llist[0])
+        ttype = self.j.data.types.type_detect(llist[0])
         for item in llist:
             res = ttype.check(item)
             if not res:
@@ -108,7 +110,7 @@ class List():
             v = ""
         if ttype is not None:
             ttype = ttype.NAME
-        v = j.data.text.getList(v, ttype)
+        v = self.j.data.text.getList(v, ttype)
         v = self.clean(v)
         if self.check(v):
             return v
@@ -121,7 +123,7 @@ class List():
         if len(val) == 0:
             return val
         if ttype is None:
-            self.SUBTYPE = j.data.types.type_detect(val[0])
+            self.SUBTYPE = self.j.data.types.type_detect(val[0])
             ttype = self.SUBTYPE
         res = []
         for item in val:
@@ -196,7 +198,7 @@ class List():
         if key == "":
             raise NotImplemented()
         else:
-            return j.data.serializers.toml.loads(val)
+            return self.j.data.serializers.toml.loads(val)
 
     def capnp_schema_get(self, name, nr):
         s = self.SUBTYPE.capnp_schema_get("name", 0)
@@ -206,7 +208,7 @@ class List():
         else:
             # the sub type is now bytes because that is how the subobjects will
             # be stored
-            capnptype = j.data.types.bytes.capnp_schema_get(
+            capnptype = self.j.data.types.bytes.capnp_schema_get(
                 "", nr=0).split(":", 1)[1].rstrip(";").strip()
         return "%s @%s :List(%s);" % (name, nr, capnptype)
 
@@ -243,7 +245,7 @@ class Hash(List):
         """
 
         def bytesToInt(val):
-            if j.data.types.bytes.check(val):
+            if self.j.data.types.bytes.check(val):
                 if len(val) is not 4:
                     raise RuntimeError(
                         "byte for first part of hash can only be 4 bytes")
@@ -251,7 +253,7 @@ class Hash(List):
             else:
                 return int(val)
 
-        if j.data.types.list.check(value) or j.data.types.set.check(value):
+        if self.j.data.types.list.check(value) or self.j.data.types.set.check(value):
             # prob given as list or set of 2 which is the base representation
             if len(value) != 2:
                 raise RuntimeError("hash can only be list/set of 2")
@@ -259,13 +261,13 @@ class Hash(List):
             v1 = bytesToInt(value[1])
             return (v0, v1)
 
-        elif j.data.types.bytes.check(value):
+        elif self.j.data.types.bytes.check(value):
             if len(value) is not 8:
                 raise RuntimeError("bytes should be len 8")
             #means is byte
             return struct.unpack("II", b"aaaadddd")
 
-        elif j.data.types.string.check(value):
+        elif self.j.data.types.string.check(value):
             if ":" not in value:
                 raise RuntimeError(
                     "when string, needs to have : inside %s" %

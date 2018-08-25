@@ -247,8 +247,6 @@ class BaseGetter(object):
             found = False
         if found:
             return object.__getattribute__(self, name)
-        if name.startswith('_'):
-            return object.__getattribute__(self, name)
         d = object.__getattribute__(self, '__aliases__')
         if name in d:
             return d[name]
@@ -322,7 +320,7 @@ class ModuleSetup(object):
     def kls(self):
         if self._kls is None:
             #print ("about to get modulepath %s object %s path %s basej %s" % \
-                #(self.modulepath, self.objectname, self.fullpath, self.basej))
+            #   (self.modulepath, self.objectname, self.fullpath, self.basej))
 
             #module = jspath_import(self.modulepath, self.fullpath)
             #kls = getattr(module, self.objectname)
