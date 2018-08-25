@@ -87,7 +87,23 @@ else:
 
         def __init__(self, logging_enabled=False, filter=None, config_dir=None):
             JSBase.__init__(self)
+            self._shell = None
             self.bootstrap(logging_enabled, filter, config_dir)
+
+        def shell(self,name="",loc=True):
+            if self._shell == None:
+                from IPython.terminal.embed import InteractiveShellEmbed
+                if name is not "":
+                    name = "SHELL:%s" % name
+                self._shell = InteractiveShellEmbed(banner1= name, exit_msg="")
+            if loc:
+                import inspect
+                curframe = inspect.currentframe()
+                calframe = inspect.getouterframes(curframe, 2)
+                f = calframe[1]
+                print("\n*** file: %s"%f.filename)
+                print("*** function: %s [linenr:%s]\n" % (f.function,f.lineno))
+            return self._shell(stack_depth=2)
 
         def bootstrap(self, logging_enabled=False, filter=None,
                             config_dir=None):
