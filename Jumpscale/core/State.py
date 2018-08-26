@@ -60,6 +60,7 @@ class State(object):
         self.configJSPath = self.executor.stateOnSystem["path_jscfg"] + "/jumpscale.toml"
         self.configStatePath = self.executor.stateOnSystem["path_jscfg"] + "/state.toml"
         self._configState = self.executor.stateOnSystem["cfg_state"]
+        print ("config_State", self._configState)
         self._configJS = self.executor.stateOnSystem["cfg_jumpscale"]
 
     @property

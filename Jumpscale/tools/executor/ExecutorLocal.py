@@ -62,9 +62,9 @@ class ExecutorLocal(ExecutorBase):
 
             def load(name):
                 path = "%s/%s.toml" % (cfgdir, name)
-                if os.path.exists(path):
+                try:
                     return pytoml.loads(self.j.sal.fs.fileGetContents(path))
-                else:
+                except ValueError:
                     return {}
 
             res["cfg_jumpscale"] = load("jumpscale")
