@@ -20,26 +20,43 @@ class LoggerFactory():
         if j is not None:
             self.j = j # must patch this after instantiation to break loop
         self.logger_name = 'j'
-        self.Handlers = self._jsbase(('Handlers',
-                           'Jumpscale.logging.Handlers'))
-        self.handlers = self.Handlers()
+        self._handlers = None
         self.loggers = {}
         self.exclude = []
 
-        self.JSLoggerDefault = self._jsbase(('JSLoggerDefault',
-                           'Jumpscale.logging.JSLoggerDefault'))
-        self._default = self.JSLoggerDefault("default", self)
+        self._logger = None # JSBase sets this as well
+        self.__default = None
 
         self.JSLogger = self._jsbase(('JSLogger',
                            'Jumpscale.logging.JSLogger'))
-        self.logger = self.JSLogger("logger", self)
-        self.logger.addHandler(self.handlers.consoleHandler)
-
         self.enabled = True
         self.filter = ["*"]  # default filter to see which loggers will
                              # be attached needs to have * or j.sal... inside
 
         # self.logger.debug("started logger factory")
+
+    @property
+    def handlers(self):
+        if self._handlers is None:
+            self.Handlers = self._jsbase(('Handlers',
+                               'Jumpscale.logging.Handlers'))
+            self._handlers = self.Handlers()
+        return self._handlers
+
+    @property
+    def logger(self): # JSBase still has a logger property setter
+        if self._logger is None:
+            self._logger = self.JSLogger("logger", self)
+            self._logger.addHandler(self.handlers.consoleHandler)
+        return self._logger
+
+    @property
+    def _default(self):
+        if self.__default is None:
+            self.JSLoggerDefault = self._jsbase(('JSLoggerDefault',
+                               'Jumpscale.logging.JSLoggerDefault'))
+            self.__default = self.JSLoggerDefault("default", self)
+        return self.__default
 
     def _getName(self, name):
 

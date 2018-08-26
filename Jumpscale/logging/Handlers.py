@@ -6,8 +6,7 @@ import logging
 from logging.handlers import TimedRotatingFileHandler
 from logging.handlers import MemoryHandler
 
-# not used from .Filter import ModuleFilter
-from .LimitFormatter import LimitFormatter
+# XXX not used? from .Filter import ModuleFilter
 
 
 FILE_FORMAT = '%(asctime)s - %(pathname)s:%(lineno)d - %(levelname)-8s - %(message)s'
@@ -42,7 +41,9 @@ class Handlers():
     @property
     def consoleHandler(self):
         if self._consoleHandler is None:
-            formatter = LimitFormater(
+            LimitFormatter = self._jsbase(('LimitFormatter',
+                                'Jumpscale.logging.LimitFormatter'))
+            formatter = LimitFormatter(
                 fmt=CONSOLE_FORMAT,
                 datefmt="%a%d %H:%M",
                 reset=True,
@@ -55,7 +56,7 @@ class Handlers():
                 },
                 secondary_log_colors={},
                 style='%',
-                lenght=37
+                length=37
             )
             ch = logging.StreamHandler()
             ch.setLevel(logging.DEBUG)
@@ -79,7 +80,7 @@ class Handlers():
     def telegramHandler(self, client, chat_id, level=logging.CRITICAL):
         """
         Create a telegram handler to forward logs to a telegram group.
-        @param client: A jumpscale telegram_bot client 
+        @param client: A jumpscale telegram_bot client
         @param chat_id: Telegram chat id to which logs need to be forwarded
         @param level: Loglevel that should be handeld by this handler
         """
@@ -99,7 +100,7 @@ class TelegramHandler(logging.Handler):
     def __init__(self, client, chat_id):
         """
         Create a telegram handler to forward logs to a telegram group.
-        @param client: A jumpscale telegram_bot client 
+        @param client: A jumpscale telegram_bot client
         @param chat_id: Telegram chat id to which logs need to be forwarded
         """
         super(TelegramHandler, self).__init__()

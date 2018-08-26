@@ -1,6 +1,6 @@
 from colorlog import ColoredFormatter
 
-class LimitFormater(ColoredFormatter):
+class LimitFormatter(ColoredFormatter):
 
     def __init__(self, fmt, datefmt, reset, log_colors,
                        secondary_log_colors, style, length):
