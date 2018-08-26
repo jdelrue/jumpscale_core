@@ -890,7 +890,7 @@ class SystemFS:
         try:
             st = os.lstat(path)
             found = True
-        except (OSError, AttribuuteError):
+        except (OSError, AttributeError):
             pass
         if found and followlinks and stat.S_ISLNK(st.st_mode):
             self.logger.debug('path %s exists' % str(path.encode("utf-8")))
