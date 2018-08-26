@@ -388,7 +388,7 @@ class JSLoader():
         for plugin, outJSON in self.jsonfiles.items():
             self.logger.debug("* jumpscale json path:%s" % outJSON)
             try:
-                outJSON = self.j.sal.fs.readFile(outJSON)
+                outJSON = self.j.sal.fs.fileGetContents(outJSON)
                 modbase = json.loads(outJSON)
             except ValueError as e:
                 modbase = ({}, {})
@@ -448,7 +448,7 @@ class JSLoader():
                 [$classname]["import"] = $importitems
         """
         res = {}
-        C = self.j.sal.fs.readFile(path)
+        C = self.j.sal.fs.fileGetContents(path)
         classname = None
         locfound = False
         for line in C.split("\n"):
