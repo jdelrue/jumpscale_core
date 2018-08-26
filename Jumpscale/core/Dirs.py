@@ -26,7 +26,7 @@ class Dirs(object):
     def __init__(self):
         ''' jumpscale sandbox base folder
         '''
-        self.reload()
+        #self.reload() # isn't needed: done manually in bootstrap anyway
         self._TEMPLATEDIR = None
         self._JSAPPSDIR = None
         self._templatedir_set = False
