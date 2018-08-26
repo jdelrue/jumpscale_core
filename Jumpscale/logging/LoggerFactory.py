@@ -1,11 +1,6 @@
 import logging
 import os
-from .Handlers import *
-
-from .JSLogger import JSLogger
-from .JSLoggerDefault import JSLoggerDefault
 import sys
-
 
 class LoggerFactory():
 
@@ -24,13 +19,19 @@ class LoggerFactory():
         if j is not None:
             self.j = j # must patch this after instantiation to break loop
         self.logger_name = 'j'
-        self.handlers = Handlers()
+        self.Handlers = self._jsbase(('Handlers',
+                           'Jumpscale.logging.Handlers'))
+        self.handlers = self.Handlers()
         self.loggers = {}
         self.exclude = []
 
-        self._default = JSLoggerDefault("default", self)
+        self.JSLoggerDefault = self._jsbase(('JSLoggerDefault',
+                           'Jumpscale.logging.JSLoggerDefault'))
+        self._default = self.JSLoggerDefault("default", self)
 
-        self.logger = JSLogger("logger", self)
+        self.JSLogger = self._jsbase(('JSLogger',
+                           'Jumpscale.logging.JSLogger'))
+        self.logger = self.JSLogger("logger", self)
         self.logger.addHandler(self.handlers.consoleHandler)
 
         self.enabled = True
@@ -91,8 +92,8 @@ class LoggerFactory():
             if force or check_(name):
                 # print("JSLOGGER:%s" % name)
                 # logger = logging.getLogger(name)
-                logger = JSLogger(name, self)
-                logger.level = self.j.core.state.configGetFromDict("logging", "level", logging.DEBUG)
+                logger = self.JSLogger(name, self)
+                logger.level = self.j.core.state.configGetFromDict("logging","level", logging.DEBUG)
 
                 for handler in self.handlers._all:
                     logger.handlers = []
