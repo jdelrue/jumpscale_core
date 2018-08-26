@@ -121,7 +121,7 @@ class Jumpscale(JSBase): # deliberately deriving from JSBase
         l = DLoggerFactory()
         l.enabled = logging_enabled
         l.filter = filter or []  # default filter which captures all is *
-        self.logging = l
+        self.logging = l # sigh this is critical, fires off a lot of stuff
 
         for (parent, child, module, kls) in bootstrap:
             add_dynamic_instance(self, parent, child, module, kls)
