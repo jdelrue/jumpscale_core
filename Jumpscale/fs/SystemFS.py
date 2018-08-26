@@ -13,8 +13,10 @@ import stat
 from stat import ST_MTIME
 import stat
 from functools import wraps
-from .SystemFSDecorators import *
 import copy
+from .SystemFSDecorators import (pathShorten, pathClean, pathDirClean,
+                                 dirEqual, pathNormalize, cleanupString,
+                                 path_check)
 
 class SystemFS:
 
