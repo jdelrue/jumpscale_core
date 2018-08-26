@@ -65,7 +65,6 @@ class Config(object):
                 self.j.data.text.toStr(self.j.tools.configmanager.path),
                 self.location, self.instance + '.toml')
             self.logger.debug("getpath:%s" % self._path)
-        print("getpath:%s" % self._path)
         return self._path
 
     @property
