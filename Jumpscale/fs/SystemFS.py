@@ -1120,6 +1120,7 @@ class SystemFS:
             os.system(cmd)
         os.unlink(filename)
 
+    # issue #99 - see readFile, decorator is identical
     @path_check(filename={"required", "exists", "file"})
     def fileGetContents(self, filename, binary=False, encoding='utf-8'):
         """Read a file and get contents of that file
@@ -1152,7 +1153,8 @@ class SystemFS:
         self.logger.debug('File %s is closed after reading' % filename)
         return data
 
-    @path_check(filename={"required", "exists", "file"})
+    # issue #99 - calling fileGetContents means this decorator is called twice
+    #@path_check(filename={"required", "exists", "file"})
     def readFile(self, filename, binary=False):
         """
         Get contents as string from filename.
