@@ -8,25 +8,41 @@ import time
 
 import hexdump
 
-# monkey-patch the socket stream so that it's possible to
+def get_handle_const(num):
+    for objname in dir(rpyc.core.consts):
+        if not objname.startswith('HANDLE_'):
+            continue
+        if getattr(rpyc.core.consts, objname) == num:
+            return objname[7:]
+    return '<?>'
+
+# monkey-patch the channel so that it's possible to
 # see what traffic is going back and forth
-class LogStream(rpyc.core.stream.SocketStream):
+class LogChannel(rpyc.core.channel.Channel):
+    COMPRESSION_THRESHOLD=10
     isLoggingOn = True
     _logFile = open("/tmp/log.txt", "w")
-    def read(self, count):
-        data = super(LogStream, self).read(count)
-        if self.isLoggingOn:
-            hd = '\n'.join(hexdump.dumpgen(data or b''))
-            self._logFile.write("\n" + time.asctime() + " RECV\n" + hd)
-        return data
-    def write(self, data):
-        if self.isLoggingOn:
-            hd = '\n'.join(hexdump.dumpgen(data or b''))
-            self._logFile.write("\n" + time.asctime() + " SEND\n" + hd)
-        return super(LogStream, self).write(data)
 
-rpyc.core.stream.SocketStream = LogStream
-rpyc.utils.factory.SocketStream = LogStream
+    def dbg(self, report, length, data):
+        hd = '\n'.join(hexdump.dumpgen(data or b''))
+        (typ, seq, (action, unpack)) = rpyc.core.brine.load(data)
+        action = get_handle_const(action)
+        hd += "\n" + "%d %d %s %s" % (typ, seq, action, repr(unpack))
+        self._logFile.write("\n" + time.asctime() + " " + length + " " +\
+                    str(self.compress) + " %s\n" % report + hd + '\n')
+    def recv(self):
+        data = super(LogChannel, self).recv()
+        if self.isLoggingOn:
+            self.dbg('RECV', str(len(data)), data)
+        return data
+    def send(self, data):
+        nsent = super(LogChannel, self).send(data)
+        if self.isLoggingOn:
+            self.dbg('SEND', nsent, data)
+        return nsent
+
+rpyc.core.channel.Channel = LogChannel
+rpyc.utils.factory.Channel = LogChannel
 
 if len(sys.argv) == 2:
     host = sys.argv[1]
@@ -35,7 +51,7 @@ else:
 
 c = rpyc.classic.connect(host, 18861)
 
-#with rpyc.classic.redirected_stdio(c):
+with rpyc.classic.redirected_stdio(c):
     j = c.root.j
     #j.core.application.start("jsshell@%s" % host)
     IPython.embed()  
