@@ -55,5 +55,5 @@ class Core(object):
 
     @state.setter
     def state(self, newstate):
-        slf._state = state
+        self._state = newstate
 
