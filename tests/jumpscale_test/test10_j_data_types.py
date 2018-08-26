@@ -609,8 +609,10 @@ class TestJDataTypes(TestcasesBase):
 
             # These actually fail (!!)  raised as a bug against
             # the *standard* python library: https://bugs.python.org/issue34453
-            ('1111:2222:3333:4444:5555:6666:00.00.00.00', False),
-            ('1111:2222:3333:4444:5555:6666:000.000.000.000', False),
+            # turns out it's not the python library, it's an ambiguity
+            # in the IPv4 RFC.  so, these are legitimately OK.
+            ('1111:2222:3333:4444:5555:6666:00.00.00.00', True),
+            ('1111:2222:3333:4444:5555:6666:000.000.000.000', True),
         ]
 
         for i, (test, expected) in enumerate(ipv6_tests):
