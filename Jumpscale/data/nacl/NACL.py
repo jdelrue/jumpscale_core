@@ -20,16 +20,14 @@ class NACL:
             self.logger.debug("sshkeyname for nacl:%s" % sshkeyname)
             pass
         elif self.j.tools.configmanager.keyname:
-            self.logger.debug(
-                "get config from git repo, keyname='%s'" %
-                self.j.tools.configmanager.keyname)
+            self.logger.debug("get config from git repo, keyname='%s'" %
+                                self.j.tools.configmanager.keyname)
             sshkeyname = self.j.tools.configmanager.keyname
         else:
-            sshkeyname = self.j.core.state.configGetFromDict(
-                "myconfig", "sshkeyname")
-            self.logger.debug(
-                "get config from system, keyname:'%s'" %
-                sshkeyname)
+            sshkeyname = self.j.core.state.configGetFromDict("myconfig",
+                                                             "sshkeyname")
+            self.logger.debug("get config from system, keyname:'%s'" %
+                               sshkeyname)
 
         self.sshkeyname = sshkeyname
         self._agent = None
@@ -45,12 +43,12 @@ class NACL:
         # get/create the secret seed
         self.path_secretseed = "%s/%s.seed" % (self.path, self.name)
 
-        if not self.j.sal.fs.exists(self.path_secretseed):
+        if self.j.sal.fs.exists(self.path_secretseed):
+            secretseed = self.file_read_hex(self.path_secretseed)
+        else:
             secretseed = self.hash32(nacl.utils.random(
                 nacl.secret.SecretBox.KEY_SIZE))
             self.file_write_hex(self.path_secretseed, secretseed)
-        else:
-            secretseed = self.file_read_hex(self.path_secretseed)
 
         # this creates a unique encryption box
         # the secret needs 3 components: the passphrase(secret), the
@@ -62,8 +60,8 @@ class NACL:
         # create temp box encrypt/decr (this to not keep secret in mem)
         self._box = nacl.secret.SecretBox(
             nacl.utils.random(nacl.secret.SecretBox.KEY_SIZE))
-        self.secret = self._box.encrypt(
-            secret2, nacl.utils.random(nacl.secret.SecretBox.NONCE_SIZE))
+        self.secret = self._box.encrypt(secret2,
+                    nacl.utils.random(nacl.secret.SecretBox.NONCE_SIZE))
         secret = ""
         secret2 = ""
         secretseed = ""
@@ -89,21 +87,20 @@ class NACL:
             for item in self.j.clients.sshkey.sshagent.get_keys():
                 if self.j.sal.fs.getBaseName(item.keyname) == name:
                     return item
-            raise RuntimeError(
-                "Could not find agent for key with name:%s" %
-                name)
+            raise RuntimeError("Could not find agent for key with name:%s" %
+                                name)
 
         if self._agent is None:
             if not self.j.clients.sshkey.exists(self.sshkeyname):
                 keypath = "%s/.ssh/%s" % (self.j.dirs.HOMEDIR, self.sshkeyname)
                 if self.j.sal.fs.exists(keypath):
-                    self.j.clients.sshkey.key_load(
-                        "%s/.ssh/%s" %
+                    self.j.clients.sshkey.key_load( "%s/.ssh/%s" %
                         (self.j.dirs.HOMEDIR, self.sshkeyname))
                 else:
                     # if sshkeyname from state is not reachable delete it and
                     # re-init config manager
-                    self.j.core.state.configSetInDict("myconfig", "sshkeyname", "")
+                    self.j.core.state.configSetInDict("myconfig",
+                                                      "sshkeyname", "")
                     self.j.tools.configmanager.init()
             self._agent = getagent(self.sshkeyname)
         return self._agent
@@ -122,7 +119,8 @@ class NACL:
         """
         js_shell 'print(j.data.nacl.default.words)'
         """
-        return self.j.data.encryption.mnemonic.to_mnemonic(self.privkey.encode())
+        privkey = self.privkey.encode())
+        return self.j.data.encryption.mnemonic.to_mnemonic(privkey)
         # if not self.j.sal.fs.exists(self.path_words):
         #     self.logger.info("GENERATED words")
         #     words = self.j.data.encryption.mnemonic_generate()
@@ -200,8 +198,7 @@ class NACL:
         return res
 
     def encrypt(self, data, hex=False):
-        """
-        Encrypt data using the public key
+        """ Encrypt data using the public key
             :param data: data to be encrypted, should be of type binary
             @return: encrypted data
         """
@@ -213,8 +210,7 @@ class NACL:
         return res
 
     def decrypt(self, data, hex=False):
-        """
-        Decrypt incoming data using the private key
+        """ Decrypt incoming data using the private key
             :param data: encrypted data provided
             @return decrypted data
         """
@@ -224,8 +220,8 @@ class NACL:
         return unseal_box.decrypt(data)
 
     def _keys_generate(self):
-        """
-        Generate private key (strong) & store in chosen path & will load in this class
+        """ Generate private key (strong) & store in chosen path &
+            will load in this class
         """
         key = PrivateKey.generate()
         key2 = key.encode()  # generates a bytes representation of the key
@@ -247,10 +243,10 @@ class NACL:
         return res[:-len(data)]
 
     def verify(self, data, signature, pubkey=""):
-        """
-        data is the original data we have to verify with signature
-        signature is Ed25519 64 bytes signature
-        pubkey is the signature public key, is not specified will use your own  (the pubkey is 32 bytes)
+        """ data is the original data we have to verify with signature
+            signature is Ed25519 64 bytes signature
+            pubkey is the signature public key, is not specified will use
+            your own (the pubkey is 32 bytes)
 
         """
         if pubkey == "":
@@ -265,12 +261,14 @@ class NACL:
         return True
 
     def sign_with_ssh_key(self, data):
-        """
-        will return 32 byte signature which uses the sshagent loaded on your system
-        this can be used to verify data against your own sshagent to make sure data has not been tampered with
+        """ will return 32 byte signature which uses the sshagent
+            loaded on your system
+            this can be used to verify data against your own sshagent
+            to make sure data has not been tampered with
 
-        this signature is then stored with e.g. data and you can verify against your own ssh-agent if the data was not tampered with
-
+            this signature is then stored with e.g. data and you 
+            can verify against your own ssh-agent if the data was
+            tampered with
         """
         hash = hashlib.sha1(data).digest()
         signeddata = self.agent.sign_ssh_data(hash)
