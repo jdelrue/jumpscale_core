@@ -166,6 +166,10 @@ skipproperties = [
 
         # https://github.com/threefoldtech/jumpscale_core/issues/94
         'j.tools.alerthandler.test',
+
+        # https://github.com/threefoldtech/jumpscale_lib/issues/94
+        'j.data.indexdb.test',
+
     ]
 
 # use this for testing of a restricted set of tests
