@@ -248,10 +248,10 @@ class JSLoader():
         for jlocationRoot, jlocationRootDict in moduleList.items():
             # is per item under j e.g. self.j.clients
 
-            #print ("jlocationRoot", jlocationRoot)
+            #print ("jlocationRoot", jlocationRoot, jlocationRootDict)
             # if jlocationRoot == 'j':
             #    print (jlocationRootDict)
-            if not jlocationRoot.startswith("j.") and jlocationRoot != 'j':
+            if not jlocationRoot.startswith("j") and jlocationRoot != 'j':
                 raise RuntimeError(
                     "jlocation should start with j, found: '%s', in %s" %
                     (jlocationRoot, jlocationRootDict))
@@ -539,6 +539,8 @@ class JSLoader():
                     if "location" not in item:
                         continue
                     location = item["location"]
+                    if location == 'j': # skip root j for now
+                        continue
                     baseList[location] = classname
 
             if basename.startswith("_"):
@@ -554,6 +556,8 @@ class JSLoader():
                 if "location" not in item:
                     continue
                 location = item["location"]
+                if location == 'j': # skip root j for now
+                    continue
                 if "import" in item:
                     imports = item["import"]
                 else:
