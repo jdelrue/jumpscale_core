@@ -71,22 +71,28 @@ def cleanupString(string, replacewith="_", regex="([^A-Za-z0-9])"):
 
 
 def path_check(**arguments):
-    """
-    Decorator to check if specified path arguments pass the specified validators.
-    The following validations are supported:
-    - "required": Means that the path argument value must not be None or empty string
-    - "exists": Means that the path argument value must be an existing directory
-    - "file": Means that the path argument value must be an existing file or a link to a file
-    - "pureFile": Means that the path argument value must be an existing file
-    - "dir": Means that the path argument value must be an existing directory or a link to a directory
-    - "pureDir": Means that the path argument value must be an existing directory
-    When no validations are added, the value of the path argument will still be expanded
-    with the current home directory if the path starts with ~
+    """ Decorator to check if specified path arguments pass the
+        specified validators.
+        The following validations are supported:
+        - "required": Means that the path argument value must not be None
+                       or empty string
+        - "exists": Means that the path argument value must be an
+                       existing directory
+        - "file": Means that the path argument value must be an
+                       existing file or a link to a file
+        - "pureFile": Means that the path argument value must be an existing
+                       file
+        - "dir": Means that the path argument value must be an
+                       existing directory or a link to a directory
+        - "pureDir": Means that the path argument value must be an
+                       existing directory
+        When no validations are added, the value of the path argument will still
+        be expanded with the current home directory if the path starts with ~
 
-    E.g.
-    @path_check(sourceDir={"required","exists"}, destDir={"required"})
-    def copyDir(sourceDir, destDir):
-        pass
+        E.g.
+        @path_check(sourceDir={"required","exists"}, destDir={"required"})
+        def copyDir(sourceDir, destDir):
+            pass
     """
     for argument, validators in arguments.items():
         if not isinstance(validators, set):
