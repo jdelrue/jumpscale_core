@@ -1,6 +1,7 @@
 import logging
 import os
 import sys
+import time
 
 class LoggerFactory():
 
@@ -35,7 +36,8 @@ class LoggerFactory():
         self.logger.addHandler(self.handlers.consoleHandler)
 
         self.enabled = True
-        self.filter = ["*"]  # default filter to see which loggers will be attached needs to have * or j.sal... inside
+        self.filter = ["*"]  # default filter to see which loggers will
+                             # be attached needs to have * or j.sal... inside
 
         # self.logger.debug("started logger factory")
 
@@ -59,8 +61,9 @@ class LoggerFactory():
 
     def get(self, name="", force=False):  # -> JSLogger:
         """
-        Return a logger with the given name. Name will be prepend with 'j.' so
-        every logger return by this function is a child of the jumpscale root logger 'j'
+        Return a logger with the given name. Name will be prepend with
+        'j.' so every logger returned by this function is a child of the
+        jumpscale root logger 'j'
 
         """
         name = self._getName(name)
@@ -93,7 +96,8 @@ class LoggerFactory():
                 # print("JSLOGGER:%s" % name)
                 # logger = logging.getLogger(name)
                 logger = self.JSLogger(name, self)
-                logger.level = self.j.core.state.configGetFromDict("logging","level", logging.DEBUG)
+                logger.level = self.j.core.state.configGetFromDict(
+                                            "logging","level", logging.DEBUG)
 
                 for handler in self.handlers._all:
                     logger.handlers = []
@@ -107,8 +111,8 @@ class LoggerFactory():
         return self.loggers[name]
 
     def disable(self):
-        """
-        will transform all loggers to empty loggers which only act on errors, but ignore logs
+        """ will transform all loggers to empty loggers which only act
+            on errors, but ignore logs
         """
         if self.enabled:
             self.enabled = False
@@ -223,13 +227,14 @@ class LoggerFactory():
         exclude = self.j.data.types.list.fromString(exclude)
         if save:
             new = False
+            logging = self.j.core.state.config_js["logging"]
             for item in items:
-                if item not in self.j.core.state.config_js["logging"]["filter"]:
-                    self.j.core.state.config_js["logging"]["filter"].append(item)
+                if item not in logging["filter"]:
+                    logging["filter"].append(item)
                     new = True
             for item in exclude:
-                if item not in self.j.core.state.config_js["logging"]["exclude"]:
-                    self.j.core.state.config_js["logging"]["exclude"].append(item)
+                if item not in logging["exclude"]:
+                    logging["exclude"].append(item)
                     new = True
             if new:
                 self.j.core.state.configSave()
@@ -274,7 +279,8 @@ class LoggerFactory():
         """
         get info from config file & make sure all logging is done properly
         """
-        self.enabled = self.j.core.state.configGetFromDict("logging", "enabled", True)
+        self.enabled = self.j.core.state.configGetFromDict("logging",
+                                                    "enabled", True)
         level = self.j.core.state.configGetFromDict("logging", "level", 'DEBUG')
         self.loggers_level_set(level)
         self.handlers_level_set(level)
@@ -305,7 +311,7 @@ class LoggerFactory():
 
     def test(self):
         """
-        js_shell 'j.logger.test()'
+        js_shell 'j.logging.test()'
         """
 
 
