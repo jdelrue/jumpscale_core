@@ -215,8 +215,7 @@ see module and mfullpath parameters, below, respectively.
             for s in self.serialisers:
                 [attr, kls, packtype] = s
                 module = 'Jumpscale.data.serializers.%s' % kls # same name
-                mfullpath = os.path.join(fullpath, "%s.py" % kls)
-                mod = self._add_instance(attr, module, kls, mfullpath, self.j)
+                mod = self._add_instance(attr, module, kls)
 
 Whilst this will be reworked to do relative imports (automatically
 taking the name of the module path from the *parent* object
@@ -226,12 +225,15 @@ named after the field "attr" to the current SerializersFactory instance
 (self.snappy which will appear as j.data.serializers.snappy or better
 self.j.data.serializers.snappy), of a class named "kls", imported from
 the module named "Jumpscale.data.serializers.<INSERT SAME CLASS NAME kls>".
+Functionally it is equivalent to:
+
+    from <Module> import <class>
 
 However bear in mind that these are **NOT** actual instances, they are
 *lazy* instances inserted into the SerializersFactory BaseGetter
 "hidden" dictionary, which, *only* if that *specific* attribute named
 "attr" is accessed, will the instance (or the class, if \_add\_kls
-is used instead), actually get instantiated.
+is used instead), actually get created.
 
 Functionality-wise this code works.  It is just not very pretty.  Hence
 this documentation, as it is also indicative of the direction that is
