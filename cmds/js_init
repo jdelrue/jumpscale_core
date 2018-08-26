@@ -20,6 +20,7 @@ print(j.core.state.mascot)
 j.core.state.configSetInDict('system','autopip',False)
 
 j.tools.jsloader.generate()
+j.tools.executorLocal.initEnv()
 
 #try:
 #print ("WARNING: dockerconfig was not done")

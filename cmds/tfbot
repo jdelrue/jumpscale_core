@@ -1,22 +1,48 @@
 #! /usr/bin/env python3
 
 """
-This script is used to quickly deploy a ubuntu container on a 0-OS node and allow you to ssh into it
-
-This container is used to build flist, it contains already preinstalled tools like git, mc, build-essential.
-
+This is the script which maninipulates a local tfbot as deployed in a Zero-OS
 """
 
 import time
 
 import click
 from jumpscale import j
+import time
 
+
+
+def _zos_node():
+    node = _check()
+    if node.addr == 'localhost':
+        # cf zdb
+        node = j.clients.virtualbox.zero_os_private(node)
+    return node
 
 @click.group()
 def cli():
     pass
 
+
+@click.command()
+@click.argument('ip', default=None, required=False)
+def configure(ip=None):
+    """
+    configure the zero-os, also make sure partitions are done for zerodb, need ip addr
+
+    ipaddr of zero-os if not specified then will be localhost (VM) on port 4445
+
+
+    """
+    print("configure on ip:%s"%ip)
+    if ip is not None:
+        data = {'host': ip}
+    else:
+        data = {'host': 'localhost', 'port': 4445}
+
+    node = j.clients.zos.get('builder', data=data)
+    node.zerodbs.partition_and_mount_disks()
+    print("zero-os node configured")
 
 @click.command()
 def reset():
@@ -39,10 +65,31 @@ def reset():
 @click.command()
 def destroy():
     """
-    will remove the virtualbox vms from local machine, be careful
+    will remove the virtualbox vm for ZOS
     :return:
     """
-    j.tools.builder.zos_vb_delete_all()
+
+    if "builder" not in j.clients.virtualbox.list():
+        return
+
+    vb = j.clients.virtualbox.get(instance="builder", interactive=False)
+
+    if not "builder" in vb.vm_list():
+        return
+
+    vm = vb.vm_get("builder")
+    vm.stop()
+    time.sleep(1)
+    vm.delete()
+
+
+@click.command()
+def init():
+    """
+    use virtualbox to launch a zero-os on your machine (tested on linux and osx)
+    the name of the machine is builder
+    """
+    _init()
 
 
 @click.command()
@@ -117,21 +164,56 @@ def container():
     """
     create a build container in zero-os and launch ubuntu with lots of tools pre-installed to make building easy
     """
-    j.shell("TO IMPLEMENT, USE j.tools.builder")
+
+    node = _zos_node()
+
+    print('creating builder container...')
+    container = node.containers.create(name='builder',
+                                       flist='https://hub.grid.tf/tf-official-apps/ubuntu-bionic-build.flist',
+                                       nics=[{'type': 'default'}],
+                                       ports={2222: 22})
+
+    node = _node(name="builder",addr=node.addr,port=2222)
 
 
 @click.command()
 @click.option('--name', '-n', default='main', help='name of the tfbot container')
+@click.option('--port', '-p', default=3333, help='port which will be exposed for ssh')
 def tfbot_build(name, port):
     """
-    create a tfbot container
+    create a digital me container
     connect to zerotier network 1d7193940435f485, this is an ipv6 zerotier network which connects all tfbot's
     """
-    j.shell("TO IMPLEMENT, USE j.tools.builder")
 
+    node = _zos_node()
+
+    print('creating tfbot container...')
+    name = "tfbot_"+name
+    container = node.containers.create(name=name,
+                                       flist='https://hub.grid.tf/tf-official-apps/ubuntu-bionic-build.flist',
+                                       nics=[{'type': 'default'}, {'type': 'zerotier', 'id': '1d7193940435f485'}],
+                                       ports={port: 22})
+
+    ssh_container_node = _node(name=name, addr=node.addr, port=port)
+
+    print('tfbot container deployed (in debug mode)')
+    print("can also connect using js_node toolset, recommended: 'js_node ssh -i %s'" % name)
+
+    n = j.tools.nodemgr.get(instance=name)
+
+    n.prefab.jumpscale.jumpscalecore.install(full=False) #full does not seem to be needed
+
+    #will update the code
+    n.sync()
+
+    print ("OK: digital me is installed")
+
+
+cli.add_command(init)
+cli.add_command(configure)
 cli.add_command(zdb)
 cli.add_command(container)
-cli.add_command(tfbot_build)
+cli.add_command(tfbot)
 cli.add_command(reset)
 cli.add_command(destroy)
 
