@@ -119,7 +119,7 @@ class NACL:
         """
         js_shell 'print(j.data.nacl.default.words)'
         """
-        privkey = self.privkey.encode())
+        privkey = self.privkey.encode()
         return self.j.data.encryption.mnemonic.to_mnemonic(privkey)
         # if not self.j.sal.fs.exists(self.path_words):
         #     self.logger.info("GENERATED words")
