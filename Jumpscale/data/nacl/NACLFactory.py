@@ -36,7 +36,8 @@ class NACLFactory:
 
     def remember(self):
         """
-        will start redis core, this will make sure that the secret & words are remembered for 1h
+        will start redis core, this will make sure that the secret & words
+        are remembered for 1h
 
         js_shell 'j.data.nacl.remember()'
 
@@ -78,7 +79,8 @@ class NACLFactory:
 
         result is base64
 
-        its a combination of nacl symmetric encryption using secret and asymetric encryption using the words
+        its a combination of nacl symmetric encryption using secret and
+        asymetric encryption using the words
 
         the result is a super strong encryption
 
@@ -226,7 +228,9 @@ class NACLFactory:
         res2 = self.decrypt("1111", res, interactive=False)
         assert "something" == res2
 
-        words = 'oxygen fun inner bachelor cherry pistol knife quarter grass act ceiling wrap another input style profit middle cake slight glance silk rookie caught parade'
+        words = 'oxygen fun inner bachelor cherry pistol knife quarter ' \
+                'grass act ceiling wrap another input style profit middle ' \
+                'cake slight glance silk rookie caught parade'
         res3 = self.encrypt(
             "1111",
             "something",
