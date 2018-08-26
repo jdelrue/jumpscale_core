@@ -11,6 +11,7 @@ import codecs
 import pickle as pickle
 import stat
 from stat import ST_MTIME
+import stat
 from functools import wraps
 from .SystemFSDecorators import *
 import copy
@@ -883,16 +884,19 @@ class SystemFS:
         """
         if path is None:
             raise TypeError('Path is not passed in system.fs.exists')
-        if os.path.exists(path) or os.path.islink(path):
-            if os.path.islink(path) and followlinks:
-                self.logger.debug('path %s exists' %
-                                  str(path.encode("utf-8")))
-                relativelink = self.readLink(path)
-                newpath = self.joinPaths(
-                    self.getParent(path), relativelink)
-                return self.exists(newpath)
-            else:
-                return True
+        found = False
+        try:
+            st = os.lstat(path)
+            found = True
+        except (OSError, AttribuuteError):
+            pass
+        if found and followlinks and stat.S_ISLNK(st.st_mode):
+            self.logger.debug('path %s exists' % str(path.encode("utf-8")))
+            relativelink = self.readLink(path)
+            newpath = self.joinPaths( self.getParent(path), relativelink)
+            return self.exists(newpath)
+        if found:
+            return True
         self.logger.debug('path %s does not exist' % str(path.encode("utf-8")))
         return False
 
