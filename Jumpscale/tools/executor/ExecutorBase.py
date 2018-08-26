@@ -410,7 +410,6 @@ echo --TEXT--
         """
         init the environment of an executor
         """
-        print ("initEnv")
         self.reset()
         T = self._getDirPathConfig()
         T = T.replace("//", "/")
