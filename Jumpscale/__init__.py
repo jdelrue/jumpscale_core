@@ -58,11 +58,12 @@ else:
     ('data', 'datacache', 'data.cache.Cache', 'Cache'),
     ('tools', 'jsloader', 'tools.jsloader.JSLoader', 'JSLoader'),
     ('tools', 'executorLocal', 'tools.executor.ExecutorLocal',
-     'ExecutorLocal'),
+                             'ExecutorLocal'),
     ('core', 'exceptions', 'errorhandler.JSExceptions',
                             'JSExceptions'),
     ('', 'dirs', 'core.Dirs', 'Dirs'),
     ('core', 'platformtype', 'core.PlatformTypes', 'PlatformTypes'),
+    # needed in cases where config file doesn't exist
     ('sal', 'process', 'sal.process.SystemProcess', 'SystemProcess'),
     ('', 'application', 'core.application', None),
     ('', 'cache', 'data.cache', None),
