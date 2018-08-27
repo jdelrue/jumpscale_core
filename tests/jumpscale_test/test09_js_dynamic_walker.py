@@ -170,16 +170,16 @@ skipproperties = [
         # https://github.com/threefoldtech/jumpscale_lib/issues/94
         'j.data.indexdb.test',
 
-        # https://github.com/threefoldtech/jumpscale_lib/issues/100
+        # https://github.com/threefoldtech/jumpscale_core/issues/100
         'j.tools.jinja2.test',
 
-        # https://github.com/threefoldtech/jumpscale_lib/issues/100
+        # https://github.com/threefoldtech/jumpscale_core/issues/100
         'j.tools.jinja2.test',
 
-        # https://github.com/threefoldtech/jumpscale_lib/issues/101
+        # https://github.com/threefoldtech/jumpscale_core/issues/101
         'j.tools.develop.test_js_quick',
 
-        # https://github.com/threefoldtech/jumpscale_lib/issues/102
+        # https://github.com/threefoldtech/jumpscale_core/issues/102
         'j.servers.zdb.test',
 
     ]
