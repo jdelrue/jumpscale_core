@@ -185,6 +185,9 @@ skipproperties = [
         # https://github.com/threefoldtech/jumpscale_core/issues/103
         'j.clients.trello.test',
 
+        # https://github.com/threefoldtech/jumpscale_core/issues/104
+        'j.tools.tfbot.test',
+
     ]
 
 # use this for testing of a restricted set of tests

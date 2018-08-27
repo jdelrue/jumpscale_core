@@ -31,6 +31,6 @@ class TFBotFactory(JSBASE):
         """
         js_shell 'j.tools.tfbot.test()'
         """
-        bot = self.tfbot_get()
+        bot = self.get()
         print(bot.node)
         j.shell()
