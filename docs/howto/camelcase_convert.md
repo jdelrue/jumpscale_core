@@ -64,5 +64,5 @@ allows the callee to be converted to camel_case, and if the CALLER
 happens to accidentally use camelCase, log that fact, and return the
 **LOWER_CASE** version of the function **TRANSPARENTLY**.
 
-This allows applications to keep on working without a total drastic
-shutdown of all development.
+This allows applications to keep on working and to transition safely
+over to camel_case, without a total drastic shutdown of all development.
