@@ -170,6 +170,9 @@ skipproperties = [
         # https://github.com/threefoldtech/jumpscale_lib/issues/94
         'j.data.indexdb.test',
 
+        # https://github.com/threefoldtech/jumpscale_lib/issues/95
+        'j.data.worksheets.test',
+
         # https://github.com/threefoldtech/jumpscale_core/issues/100
         'j.tools.jinja2.test',
 
