@@ -191,7 +191,7 @@ class AlertHandler(JSBASE):
 
         print(j.tools.alerthandler.list())
 
-        j.tools.alerthandler.print()
+        j.tools.alerthandler.report()
 
     # DO NOT REMOVE, can do traicks later with the eco.lua to make faster
     # def redis_enable(self):
