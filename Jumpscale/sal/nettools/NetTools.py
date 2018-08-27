@@ -115,7 +115,7 @@ class NetTools:
             command = "netstat -ntulp | grep ':%s '" % port
             # raise self.j.exceptions.RuntimeError("stop")
             exitcode, output, err = self.j.sal.process.execute(
-                command, die=True, showout=False)
+                command, die=False, showout=False)
             return exitcode == 0
         elif self.j.core.platformtype.myplatform.isMac:
             command = "netstat -an -f inet"
