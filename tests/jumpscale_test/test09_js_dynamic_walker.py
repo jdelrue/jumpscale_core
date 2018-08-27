@@ -173,6 +173,12 @@ skipproperties = [
         # https://github.com/threefoldtech/jumpscale_lib/issues/100
         'j.tools.jinja2.test',
 
+        # https://github.com/threefoldtech/jumpscale_lib/issues/100
+        'j.tools.jinja2.test',
+
+        # https://github.com/threefoldtech/jumpscale_lib/issues/101
+        'j.tools.develop.test_js_quick',
+
     ]
 
 # use this for testing of a restricted set of tests
