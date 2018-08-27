@@ -155,9 +155,9 @@ class AlertHandler(JSBASE):
     def count(self):
         return len(self.list())
 
-    def print(self):
+    def report(self): # name "print" conflicts with print (lib2to3 error)
         """
-        js9 'j.tools.alerthandler.print()'
+        js9 'j.tools.alerthandler.report()'
         """
         for (key, obj) in self.list():
             tb_text = obj.trace
