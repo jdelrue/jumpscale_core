@@ -179,6 +179,9 @@ skipproperties = [
         # https://github.com/threefoldtech/jumpscale_lib/issues/101
         'j.tools.develop.test_js_quick',
 
+        # https://github.com/threefoldtech/jumpscale_lib/issues/102
+        'j.servers.zdb.test',
+
     ]
 
 # use this for testing of a restricted set of tests
