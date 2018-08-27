@@ -54,3 +54,15 @@ It may actually be safer to have a transition system, hooking into
 __getattribute__, where functions in the camelcase list are identified
 at runtime, warnings issued, and a "dynamic" substitute carried out.
 This needs some more thought.
+
+# "Live" introspection
+
+Ok so after evaluating the alternative (dynamic substitute) it was decided
+to add a JSBase.__getattr__ which does live detection of whether a
+function is being called as camel_case or camelCase.  The live detection
+allows the callee to be converted to camel_case, and if the CALLER
+happens to accidentally use camelCase, log that fact, and return the
+**LOWER_CASE** version of the function **TRANSPARENTLY**.
+
+This allows applications to keep on working without a total drastic
+shutdown of all development.
