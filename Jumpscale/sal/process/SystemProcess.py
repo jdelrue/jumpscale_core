@@ -244,13 +244,13 @@ class SystemProcess(object):
 
         # if not specified then print to stdout/err
         if outMethod == "print":
-            def outMethod(x): return print("STDOUT: %s" %
-                                           x.decode("UTF-8").rstrip())
+            def outMethod(x):
+                print("STDOUT: %s" % x.decode("UTF-8").rstrip())
             # outMethod = lambda x: sys.stdout.buffer.write(x)  #DOESN't work, don't know why
         if errMethod == "print":
             # errMethod = lambda x: sys.stdout.buffer.write(x)
-            def errMethod(x): return print("STDERR: %s" %
-                                           x.decode("UTF-8").rstrip())
+            def errMethod(x):
+                print("STDERR: %s" % x.decode("UTF-8").rstrip())
 
         async def _read_stream(stream, cb, res):
             while True:

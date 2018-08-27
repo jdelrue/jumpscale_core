@@ -868,7 +868,7 @@ class NetTools:
                 return
             else:
                 return urlopener.open(url).read()
-        return print("!!! File already exists did not overwrite")
+        print("!!! File already exists did not overwrite")
 
     def getDomainName(self):
         """

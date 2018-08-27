@@ -86,7 +86,8 @@ class TarantoolClient(JSConfigClient):
 
         lcontent = ""
 
-        template_path = j.sal.fs.joinPaths(self._template_dir, 'python', 'model.py')
+        template_path = j.sal.fs.joinPaths(self._template_dir,
+                        'python', 'model.py.template')
         template = j.sal.fs.fileGetContents(template_path)
         lcontent += j.data.text.strip(template)
 

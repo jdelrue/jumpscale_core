@@ -477,7 +477,7 @@ class Console(JSBASE):
             descr2 = "%s\nMake a selection please, start typing, we will try to do auto completion.\n" % descr
 
             self.echo(descr2)
-            print("        :%s" % chars, end=' ')
+            sys.stdout.write("        :%s " % chars)
 
         if len(choicearray) > maxchoice or autocomplete:
             wildcard = False
