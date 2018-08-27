@@ -513,6 +513,10 @@ class JSBase(BaseGetter):
             do not do it the other way round: do NOT edit the callers
             first.  the code below is SPECIFICALLY designed to have
             CALLEEs be modified first.
+
+            TODO: add in inspect to make sure it's actually a function
+            (actually... a method: inspect.ismethod), and also make
+            absolutely sure it's not a property method.
         """
         # XXX not a good idea to do this.  once committed, REALLY have to
         # stick with it.
