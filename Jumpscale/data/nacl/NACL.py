@@ -91,6 +91,7 @@ class NACL:
                                 name)
 
         if self._agent is None:
+            print ("key", self.sshkeyname)
             if not self.j.clients.sshkey.exists(self.sshkeyname):
                 keypath = "%s/.ssh/%s" % (self.j.dirs.HOMEDIR, self.sshkeyname)
                 if self.j.sal.fs.exists(keypath):

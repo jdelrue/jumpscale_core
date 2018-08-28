@@ -73,6 +73,8 @@ class ConfigFactory(object):
         if not self._keyname:
             self._keyname = self.j.core.state.configGetFromDict(
                 "myconfig", "sshkeyname")
+            if not self._keyname: # issue #106 - needs checking if this is ok
+                self.init()       # XXX can keyname be *allowed* to be blank?
         return self._keyname
 
     def sandbox_check(self, path="", die=False):
