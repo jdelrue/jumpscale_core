@@ -224,7 +224,7 @@ def log_camel_case_found(obj, frame, attr, attrname):
             continue
         break
     kls = get_class_that_defined_method(attr)
-    report = "%s/%d:%s" % (fname, lineno, modulename)
+    report = "%s:%d:%s" % (fname, lineno, modulename)
     # TODO: this is where the warning has to be put.
     #print ("camel case found", report)
     if report in camel_case_log:
