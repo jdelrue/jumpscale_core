@@ -4,7 +4,7 @@ import os
 import os.path
 import hashlib
 import fnmatch
-# import inspect
+import inspect # needed for getPathOfRunningFunction
 import shutil
 import tempfile
 import codecs

@@ -127,6 +127,9 @@ def _listtests(tree, j, obj1, obj2, depth):
             _testfn)
 
 skipproperties = [
+
+        'j.j', # yaaaa don't walk self.j.j...
+
         # add tests which are to be skipped due to being dangerous
         # (destructive) or are being skipped because they have
         # a bugreport associated with them.  add the link to the
