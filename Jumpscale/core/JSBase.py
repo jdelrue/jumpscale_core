@@ -229,12 +229,25 @@ def log_camel_case_found(obj, frame, attr, attrname):
     #print ("camel case found", report)
     if report in camel_case_log:
         return
-    called = "%s.%s" % (kls.__name__, attrname)
+    calledmodule = kls.__module__.split('.')[-1]
+    called = "%s.%s.%s" % (calledmodule, kls.__name__, attrname)
     camel_case_log[report] = called
     save_camel_case_log_entry(report, called)
 
-def camel(s):
+def _camel(s):
     return s != s.lower() and s != s.upper() and "_" not in s
+
+def camel(s):
+    if not _camel(s):
+        return False
+    # exclude some outliers
+    if s.startswith("__") and s.endswith("__"):
+        return False
+    if "_" not in s:
+        return False
+    if s.startswith("_") and "_" not in s[1:] and not camel(s[1:]):
+        return False
+    return True
 
 def to_snake_case(not_snake_case):
     final = ''
@@ -255,6 +268,10 @@ def to_snake_case(not_snake_case):
     if final[0] == "_":
         final = final[1:]
     return final
+
+def camelCase(st):
+    output = ''.join(x for x in st.title() if x.isalnum())
+    return output[0].lower() + output[1:]
 
 
 class BaseGetter(object):
@@ -545,24 +562,25 @@ class JSBase(BaseGetter):
         #if not os.environ.get('CAMELCASECHECK'):
         #    return BaseGetter.__getattribute__(self, attrname)
 
-        if not camel(attrname): # it_was_one_of_these, it's_cool.
+        if camel(attrname): # it_was_one_of_these, it's_cool.
             return BaseGetter.__getattribute__(self, attrname)
         # so, it's a camelCaseThing. first try and get it *as* camelCase
         #print ("looking for", attrname)
         try:
             # ok try "snake" version...
-            to_snake = to_snake_case(attrname)
+            #to_snake = to_snake_case(attrname)
+            to_camel = camelCase(attrname)
             #print ("looking for snake %s" % to_snake)
-            attr = BaseGetter.__getattribute__(self, to_snake)
+            attr = BaseGetter.__getattribute__(self, to_camel)
             if not inspect.ismethod(attr): # not a method
                 return BaseGetter.__getattribute__(self, attrname)
             if isinstance(attr, property): # it's a property
                 return BaseGetter.__getattribute__(self, attrname)
         except AttributeError:
-            #print ("looking for %s failed, try %s" % (to_snake, attrname))
+            #print ("looking for %s failed, try %s" % (to_camel, attrname))
             return BaseGetter.__getattribute__(self, attrname)
         # ok that worked, so, hmmm, we should log finding the camel_case
-        #print ("looking for %s worked" % to_snake)
+        #print ("looking for %s worked" % to_camel)
         frame = inspect.currentframe().f_back # skip this __getattr__!
         log_camel_case_found(self, frame, attr, attrname)
         return attr
