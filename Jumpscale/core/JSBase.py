@@ -235,7 +235,7 @@ def log_camel_case_found(obj, frame, attr, attrname):
     save_camel_case_log_entry(report, called)
 
 def _camel(s):
-    return s != s.lower() and s != s.upper() and "_" not in s
+    return s != s.lower() and s != s.upper()
 
 def camel(s):
     if not _camel(s):
@@ -251,6 +251,9 @@ def camel(s):
 
 def to_snake_case(not_snake_case):
     final = ''
+    while not_snake_case.startswith("_"):
+        final += "_"
+        not_snake_case = not_snake_case[1:]
     for i in range(len(not_snake_case)):
         item = not_snake_case[i]
         if i < len(not_snake_case) - 1:
@@ -265,8 +268,6 @@ def to_snake_case(not_snake_case):
             final += "_"+item.lower()
         else:
             final += item
-    if final[0] == "_":
-        final = final[1:]
     return final
 
 def camelCase(st):
@@ -562,16 +563,16 @@ class JSBase(BaseGetter):
         #if not os.environ.get('CAMELCASECHECK'):
         #    return BaseGetter.__getattribute__(self, attrname)
 
-        if camel(attrname): # it_was_one_of_these, it's_cool.
+        if not _camel(attrname): # it_was_one_of_these, it's_cool.
             return BaseGetter.__getattribute__(self, attrname)
         # so, it's a camelCaseThing. first try and get it *as* camelCase
         #print ("looking for", attrname)
         try:
             # ok try "snake" version...
-            #to_snake = to_snake_case(attrname)
-            to_camel = camelCase(attrname)
+            to_snake = to_snake_case(attrname)
+            #to_camel = camelCase(attrname)
             #print ("looking for snake %s" % to_snake)
-            attr = BaseGetter.__getattribute__(self, to_camel)
+            attr = BaseGetter.__getattribute__(self, to_snake)
             if not inspect.ismethod(attr): # not a method
                 return BaseGetter.__getattribute__(self, attrname)
             if isinstance(attr, property): # it's a property
