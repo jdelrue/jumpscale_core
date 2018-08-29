@@ -1,4 +1,4 @@
-# Converting all code to camel_case with automated tools
+# Converting all code to snake_case with automated tools
 
 Python is a dynamic weakly-typed language.  Therefore it is completely
 unsafe and near impossible to do static conversion of function names
@@ -67,9 +67,9 @@ to identify functions (through the overload of __getattr__).
 
 Ok so after evaluating the alternative (dynamic substitute) it was decided
 to add a JSBase.__getattr__ which does live detection of whether a
-function is being called as camel_case or camelCase.  The live detection
+function is being called as snake_case or camelCase.  The live detection
 allows the callee to be converted to camelCase, and if the CALLER
-happens to accidentally use camel_case, log that fact, and return the
+happens to accidentally use snake_case, log that fact, and return the
 **CAMELCASED** version of the function **TRANSPARENTLY**.
 
 This allows applications to keep on working and to transition safely
@@ -86,7 +86,7 @@ be deleted, ever), containing information in the following format:
     abscallepath:linenum:module <TAB> CalledModule:CalledClass:called_function
 
 The trace output contains the name of the file and the line number from
-where a camel_case function was called *FROM*.  This is the critical
+where a snake_case function was called *FROM*.  This is the critical
 information that is extremely difficult to get hold of in a static
 analysis system of a dynamic programming language like python.  The module
 is included just for visual convenience, strictly speaking.
@@ -117,14 +117,14 @@ ensure that the following settings are in place:
     fixname = 'camelcasecallers'
 
 Then, re-run the tool.  It will use lib2to3 to go through every single line,
-searching for a match on any recorded use of a camel_case function call
+searching for a match on any recorded use of a snake_case function call
 that had been detected by the live trace system.
 
 Note that the detection matches not on the full path, but on the "Jumpscale"
 library path.  So **only** files which are of the form Jumpscale/core/State.py
 or DigitalMeLib/xxxx/yyy.py will be converted.
 
-On encountering a line with a function call that is known to be camel_case,
+On encountering a line with a function call that is known to be snake_case,
 a basic sanity check is performed (NOTE, this is NOT a sophisticated check),
 as to whether the function name matches (and only the function name).
 No filtering is carried out.
