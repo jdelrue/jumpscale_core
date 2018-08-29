@@ -3,6 +3,7 @@ import os
 import sys
 import importlib.util
 import inspect
+import traceback
 import gc    # needed for camelcase
 import trace # needed for camelcase
 
@@ -196,16 +197,41 @@ def file_module_function_of(frame):
     return filename, lineno, modulename, funcname
 
 
-def log_camel_case_found(obj, frame, attr):
+#https://stackoverflow.com/questions/3589311/get-defining-class-of-unbound-method-object-in-python-3/25959545#25959545
+def get_class_that_defined_method(meth):
+    if inspect.ismethod(meth):
+        for cls in inspect.getmro(meth.__self__.__class__):
+           if cls.__dict__.get(meth.__name__) is meth:
+                return cls
+        meth = meth.__func__  # fallback to __qualname__ parsing
+    if inspect.isfunction(meth):
+        tmp = meth.__qualname__.split('.<locals>', 1)[0].rsplit('.', 1)[0]
+        cls = getattr(inspect.getmodule(meth), tmp)
+        if isinstance(cls, type):
+            return cls
+    # handle special descriptor objects
+    return getattr(meth, '__objclass__', None)
+
+def log_camel_case_found(obj, frame, attr, attrname):
     global camel_case_log
-    (filename, lineno, modulename, funcname) = file_module_function_of(frame)
-    report = "%s.%s/%d:%s" % (modulename, funcname, lineno, attr)
+    (fname, lineno, modulename, funcname) = file_module_function_of(frame)
+    while True:
+        if funcname == 'JSBase.__getattr__' or \
+            funcname == 'BaseGetter.__getattribute__':
+            frame = frame.f_back
+            (fname, lineno, modulename, funcname) = \
+                        file_module_function_of(frame)
+            continue
+        break
+    kls = get_class_that_defined_method(attr)
+    report = "%s/%d:%s" % (fname, lineno, modulename)
     # TODO: this is where the warning has to be put.
     #print ("camel case found", report)
     if report in camel_case_log:
         return
-    camel_case_log[report] = filename
-    save_camel_case_log_entry(report, filename)
+    called = "%s.%s" % (kls.__name__, attrname)
+    camel_case_log[report] = called
+    save_camel_case_log_entry(report, called)
 
 def camel(s):
     return s != s.lower() and s != s.upper() and "_" not in s
@@ -537,8 +563,8 @@ class JSBase(BaseGetter):
             return BaseGetter.__getattribute__(self, attrname)
         # ok that worked, so, hmmm, we should log finding the camel_case
         #print ("looking for %s worked" % to_snake)
-        frame = inspect.currentframe().f_back
-        log_camel_case_found(self, frame, attrname)
+        frame = inspect.currentframe().f_back # skip this __getattr__!
+        log_camel_case_found(self, frame, attr, attrname)
         return attr
 
     def _check_child_mod_cache(self, keys, toadd=None):
