@@ -30,7 +30,7 @@ class ZOSContainer(JSBASE):
         self._container = None
         self._node_connected = False
         self._redis_key="containers:%s"%node.name
-        self._schema = j.data.schema.schema_from_text(schema)
+        self._schema = j.data.schema.schema_add(schema)
 
         if self._zos_redis.get(self._redis_key) is None:
             #does not exist in redis yet

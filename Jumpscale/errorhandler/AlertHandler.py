@@ -27,7 +27,7 @@ class AlertHandler(JSBASE):
         self.enabled = hasattr(j.application, 'schemas')
         if not self.enabled:
             return
-        self.schema_alert = j.data.schema.schema_from_text(SCHEMA_ALERT)
+        self.schema_alert = j.data.schema.schema_add(SCHEMA_ALERT)
 
         self.db = j.core.db
         self.serialize_json = False  # will be serialized as capnp
@@ -57,7 +57,8 @@ class AlertHandler(JSBASE):
             e.level = error.level
             e.trace = error.trace
         else:
-            e.message = "\n".join(error.args)
+            args=[str(item) for item in error.args]
+            e.message = "\n".join(args)
             name = str(error.__class__).split("'")[1].strip()
             e.cat = "python.%s" % name
         e.trace = tb_text
