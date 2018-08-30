@@ -4,35 +4,34 @@
 class Types(object):
     __jslocation__ = "j.data.types"
 
+    # order here is critically important, see issue #109
     types = [ \
-    # CustomTypes
+    ('PrimitiveTypes', 'Boolean', ('bool', 'boolean',), True, ('b',)),
+    ('CollectionTypes', 'Dictionary', ('dict',), True, ()),
+    ('CollectionTypes', 'List', ('list',), True, ('l',)),
+    ('PrimitiveTypes', 'Bytes', ('bytes',), True, ()),
     ('CustomTypes', 'Guid', ('guid',), True, ()),
+    ('PrimitiveTypes', 'Float', ('float',), True, ('f',)),
+    ('PrimitiveTypes', 'Integer', ('int', 'integer',), True, ('i',)),
+    ('PrimitiveTypes', 'StringMultiLine', ('multiline'), True, ()),
+    ('PrimitiveTypes', 'String', ('string', 'str'), True, ('s',)),
+    ('CustomTypes', 'Date', ('date',), False, ('d')),
+    ('CustomTypes', 'Numeric', ('numeric',), False, ('n', 'num',)),
+    ('PrimitiveTypes', 'Percent', ('percent',), True, ('p', 'perc',)),
+    ('CollectionTypes', 'Hash', ('hash',), True, ('h',)),
+    ('PrimitiveTypes', 'Object', ('object',), True, ('o',)),
+    ('PrimitiveTypes', 'JSObject', ('jsobject',), True, ('jo',)),
+    ('CustomTypes', 'Url', ('url',), True, ('u',)),
+
     ('CustomTypes', 'Email', ('email',), False, ()),
     ('CustomTypes', 'Path', ('path',), False, ()),
-    ('CustomTypes', 'Url', ('url',), True, ('u',)),
     ('CustomTypes', 'Tel', ('tel',), False, ('mobile',)),
     ('CustomTypes', 'IPRange', ('iprange',), False, ('ipaddressrange',)),
     ('CustomTypes', 'IPAddress', ('ipaddr', 'ipaddress'), False, ()),
     ('CustomTypes', 'IPPort', ('ipport',), False, ()),
-    ('CustomTypes', 'Numeric', ('numeric',), False, ('n', 'num',)),
-    ('CustomTypes', 'Date', ('date',), False, ('d')),
-    # CollectionTypes
     ('CollectionTypes', 'YAML', ('yaml',), False, ()),
     ('CollectionTypes', 'JSON', ('json',), False, ()),
-    ('CollectionTypes', 'Dictionary', ('dict',), True, ()),
-    ('CollectionTypes', 'List', ('list',), True, ('l',)),
-    ('CollectionTypes', 'Hash', ('hash',), True, ('h',)),
     ('CollectionTypes', 'Set', ('set',), False, ()),
-    # PrimitiveTypes
-    ('PrimitiveTypes', 'String', ('string', 'str'), True, ('s',)),
-    ('PrimitiveTypes', 'StringMultiLine', ('multiline'), True, ()),
-    ('PrimitiveTypes', 'Bytes', ('bytes',), True, ()),
-    ('PrimitiveTypes', 'Boolean', ('bool', 'boolean',), True, ('b',)),
-    ('PrimitiveTypes', 'Integer', ('int', 'integer',), True, ('i',)),
-    ('PrimitiveTypes', 'Float', ('float',), True, ('f',)),
-    ('PrimitiveTypes', 'Percent', ('percent',), True, ('p', 'perc',)),
-    ('PrimitiveTypes', 'Object', ('object',), True, ('o',)),
-    ('PrimitiveTypes', 'JSObject', ('jsobject',), True, ('jo',)),
     ]
 
     def __init__(self):
@@ -52,8 +51,14 @@ class Types(object):
                 self._ttypes[aattr] = "_%s" % attrlist[0]
 
     def type_detect(self, val):
-        """
-        check for most common types
+        """ check for most common types.  PLEASE NOTE: this function
+            CRITICALLY depends on the order of Types.types, above.
+            checks are called in order, and the FIRST ONE THAT SUCCEEDs
+            is returned as the type of the object.
+
+            therefore if there are potentially multiple matches
+            for a given value, if the order is wrong the WRONG TYPE
+            will be returned.
         """
         for ttypename in self.types_list:
             ttype = getattr(self, ttypename)
