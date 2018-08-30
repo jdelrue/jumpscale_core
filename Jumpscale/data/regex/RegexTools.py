@@ -73,6 +73,8 @@ class RegexTools:
                 'Jumpscale.data.regex.RegexTools'))()
         self.RegexMatches = self._jsbase(('RegexMatches',
             'Jumpscale.data.regex.RegexTools'))
+        self.RegexMatch = self._jsbase(('RegexMatch',
+            'Jumpscale.data.regex.RegexTools'))
 
     def findHtmlElement(self, subject, tofind, path, dieIfNotFound=True):
         match = re.search(r"< *%s *>" % tofind, subject, re.IGNORECASE)
