@@ -196,6 +196,9 @@ skipproperties = [
         # https://github.com/threefoldtech/jumpscale_core/issues/104
         'j.tools.tfbot.test',
 
+        # https://github.com/threefoldtech/jumpscale_core/issues/113
+        'j.clients.multicast.test_listen',
+
     ]
 
 # use this for testing of a restricted set of tests
