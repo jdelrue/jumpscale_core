@@ -198,6 +198,7 @@ skipproperties = [
 
         # https://github.com/threefoldtech/jumpscale_core/issues/113
         'j.clients.multicast.test_listen',
+        'j.clients.multicast.test_send',
 
     ]
 
