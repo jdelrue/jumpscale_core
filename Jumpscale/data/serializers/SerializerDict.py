@@ -86,7 +86,9 @@ class SerializerDict:
         elif self.j.data.types.string.check(dictsource[key]):
             if not self.j.data.types.string.check(val):
                 raise ValueError(
-                    "Expected value of \"{}\" should be of type string.".format(key))
+                    "Expected value of \"{}\" should be "
+                    "of type string, is of type "
+                    "{}".format(key, repr(type(val))))
             dictsource[key] = self.j.data.text.strip(str(val))
         else:
             raise ValueError("could not find type of:%s" % dictsource[key])
