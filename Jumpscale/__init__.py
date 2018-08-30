@@ -1,3 +1,6 @@
+import gevent.monkey
+gevent.monkey.patch_all() # issue #111 - has to be done *really* early
+
 import os
 
 from .core.JSBase import JSBase, global_j
