@@ -62,8 +62,8 @@ class String():
 
 class StringMultiLine(String):
 
-    NAME = 'stringmultiline'
-    BASETYPE = 'stringmultiline'
+    NAME = 'stringmultiline'     # this really does not match with the
+    BASETYPE = 'stringmultiline' # list of aliases.
 
     def check(self, value):
         '''Check whether provided value is a string and has \n inside'''

@@ -13,7 +13,8 @@ class Types(object):
     ('CustomTypes', 'Guid', ('guid',), True, ()),
     ('PrimitiveTypes', 'Float', ('float',), True, ('f',)),
     ('PrimitiveTypes', 'Integer', ('int', 'integer',), True, ('i',)),
-    ('PrimitiveTypes', 'StringMultiLine', ('multiline'), True, ()),
+    ('PrimitiveTypes', 'StringMultiLine', ('multiline',
+                                           'stringmultiline'), True, ()),
     ('PrimitiveTypes', 'String', ('string', 'str'), True, ('s',)),
     ('CustomTypes', 'Date', ('date',), False, ('d')),
     ('CustomTypes', 'Numeric', ('numeric',), False, ('n', 'num',)),
@@ -47,6 +48,7 @@ class Types(object):
                 # store first instance of type in types_list
                 if idx == 0 and in_list:
                     self.types_list.append(attr)
+                self._ttypes[attr] = "_%s" % attrlist[0]
             for aattr in aliases:
                 self._ttypes[aattr] = "_%s" % attrlist[0]
 

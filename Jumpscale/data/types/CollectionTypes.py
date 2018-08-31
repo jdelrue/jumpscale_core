@@ -110,6 +110,7 @@ class List():
             v = ""
         if ttype is not None:
             ttype = ttype.NAME
+        print ("fromSTring", v, ttype)
         v = self.j.data.text.getList(v, ttype)
         v = self.clean(v)
         if self.check(v):
