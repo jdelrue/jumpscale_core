@@ -200,6 +200,10 @@ skipproperties = [
         'j.clients.multicast.test_listen',
         'j.clients.multicast.test_send',
 
+        # this one is a bit big, and a bit long: it requires VirtualBox
+        # (from oracle... *sigh*...)
+        'j.tools.builder.test',
+
     ]
 
 # use this for testing of a restricted set of tests
