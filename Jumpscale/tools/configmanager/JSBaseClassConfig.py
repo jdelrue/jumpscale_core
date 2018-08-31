@@ -6,21 +6,16 @@ JSBASE = j.application.jsbase_get_class()
 
 class JSBaseClassConfig(JSBASE):
 
-    def __init__(
-            self,
-            instance="main",
-            data={},
-            parent=None,
-            template=None,
-            ui=None,
-            interactive=False): # XXX issue #36, set to False (was True)
+    def __init__(self, instance="main", data={}, parent=None,
+                 template=None, ui=None,
+                 interactive=False): # XXX issue #36, set to False (was True)
+        JSBASE.__init__(self)
         if parent is not None:
             self.__jslocation__ = parent.__jslocation__
-        JSBASE.__init__(self)
         self._single_item = True
 
         if ui is None:
-            self._ui = j.tools.formbuilder.baseclass_get()  # is the default class
+            self._ui = j.tools.formbuilder.baseclass_get() # the default class
         else:
             self._ui = ui
         if template is None:
@@ -33,7 +28,8 @@ class JSBaseClassConfig(JSBASE):
         self.interactive = interactive and j.tools.configmanager.interactive
 
         self._config = j.tools.configmanager._get_for_obj(
-            self, instance=self._instance, data=data, template=self._template, ui=self._ui)
+            self, instance=self._instance, data=data,
+            template=self._template, ui=self._ui)
 
         if self.config.new and data == {} and self.interactive:
             self.configure()
@@ -95,8 +91,8 @@ class JSBaseClassConfig(JSBASE):
             msg = self.config_check()
             if msg is not None and msg != "":
                 self.logger.debug(msg)
-                j.tools.console.askString(
-                    "please correct the information in next configuraton screen, press enter")
+                j.tools.console.askString("please correct the information in "
+                                        "next configuraton screen, press enter")
             else:
                 break
 
