@@ -609,7 +609,6 @@ class ConfigFactory(object):
         """
         # print(self)
         self.j.data.nacl.default.agent
-        print(self)
 
     def test(self):
         """
