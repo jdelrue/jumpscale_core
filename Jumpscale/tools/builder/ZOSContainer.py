@@ -71,11 +71,12 @@ class ZOSContainer(JSBASE):
                                            flist='https://hub.grid.tf/tf-official-apps/ubuntu-bionic-build.flist',
                                            nics=[{'type': 'default'}],
                                            ports={self.model.port: 22})
-        while "pid" not in self._container.info:
+        info = self._container.info['container']
+        while "pid" not in info:
             time.sleep(0.1)
             self.logger.debug("waiting for container to start")
-        self.model.pid = self._container.info["pid"]
-        self.model.container_id = self._container.info["id"]
+        self.model.pid = info["pid"]
+        self.model.container_id = info["id"]
         self.model_save()
         assert self._container.is_running()
 

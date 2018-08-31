@@ -181,7 +181,6 @@ class Builder(JSBASE):
         """
         # self.zos_vb_delete_all()
         container = self.get()
-        print(container.node)
         rc,out,err = container.node.executor.execute("ls /")
         assert "coreX\n" in out  #is a file on the root
 
