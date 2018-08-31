@@ -68,6 +68,7 @@ class ZOSContainer(JSBASE):
         self.model.progress=[] #make sure we don't remember old stuff
         self.model_save()
         self._container = self.zosclient.containers.create(name=self.name,
+                                           hostname=self.name,
                                            flist='https://hub.grid.tf/tf-official-apps/ubuntu-bionic-build.flist',
                                            nics=[{'type': 'default'}],
                                            ports={self.model.port: 22})
