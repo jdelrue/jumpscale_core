@@ -222,6 +222,9 @@ skipproperties = [
         # https://github.com/threefoldtech/jumpscale_core/issues/123
         'j.servers.digitalme.test_servers',
 
+        # https://github.com/threefoldtech/jumpscale_core/issues/124
+        'j.clients.google_compute',
+
     ]
 
 # use this for testing of a restricted set of tests
