@@ -204,6 +204,9 @@ skipproperties = [
         # (from oracle... *sigh*...)
         'j.tools.builder.test',
 
+        # https://github.com/threefoldtech/jumpscale_core/issues/117
+        'j.clients.ovh.test',
+
     ]
 
 # use this for testing of a restricted set of tests
