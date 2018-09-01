@@ -1,4 +1,6 @@
-from paramiko.agent import AgentSSH, cSSH2_AGENTC_REQUEST_IDENTITIES, SSH2_AGENT_IDENTITIES_ANSWER, SSHException, AgentKey, Agent
+from paramiko.agent import (AgentSSH, cSSH2_AGENTC_REQUEST_IDENTITIES,
+                            SSH2_AGENT_IDENTITIES_ANSWER, SSHException, 
+                            AgentKey, Agent)
 from Jumpscale import j # J due to recursive import issue
 JSBASE = j.application.jsbase_get_class()
 
