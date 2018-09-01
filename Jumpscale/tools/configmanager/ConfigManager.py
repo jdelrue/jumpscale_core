@@ -1,7 +1,7 @@
 import os
 import copy
-from .JSBaseClassConfig import JSBaseClassConfig
-from .JSBaseClassConfigs import JSBaseClassConfigs
+from .JSBaseClassConfig import JSBaseClassConfig, _JSBaseClassConfig
+from .JSBaseClassConfigs import JSBaseClassConfigs, _JSBaseClassConfigs
 import sys
 
 
@@ -208,6 +208,14 @@ class ConfigFactory(object):
 
         return cpath, g.remoteUrl
 
+
+    @property
+    def _base_class_config(self):
+        return _JSBaseClassConfig
+
+    @property
+    def _base_class_configs(self):
+        return _JSBaseClassConfigs
 
     @property
     def base_class_config(self):

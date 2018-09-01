@@ -4,7 +4,7 @@ from Jumpscale import j # required because jumpscale.py doesn't exist at setup
 JSBASE = j.application.jsbase_get_class()
 
 
-class JSBaseClassConfigs:
+class _JSBaseClassConfigs:
     """ collection class to deal with multiple instances
     """
 
@@ -94,3 +94,8 @@ class JSBaseClassConfigs:
         for name in j.tools.configmanager.list(location=self.__jslocation__):
             res.append(self.get(name, create=False))
         return res
+
+class JSBaseClassConfigs(JSBASE, _JSBaseClassConfigs):
+    def __init__(self, child_class=None, single_item=False):
+        JSBASE.__init__(self)
+        _JSBaseClassConfigs.__init__(self, child_class, single_item)

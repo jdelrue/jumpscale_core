@@ -3,13 +3,15 @@ from collections import OrderedDict
 
 JSBASE = j.application.jsbase_get_class()
 
+class _JSBaseClassConfig:
 
-class JSBaseClassConfig(JSBASE):
-
-    def __init__(self, instance="main", data={}, parent=None,
+    def __init__(self, instance="main", data=None, parent=None,
                  template=None, ui=None,
                  interactive=False): # XXX issue #36, set to False (was True)
-        JSBASE.__init__(self)
+        if data is None: # issue #131 - REALLY important
+            data = {}
+
+        #print ("jsbaseclassconfig", self._template)
         if parent is not None:
             self.__jslocation__ = parent.__jslocation__
         self._single_item = True
@@ -18,13 +20,14 @@ class JSBaseClassConfig(JSBASE):
             self._ui = j.tools.formbuilder.baseclass_get() # the default class
         else:
             self._ui = ui
-        if template is None:
-            raise RuntimeError(
-                "template needs to be specified, needs to be yaml or dict")
+        if template is not None:
+            self._template = template
+        if self._template is None:
+            raise RuntimeError("template needs to be specified, "
+                               "needs to be yaml or dict")
         self._config = None
         self._instance = instance
         self._parent = parent
-        self._template = template
         self.interactive = interactive and j.tools.configmanager.interactive
 
         self._config = j.tools.configmanager._get_for_obj(
@@ -109,3 +112,13 @@ class JSBaseClassConfig(JSBASE):
         return out
 
     __repr__ = __str__
+
+
+class JSBaseClassConfig(JSBASE, _JSBaseClassConfig):
+
+    def __init__(self, instance="main", data=None, parent=None,
+                 template=None, ui=None,
+                 interactive=False):
+        JSBASE.__init__(self)
+        _JSBaseClassConfig.__init__(self, instance, data, parent,
+                 template, ui, interactive)

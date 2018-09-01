@@ -8,7 +8,7 @@ from .AgentSSHKeys import *
 class SSHKeys:
 
     __jslocation__ = "j.clients.sshkey"
-    __jsbase__ = "j.tools.configmanager.base_class_configs"
+    __jsbase__ = "j.tools.configmanager._base_class_configs"
 
     def __init__(self):
         self._sshagent = None

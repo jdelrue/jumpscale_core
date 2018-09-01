@@ -17,7 +17,7 @@ class TarantoolFactory:
     """
 
     __jslocation__ = "j.clients.tarantool"
-    __jsbase__ = 'j.tools.configmanager.base_class_configs'
+    __jsbase__ = 'j.tools.configmanager._base_class_configs'
     _child_class = TarantoolClient
 
     def __init__(self):

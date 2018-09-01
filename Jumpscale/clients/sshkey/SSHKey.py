@@ -12,17 +12,19 @@ path = ""
 """
 
 
-JSConfigBase = j.tools.configmanager.base_class_config
 
 
-class SSHKey(JSConfigBase):
+class SSHKey:
+
+    __jslocation__ = 'j.clients.sshkey.key'
+    __jsbase__ = 'j.tools.configmanager._base_class_config'
+    _template = TEMPLATE
 
     def __init__(self, instance, data=None, parent=None, interactive=True):
+
         if data is None:
             data = {}
         self._connected = None
-        JSConfigBase.__init__(self, instance=instance, data=data,
-                              parent=parent, template=TEMPLATE, interactive=interactive)
 
         keyspath="%s/keys"%(j.sal.fs.getcwd())
         if j.sal.fs.exists(keyspath):
