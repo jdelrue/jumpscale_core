@@ -802,6 +802,7 @@ class JSBase(BaseGetter):
         except AttributeError:
             altbase = None
         classes = [JSBase]
+        basekls = None
         if altbase:
             basekls = basej.jget(altbase)
             #print ("basekls", basekls)
@@ -813,7 +814,6 @@ class JSBase(BaseGetter):
             mro = inspect.getmro(self.__class__) # type(self).mro()
             #print ("baseinit", basej, self.__name__, args, kwargs)
             #print ("mro", type(self), inspect.getmro(self.__class__))
-            #print ("mrolist", mro, mro.index(self.__class__))
             for next_class in mro[1:]:  # slice to end
                 #print ("kls", next_class.__name__)
                 if hasattr(next_class, '__init__'):
@@ -823,6 +823,8 @@ class JSBase(BaseGetter):
                     if next_class.__name__ == 'JSBase':
                         continue
                     else:
+                        if basekls: # the extra class, call prior to next
+                            basekls.__init__(self, *args, **kwargs)
                         next_class.__init__(self, *args, **kwargs)
                     break
             self._call_late_inits()
@@ -831,7 +833,7 @@ class JSBase(BaseGetter):
         if derived_classes:
             # XXX have to have the first class be the Jumpscale one
             # e.g. derived_classes = [Jumpscale.core.Application.Application]
-            inits['__jsbasekls__'] = derived_classes[0]
+            inits['__jsbasekls__'] = firstkls
 
         if dynamicname is None:
             newname = "JSBased" + jname
