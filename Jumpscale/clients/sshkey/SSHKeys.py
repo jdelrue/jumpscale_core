@@ -1,7 +1,5 @@
 from Jumpscale import j # J due to recursive import issue
 
-from .SSHKey import SSHKey
-
 import os
 JSConfigBase = j.tools.configmanager.base_class_configs
 from .AgentSSHKeys import *
@@ -11,10 +9,13 @@ class SSHKeys:
 
     __jslocation__ = "j.clients.sshkey"
     __jsbase__ = "j.tools.configmanager.base_class_configs"
-    _child_class = SSHKey # picked up by JSBaseClassConfigs
 
     def __init__(self):
         self._sshagent = None
+
+    @property
+    def _child_class(self):
+        return self._jsbase(('SSHKey', 'Jumpscale.clients.sshkey.SSHKey'))
 
     @property
     def sshagent(self):
