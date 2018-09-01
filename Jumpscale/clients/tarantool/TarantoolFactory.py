@@ -20,13 +20,13 @@ class TarantoolFactory(JSConfigFactory):
     __jslocation__ = "j.clients.tarantool"
 
     def __init__(self):
+        JSConfigFactory.__init__(self, TarantoolClient)
         self.__imports__ = "tarantool"
         if j.core.platformtype.myplatform.isMac:
             self.cfgdir = "/usr/local/etc/tarantool/instances.enabled"
         else:
             self.cfgdir = "/etc/tarantool/instances.enabled"
         self._tarantoolq = {}
-        JSConfigFactory.__init__(self, TarantoolClient)
 
     def install(self):
         j.tools.prefab.local.db.tarantool.install()
