@@ -794,15 +794,28 @@ class JSBase(BaseGetter):
                              self.__jsmodulepath__, kls)
             derived_classes[idx] = nkls
 
-        classes = [JSBase] + copy(derived_classes)
+        # check if the top derived class wants to have a different (extra)
+        # base, and if so add it.
+        firstkls = derived_classes[0]
+        try:
+            altbase = getattr(firstkls, '__jsbase__')
+        except AttributeError:
+            altbase = None
+        classes = [JSBase]
+        if altbase:
+            basekls = basej.jget(altbase)
+            #print ("basekls", basekls)
+            derived_classes = [firstkls, basekls] + derived_classes[1:]
+        classes += copy(derived_classes)
 
         def initfn(self, *args, **kwargs):
             JSBase.__init__(self, _logger=basej and basej._logger or None)
-            mro = type(self).mro()
+            mro = inspect.getmro(self.__class__) # type(self).mro()
             #print ("baseinit", basej, self.__name__, args, kwargs)
             #print ("mro", type(self), inspect.getmro(self.__class__))
             #print ("mrolist", mro, mro.index(self.__class__))
             for next_class in mro[1:]:  # slice to end
+                #print ("kls", next_class.__name__)
                 if hasattr(next_class, '__init__'):
                     #print ("calling", next_class.__name__)
                     if next_class.__name__ == 'BaseGetter':

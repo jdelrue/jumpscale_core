@@ -7,11 +7,13 @@ JSConfigBase = j.tools.configmanager.base_class_configs
 from .AgentSSHKeys import *
 
 
-class SSHKeys(JSConfigBase):
+class SSHKeys:
+
+    __jslocation__ = "j.clients.sshkey"
+    __jsbase__ = "j.tools.configmanager.base_class_configs"
+    _child_class = SSHKey # picked up by JSBaseClassConfigs
 
     def __init__(self):
-        self.__jslocation__ = "j.clients.sshkey"
-        JSConfigBase.__init__(self, SSHKey)
         self._sshagent = None
 
     @property
