@@ -70,6 +70,10 @@ to test that it worked:
 js_shell
 ```
 
+to run the test suite:
+
+* python3 setup.py test
+
 ### Install (and upgrade as opposed to blowing everything away)
 
 This option can be used on debian to carry out either an install or
