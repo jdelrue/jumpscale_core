@@ -225,6 +225,9 @@ skipproperties = [
         # https://github.com/threefoldtech/jumpscale_core/issues/124
         'j.clients.google_compute',
 
+        # https://github.com/threefoldtech/jumpscale_core/issues/125
+        'j.sal.docker',
+
     ]
 
 # use this for testing of a restricted set of tests
