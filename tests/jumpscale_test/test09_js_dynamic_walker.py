@@ -228,6 +228,9 @@ skipproperties = [
         # https://github.com/threefoldtech/jumpscale_core/issues/125
         'j.sal.docker',
 
+        # https://github.com/threefoldtech/jumpscale_core/issues/126
+        'j.clients.itsyouonline.test',
+
     ]
 
 # use this for testing of a restricted set of tests
