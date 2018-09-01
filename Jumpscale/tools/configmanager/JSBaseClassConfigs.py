@@ -15,14 +15,14 @@ class JSBaseClassConfigs(JSBASE):
         @param single_item: In the case this factory will only ever return the same instance
                             set single_item to True
         """
+        JSBASE.__init__(self)
+
         if not isclass(child_class):
             raise TypeError("child_class need to be a class not %s" %
                             type(child_class))
 
         self._single_item = single_item
         self._child_class = child_class
-
-        JSBASE.__init__(self)
 
         # self.getall()
 
