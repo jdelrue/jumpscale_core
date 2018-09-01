@@ -10,7 +10,7 @@ class AgentSSHKeys(AgentSSH, JSBASE):
 
     def __init__(self):
         JSBASE.__init__(self)
-        if hasattr(self, "_conn"): # resource leak
+        if hasattr(self, "_conn") and self._conn is not None: # resource leak
             self._conn.close()
         self._conn = None
         self._keys = ()
