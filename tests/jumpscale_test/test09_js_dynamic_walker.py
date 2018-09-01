@@ -231,6 +231,9 @@ skipproperties = [
         # https://github.com/threefoldtech/jumpscale_core/issues/126
         'j.clients.itsyouonline.test',
 
+        # https://github.com/threefoldtech/jumpscale_core/issues/127
+        'j.clients.openvcloud.test',
+
     ]
 
 # use this for testing of a restricted set of tests
