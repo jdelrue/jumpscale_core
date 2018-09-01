@@ -219,6 +219,9 @@ skipproperties = [
         # https://github.com/threefoldtech/jumpscale_core/issues/121
         'j.clients.ssh.test_packetnet',
 
+        # https://github.com/threefoldtech/jumpscale_core/issues/123
+        'j.servers.digitalme.test_servers',
+
     ]
 
 # use this for testing of a restricted set of tests
