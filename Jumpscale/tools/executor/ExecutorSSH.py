@@ -8,6 +8,7 @@ class ExecutorSSH(ExecutorBase):
     def __init__(self, sshclient, debug=False, checkok=False):
         ExecutorBase.__init__(self, debug=debug, checkok=checkok)
 
+        print ("executorssh", sshclient)
         self.sshclient = sshclient
         self.type = "ssh"
 
