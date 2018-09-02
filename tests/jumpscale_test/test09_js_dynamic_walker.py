@@ -283,6 +283,11 @@ skipproperties = [
         # https://github.com/threefoldtech/jumpscale_lib/issues/107
         'j.clients.zerotier.test', 
 
+        # https://github.com/threefoldtech/digitalme/issues/35
+        'j.data.schema.test',
+        'j.data.schema.test1',
+        'j.data.schema.test3',
+
     ]
 
 # use this for testing of a restricted set of tests
