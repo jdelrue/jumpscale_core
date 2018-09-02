@@ -62,7 +62,7 @@ def compare(tree, j, obj1, obj2, depth, actionfn=None,
                 subobj1 = getattr(obj1, subname)
                 subobj2 = getattr(obj2, subname)
             except Exception as e:
-                errorfn(tree, j, obj1, obj2, depth, e)
+                errorfn(tree, j, obj1, obj2, depth, e, subname)
                 continue
         else:
             subobj1 = getattr(obj1, subname)
@@ -94,15 +94,19 @@ dynamic_test_count = 0
 class TestJSDynamicWalkerTestSearch(TestcasesBase):
     pass
 
-def _errortest(tree, j, obj1, obj2, depth, e):
+def _errortest(tree, j, obj1, obj2, depth, e, subname=None):
+    if subname is None:
+        subname = ""
+    else:
+        subname = "_" + subname
     global dynamic_test_count
     dynamic_test_count += 1
     def _testfn(*args, **kwargs):
-        print ("error walking object %s" % tree)
+        print ("error walking object %s%s" % (tree, subname))
         raise e
     name = tree.replace(".", "_")
     setattr(TestJSDynamicWalkerTestSearch,
-            "test%4d_%s_error" % (dynamic_test_count, name),
+            "test%4d_%s%s_error" % (dynamic_test_count, name, subname),
             _testfn)
 
 def _listtests(tree, j, obj1, obj2, depth):
