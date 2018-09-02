@@ -266,6 +266,10 @@ skipproperties = [
         # https://github.com/threefoldtech/jumpscale_core/issues/126
         'j.tools.flist',
 
+        # https://github.com/threefoldtech/digitalme/issues/33
+        'j.servers.raftserver.test',
+        'j.servers.raftserver.test_nopasswd',
+
     ]
 
 # use this for testing of a restricted set of tests
