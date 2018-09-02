@@ -53,6 +53,19 @@ def compare(tree, j, obj1, obj2, depth, actionfn=None,
 
     for subname in isin:
         fullname = "%s.%s" % (tree, subname)
+        if False:
+            with open("/tmp/subnames.txt", "a+") as f:
+                # get a list of the names to triage a walker-problem
+                # only store properties that have no underscore in the path
+                # e.g. no j.cache._something
+                testparts = fullname.split(".")
+                nounderscorestart = False
+                for x in testparts:
+                    if x.startswith("_"):
+                        nounderscorestart = True
+                        break
+                if not nounderscorestart:
+                    f.write("'%s',\n" % fullname)
         if includeonly and fullname not in includeonly:
             continue
         if fullname in exclude:
@@ -252,6 +265,9 @@ skipproperties = [
 # use this for testing of a restricted set of tests
 onlyproperties = [
     #'j.clients.zdb.test',
+    #'j.data',
+    #'j.data.schema',
+    #'j.data.schema.test2',
     ]
 
 compare('j', j, j, j, 3, _listtests, includeonly=onlyproperties,
