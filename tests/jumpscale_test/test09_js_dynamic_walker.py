@@ -277,6 +277,9 @@ skipproperties = [
         'j.data.markdown', # actually have to disable it all
         'j.data.markdown.test',
 
+        # https://github.com/threefoldtech/jumpscale_lib/issues/106
+        'j.sal.bind', # have to disable the whole lot
+
     ]
 
 # use this for testing of a restricted set of tests
