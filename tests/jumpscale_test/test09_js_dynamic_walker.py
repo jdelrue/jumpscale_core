@@ -280,6 +280,9 @@ skipproperties = [
         # https://github.com/threefoldtech/jumpscale_lib/issues/106
         'j.sal.bind', # have to disable the whole lot
 
+        # https://github.com/threefoldtech/jumpscale_lib/issues/107
+        'j.clients.zerotier.test', 
+
     ]
 
 # use this for testing of a restricted set of tests
