@@ -263,6 +263,9 @@ skipproperties = [
         # https://github.com/threefoldtech/digitalme/issues/36
         'j.servers.gedis.test',
 
+        # https://github.com/threefoldtech/jumpscale_core/issues/126
+        'j.tools.flist',
+
     ]
 
 # use this for testing of a restricted set of tests
