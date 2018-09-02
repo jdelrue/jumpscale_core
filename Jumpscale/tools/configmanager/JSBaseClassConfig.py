@@ -17,7 +17,7 @@ class _JSBaseClassConfig:
         self._single_item = True
 
         if ui is None:
-            self._ui = j.tools.formbuilder.baseclass_get() # the default class
+            self._ui = self.j.tools.formbuilder.baseclass_get() # the default class
         else:
             self._ui = ui
         if template is not None:
@@ -28,9 +28,9 @@ class _JSBaseClassConfig:
         self._config = None
         self._instance = instance
         self._parent = parent
-        self.interactive = interactive and j.tools.configmanager.interactive
+        self.interactive = interactive and self.j.tools.configmanager.interactive
 
-        self._config = j.tools.configmanager._get_for_obj(
+        self._config = self.j.tools.configmanager._get_for_obj(
             self, instance=self._instance, data=data,
             template=self._template, ui=self._ui)
 
@@ -44,7 +44,7 @@ class _JSBaseClassConfig:
     @property
     def logger(self):
         if self._logger is None:
-            self._logger = j.logging.get(
+            self._logger = self.j.logging.get(
                 "%s.%s" %
                 (self.__jslocation__,
                  self._instance),
@@ -94,7 +94,7 @@ class _JSBaseClassConfig:
             msg = self.config_check()
             if msg is not None and msg != "":
                 self.logger.debug(msg)
-                j.tools.console.askString("please correct the information in "
+                self.j.tools.console.askString("please correct the information in "
                                         "next configuraton screen, press enter")
             else:
                 break
