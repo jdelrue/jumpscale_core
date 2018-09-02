@@ -48,6 +48,14 @@ def jspath_import(modulepath, fullpath):
     module = sys.modules.get(modulepath, None)
     if not module:
         parent_name = modulepath.rpartition('.')[0]
+
+        # ok check parent not in modules, if not, track that down recursively
+        if parent_name:
+            parentmodule = sys.modules.get(parent_name, None)
+            if not parentmodule:
+                print ("jspath_import parent fullpath %s modulepath %s" % \
+                            (fullpath, modulepath))
+                #jspath_import(parent_name, parent_fullpath)
         spec = importlib.util.spec_from_file_location(modulepath, fullpath)
         #print ("parentname", modulepath, parent_name)
         #print ("spec", spec, dir(spec))
