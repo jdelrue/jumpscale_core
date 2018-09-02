@@ -22,7 +22,7 @@ js_config init
 """
 
 
-class ConfigFactory(object):
+class ConfigFactory:
 
     __jslocation__ = "j.tools.configmanager"
 
@@ -35,6 +35,10 @@ class ConfigFactory(object):
 
         self.Config = self._jsbase(("Config",
             'Jumpscale.tools.configmanager.Config'))
+        #self.JSBaseClassConfigs = self._jsbase(('_JSBaseClassConfigs',
+        #                  'Jumpscale.tools.configmanager.JSBaseClassConfigs'))
+        #self.JSBaseClassConfig = self._jsbase(('_JSBaseClassConfig',
+        #                  'Jumpscale.tools.configmanager.JSBaseClassConfig'))
 
     def reset(self, location=None, instance=None, force=False):
         """
