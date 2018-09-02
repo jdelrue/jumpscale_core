@@ -274,8 +274,13 @@ skipproperties = [
         'j.servers.dns.test',
 
         # https://github.com/threefoldtech/jumpscale_lib/issues/105
+        # related to below
         'j.data.markdown', # actually have to disable it all
         'j.data.markdown.test',
+
+        # https://github.com/threefoldtech/digitalme/issues/39
+        # related to above
+        'j.servers.web', # have to disable the whole lot
 
         # https://github.com/threefoldtech/jumpscale_lib/issues/106
         'j.sal.bind', # have to disable the whole lot
