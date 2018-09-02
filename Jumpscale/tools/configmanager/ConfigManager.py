@@ -35,6 +35,8 @@ class ConfigFactory:
 
         self.Config = self._jsbase(("Config",
             'Jumpscale.tools.configmanager.Config'))
+        # these can be put in here later, can't use them until all
+        # code is converted to j-less
         #self.JSBaseClassConfigs = self._jsbase(('_JSBaseClassConfigs',
         #                  'Jumpscale.tools.configmanager.JSBaseClassConfigs'))
         #self.JSBaseClassConfig = self._jsbase(('_JSBaseClassConfig',
