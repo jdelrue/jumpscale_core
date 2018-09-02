@@ -270,6 +270,8 @@ skipproperties = [
         'j.servers.raftserver.test',
         'j.servers.raftserver.test_nopasswd',
 
+        # https://github.com/threefoldtech/digitalme/issues/37
+        'j.servers.dns.test',
     ]
 
 # use this for testing of a restricted set of tests
