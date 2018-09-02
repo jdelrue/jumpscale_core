@@ -8,8 +8,9 @@ JSBASE = j.application.jsbase_get_class()
 
 class GitFactory(JSBASE):
 
+    __jslocation__ = "j.clients.git"
+
     def __init__(self):
-        self.__jslocation__ = "j.clients.git"
         JSBASE.__init__(self)
 
     def execute(self, *args, **kwargs):
