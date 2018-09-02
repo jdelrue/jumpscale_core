@@ -274,6 +274,7 @@ skipproperties = [
         'j.servers.dns.test',
 
         # https://github.com/threefoldtech/jumpscale_lib/issues/105
+        'j.data.markdown', # actually have to disable it all
         'j.data.markdown.test',
 
     ]
