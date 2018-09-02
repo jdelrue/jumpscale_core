@@ -260,6 +260,9 @@ skipproperties = [
         # https://github.com/threefoldtech/jumpscale_core/issues/130
         'j.tools.develop.test_executor',
 
+        # https://github.com/threefoldtech/digitalme/issues/36
+        'j.servers.gedis.test',
+
     ]
 
 # use this for testing of a restricted set of tests
