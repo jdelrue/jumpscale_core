@@ -293,6 +293,9 @@ skipproperties = [
         'j.data.schema.test1',
         'j.data.schema.test3',
 
+        # https://github.com/threefoldtech/jumpscale_lib/issues/108
+        'j.sal.windows', # have to disable the whole lot
+
     ]
 
 # use this for testing of a restricted set of tests
