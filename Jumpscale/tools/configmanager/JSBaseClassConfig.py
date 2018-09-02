@@ -45,9 +45,7 @@ class _JSBaseClassConfig:
     def logger(self):
         if self._logger is None:
             self._logger = self.j.logging.get(
-                "%s.%s" %
-                (self.__jslocation__,
-                 self._instance),
+                "%s.%s" % (self.__jslocation__, self._instance),
                 force=self._logger_force)
         return self._logger
 
