@@ -272,6 +272,10 @@ skipproperties = [
 
         # https://github.com/threefoldtech/digitalme/issues/37
         'j.servers.dns.test',
+
+        # https://github.com/threefoldtech/jumpscale_lib/issues/105
+        'j.data.markdown.test',
+
     ]
 
 # use this for testing of a restricted set of tests
