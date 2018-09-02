@@ -12,7 +12,6 @@ path = ""
 
 class SSHKey:
 
-    __jslocation__ = 'j.clients.sshkey.key'
     __jsbase__ = 'j.tools.configmanager._base_class_config'
     _template = TEMPLATE
 
