@@ -53,9 +53,15 @@ def jspath_import(modulepath, fullpath):
         if parent_name:
             parentmodule = sys.modules.get(parent_name, None)
             if not parentmodule:
-                print ("jspath_import parent fullpath %s modulepath %s" % \
-                            (fullpath, modulepath))
-                #jspath_import(parent_name, parent_fullpath)
+                #print ("jspath_import parent fullpath %s modulepath %s" % \
+                #            (fullpath, modulepath))
+                parent_fullpath, parentimport = os.path.split(fullpath)
+                if parentimport == '__init__.py':
+                    parent_fullpath = os.path.dirname(parent_fullpath)
+                parent_fullpath = os.path.join(parent_fullpath, "__init__.py")
+                #print ("parent fullpath %s modulepath %s" % \
+                #            (parent_fullpath, parent_name))
+                jspath_import(parent_name, parent_fullpath)
         spec = importlib.util.spec_from_file_location(modulepath, fullpath)
         #print ("parentname", modulepath, parent_name)
         #print ("spec", spec, dir(spec))
