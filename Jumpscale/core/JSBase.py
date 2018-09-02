@@ -43,7 +43,7 @@ def _import_parent_recurse(mpathname, parent_name):
 
 def jspath_import(modulepath, fullpath):
 
-    print ("jspath_import fullpath %s modulepath %s" % (fullpath, modulepath))
+    #print ("jspath_import fullpath %s modulepath %s" % (fullpath, modulepath))
 
     module = sys.modules.get(modulepath, None)
     if not module:
