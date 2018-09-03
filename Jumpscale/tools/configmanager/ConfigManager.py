@@ -1,5 +1,6 @@
 import os
 import copy
+import Jumpscale.tools.configmanager
 from .JSBaseClassConfig import JSBaseClassConfig, _JSBaseClassConfig
 from .JSBaseClassConfigs import JSBaseClassConfigs, _JSBaseClassConfigs
 import sys
