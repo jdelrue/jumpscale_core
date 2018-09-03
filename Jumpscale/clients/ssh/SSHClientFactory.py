@@ -51,7 +51,7 @@ class SSHClientFactory(JSConfigBase):
         cl = self.get(instance=instance, data=data, die=die, use_paramiko=use_paramiko)
         return cl
 
-    def get(self, instance="main", data={}, create=True, die=True, interactive=False, use_paramiko=False):
+    def get(self, instance="main", data=None, create=True, die=True, interactive=False, use_paramiko=False):
         """
         Get an instance of the SSHClient
 
@@ -84,6 +84,8 @@ class SSHClientFactory(JSConfigBase):
         '')
 
         """
+        if data is None:
+            data = {}
         instance = instance.replace(".", "-")  # allows address to be used
         if not create and instance not in self.list():
             if die:

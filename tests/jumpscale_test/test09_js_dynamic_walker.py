@@ -53,6 +53,19 @@ def compare(tree, j, obj1, obj2, depth, actionfn=None,
 
     for subname in isin:
         fullname = "%s.%s" % (tree, subname)
+        if False:
+            with open("/tmp/subnames.txt", "a+") as f:
+                # get a list of the names to triage a walker-problem
+                # only store properties that have no underscore in the path
+                # e.g. no j.cache._something
+                testparts = fullname.split(".")
+                nounderscorestart = False
+                for x in testparts:
+                    if x.startswith("_"):
+                        nounderscorestart = True
+                        break
+                if not nounderscorestart:
+                    f.write("'%s',\n" % fullname)
         if includeonly and fullname not in includeonly:
             continue
         if fullname in exclude:
@@ -62,7 +75,7 @@ def compare(tree, j, obj1, obj2, depth, actionfn=None,
                 subobj1 = getattr(obj1, subname)
                 subobj2 = getattr(obj2, subname)
             except Exception as e:
-                errorfn(tree, j, obj1, obj2, depth, e)
+                errorfn(tree, j, obj1, obj2, depth, e, subname)
                 continue
         else:
             subobj1 = getattr(obj1, subname)
@@ -94,15 +107,19 @@ dynamic_test_count = 0
 class TestJSDynamicWalkerTestSearch(TestcasesBase):
     pass
 
-def _errortest(tree, j, obj1, obj2, depth, e):
+def _errortest(tree, j, obj1, obj2, depth, e, subname=None):
+    if subname is None:
+        subname = ""
+    else:
+        subname = "_" + subname
     global dynamic_test_count
     dynamic_test_count += 1
     def _testfn(*args, **kwargs):
-        print ("error walking object %s" % tree)
+        print ("error walking object %s%s" % (tree, subname))
         raise e
     name = tree.replace(".", "_")
     setattr(TestJSDynamicWalkerTestSearch,
-            "test%4d_%s_error" % (dynamic_test_count, name),
+            "test%4d_%s%s_error" % (dynamic_test_count, name, subname),
             _testfn)
 
 def _listtests(tree, j, obj1, obj2, depth):
@@ -216,11 +233,77 @@ skipproperties = [
         # https://github.com/threefoldtech/jumpscale_core/issues/120
         'j.clients.gitea.test',
 
+        # https://github.com/threefoldtech/jumpscale_core/issues/121
+        'j.clients.ssh.test_packetnet',
+
+        # https://github.com/threefoldtech/jumpscale_core/issues/123
+        'j.servers.digitalme.test_servers',
+
+        # https://github.com/threefoldtech/jumpscale_core/issues/124
+        'j.clients.google_compute',
+
+        # https://github.com/threefoldtech/jumpscale_core/issues/125
+        'j.sal.docker',
+
+        # https://github.com/threefoldtech/jumpscale_core/issues/126
+        'j.clients.itsyouonline.test',
+
+        # https://github.com/threefoldtech/jumpscale_core/issues/127
+        'j.clients.openvcloud.test',
+
+        # https://github.com/threefoldtech/jumpscale_core/issues/128
+        'j.clients.openvcloud.test',
+
+        # https://github.com/threefoldtech/jumpscale_core/issues/129
+        'j.clients.sendgrid.test',
+
+        # https://github.com/threefoldtech/jumpscale_core/issues/130
+        'j.tools.develop.test_executor',
+
+        # https://github.com/threefoldtech/digitalme/issues/36
+        'j.servers.gedis.test',
+
+        # https://github.com/threefoldtech/jumpscale_core/issues/126
+        'j.tools.flist',
+
+        # https://github.com/threefoldtech/digitalme/issues/33
+        'j.servers.raftserver.test',
+        'j.servers.raftserver.test_nopasswd',
+
+        # https://github.com/threefoldtech/digitalme/issues/37
+        'j.servers.dns.test',
+
+        # https://github.com/threefoldtech/jumpscale_lib/issues/105
+        # related to below
+        'j.data.markdown', # actually have to disable it all
+        'j.data.markdown.test',
+
+        # https://github.com/threefoldtech/digitalme/issues/39
+        # related to above
+        'j.servers.web', # have to disable the whole lot
+
+        # https://github.com/threefoldtech/jumpscale_lib/issues/106
+        'j.sal.bind', # have to disable the whole lot
+
+        # https://github.com/threefoldtech/jumpscale_lib/issues/107
+        'j.clients.zerotier.test', 
+
+        # https://github.com/threefoldtech/digitalme/issues/35
+        'j.data.schema.test',
+        'j.data.schema.test1',
+        'j.data.schema.test3',
+
+        # https://github.com/threefoldtech/jumpscale_lib/issues/108
+        'j.sal.windows', # have to disable the whole lot
+
     ]
 
 # use this for testing of a restricted set of tests
 onlyproperties = [
     #'j.clients.zdb.test',
+    #'j.data',
+    #'j.data.schema',
+    #'j.data.schema.test2',
     ]
 
 compare('j', j, j, j, 3, _listtests, includeonly=onlyproperties,

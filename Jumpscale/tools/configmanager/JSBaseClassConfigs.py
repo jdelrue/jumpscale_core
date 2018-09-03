@@ -4,25 +4,29 @@ from Jumpscale import j # required because jumpscale.py doesn't exist at setup
 JSBASE = j.application.jsbase_get_class()
 
 
-class JSBaseClassConfigs(JSBASE):
-    """
-    collection class to deal with multiple instances
+class _JSBaseClassConfigs:
+    """ collection class to deal with multiple instances
     """
 
-    def __init__(self, child_class, single_item=False):
+    # XXX don't add __jslocation__ it recursively loads configs
+    # and things get very confuUuused...
+    # __jslocation__ = 'j.tools.configmanager.base_class_configs'
+
+    def __init__(self, child_class=None, single_item=False):
         """
         @param child_class: The class that this factory will create
         @param single_item: In the case this factory will only ever return the same instance
                             set single_item to True
         """
-        if not isclass(child_class):
+        if child_class is not None:
+            self._child_class = child_class
+        #print ("JSBaseClassConfigs", self, self._child_class)
+
+        if not isclass(self._child_class):
             raise TypeError("child_class need to be a class not %s" %
-                            type(child_class))
+                            type(self._child_class))
 
         self._single_item = single_item
-        self._child_class = child_class
-
-        JSBASE.__init__(self)
 
         # self.getall()
 
@@ -61,8 +65,7 @@ class JSBaseClassConfigs(JSBASE):
         return self.get(instance=instance, data=data, create=True)
 
     def reset(self):
-        j.tools.configmanager.delete(
-            location=self.__jslocation__, instance="*")
+        self.j.tools.configmanager.delete(location=self.__jslocation__, instance="*")
         self.getall()
 
     def delete(self, instance="", prefix=""):
@@ -70,15 +73,15 @@ class JSBaseClassConfigs(JSBASE):
             for item in self.list(prefix=prefix):
                 self.delete(instance=item)
             return
-        j.tools.configmanager.delete(
-            location=self.__jslocation__, instance=instance)
+        self.j.tools.configmanager.delete(location=self.__jslocation__,
+                                     instance=instance)
 
     def count(self):
         return len(self.list())
 
     def list(self, prefix=""):
         res = []
-        for item in j.tools.configmanager.list(location=self.__jslocation__):
+        for item in self.j.tools.configmanager.list(location=self.__jslocation__):
             if prefix != "":
                 if item.startswith(prefix):
                     res.append(item)
@@ -88,6 +91,11 @@ class JSBaseClassConfigs(JSBASE):
 
     def getall(self):
         res = []
-        for name in j.tools.configmanager.list(location=self.__jslocation__):
+        for name in self.j.tools.configmanager.list(location=self.__jslocation__):
             res.append(self.get(name, create=False))
         return res
+
+class JSBaseClassConfigs(JSBASE, _JSBaseClassConfigs):
+    def __init__(self, child_class=None, single_item=False):
+        JSBASE.__init__(self)
+        _JSBaseClassConfigs.__init__(self, child_class, single_item)

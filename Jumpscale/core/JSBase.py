@@ -48,6 +48,23 @@ def jspath_import(modulepath, fullpath):
     module = sys.modules.get(modulepath, None)
     if not module:
         parent_name = modulepath.rpartition('.')[0]
+
+        # ok check parent not in modules, if not, track that down recursively
+        # XXX however... ahh slightly unfortunate: we also need to check
+        # all the plugins - not just the current parent path - to see if
+        # the parent name matches there.  whoops.
+        if False and parent_name:
+            parentmodule = sys.modules.get(parent_name, None)
+            if not parentmodule:
+                print ("jspath_import parent fullpath %s modulepath %s" % \
+                            (fullpath, modulepath))
+                parent_fullpath, parentimport = os.path.split(fullpath)
+                if parentimport == '__init__.py':
+                    parent_fullpath = os.path.dirname(parent_fullpath)
+                parent_fullpath = os.path.join(parent_fullpath, "__init__.py")
+                print ("parent fullpath %s modulepath %s" % \
+                            (parent_fullpath, parent_name))
+                jspath_import(parent_name, parent_fullpath)
         spec = importlib.util.spec_from_file_location(modulepath, fullpath)
         #print ("parentname", modulepath, parent_name)
         #print ("spec", spec, dir(spec))
@@ -794,15 +811,28 @@ class JSBase(BaseGetter):
                              self.__jsmodulepath__, kls)
             derived_classes[idx] = nkls
 
-        classes = [JSBase] + copy(derived_classes)
+        # check if the top derived class wants to have a different (extra)
+        # base, and if so add it.
+        firstkls = derived_classes[0]
+        try:
+            altbase = getattr(firstkls, '__jsbase__')
+        except AttributeError:
+            altbase = None
+        classes = [JSBase]
+        basekls = None
+        if altbase:
+            basekls = basej.jget(altbase)
+            #print ("basekls", basekls)
+            derived_classes = [firstkls, basekls] + derived_classes[1:]
+        classes += copy(derived_classes)
 
         def initfn(self, *args, **kwargs):
             JSBase.__init__(self, _logger=basej and basej._logger or None)
-            mro = type(self).mro()
+            mro = inspect.getmro(self.__class__) # type(self).mro()
             #print ("baseinit", basej, self.__name__, args, kwargs)
             #print ("mro", type(self), inspect.getmro(self.__class__))
-            #print ("mrolist", mro, mro.index(self.__class__))
             for next_class in mro[1:]:  # slice to end
+                #print ("kls", next_class.__name__)
                 if hasattr(next_class, '__init__'):
                     #print ("calling", next_class.__name__)
                     if next_class.__name__ == 'BaseGetter':
@@ -810,6 +840,8 @@ class JSBase(BaseGetter):
                     if next_class.__name__ == 'JSBase':
                         continue
                     else:
+                        if basekls: # the extra class, call prior to next
+                            basekls.__init__(self, *args, **kwargs)
                         next_class.__init__(self, *args, **kwargs)
                     break
             self._call_late_inits()
@@ -818,7 +850,7 @@ class JSBase(BaseGetter):
         if derived_classes:
             # XXX have to have the first class be the Jumpscale one
             # e.g. derived_classes = [Jumpscale.core.Application.Application]
-            inits['__jsbasekls__'] = derived_classes[0]
+            inits['__jsbasekls__'] = firstkls
 
         if dynamicname is None:
             newname = "JSBased" + jname

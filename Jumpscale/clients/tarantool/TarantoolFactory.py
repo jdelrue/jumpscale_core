@@ -4,9 +4,8 @@ from jumpscale import j
 from .TarantoolDB import TarantoolDB
 from .TarantoolClient import TarantoolClient
 
-JSConfigFactory = j.tools.configmanager.base_class_configs
 
-class TarantoolFactory(JSConfigFactory):
+class TarantoolFactory:
 
     """
     #server_start
@@ -18,6 +17,8 @@ class TarantoolFactory(JSConfigFactory):
     """
 
     __jslocation__ = "j.clients.tarantool"
+    __jsbase__ = 'j.tools.configmanager._base_class_configs'
+    _child_class = TarantoolClient
 
     def __init__(self):
         self.__imports__ = "tarantool"
@@ -26,7 +27,6 @@ class TarantoolFactory(JSConfigFactory):
         else:
             self.cfgdir = "/etc/tarantool/instances.enabled"
         self._tarantoolq = {}
-        JSConfigFactory.__init__(self, TarantoolClient)
 
     def install(self):
         j.tools.prefab.local.db.tarantool.install()

@@ -457,7 +457,8 @@ class JSLoader():
                 classname = line.replace(
                     "class ", "").split(":")[0].split(
                     "(", 1)[0].strip()
-                if classname == "JSBaseClassConfig":
+                if classname == "JSBaseClassConfig" or \
+                   classname == "_JSBaseClassConfig":
                     break
             if find_jslocation(line) and locfound == False:
                 if classname is None:
@@ -474,7 +475,7 @@ class JSLoader():
                         "Could not find class in %s "
                         "while loading jumpscale lib." % path)
                 # XXX not a good way to get value after equals (remove " and ')
-                #print ("line ------->", line)
+                #print ("line ------->", line, path)
                 location = line.split("=", 1)[1]
                 location = location.replace('"', "")
                 location = location.replace("'", "").strip()

@@ -70,6 +70,14 @@ to test that it worked:
 js_shell
 ```
 
+to run the test suite:
+
+* python3 setup.py test
+
+Note that it is a really, REALLY good idea to set up a chroot for running
+the unit tests, as they tend to mess with things like /etc/passwd, /etc/group,
+add stuff to ~/.profile and also have to be run as root
+
 ### Install (and upgrade as opposed to blowing everything away)
 
 This option can be used on debian to carry out either an install or

@@ -432,7 +432,7 @@ echo --TEXT--
         [myconfig]
         #giturl = "ssh://git@docs.agitsystem.com:7022/myusername/myconfig.git"
         giturl = ""
-        sshkeyname = ""
+        sshkeyname = "id_rsa"
         path = ""
 
         [logging]
@@ -447,6 +447,9 @@ echo --TEXT--
         TT = pytoml.loads(TSYSTEM)
 
         TT["dirs"] = DIRPATHS
+
+        # set up a default myconfig path.
+        TT['myconfig']['path'] = TT['dirs']['CODEDIR'] + "/local/stdorg/config"
 
         # need to see if this works everywhere but think so
         TT["dirs"]["TMPDIR"] = "/tmp"

@@ -1,28 +1,30 @@
-from Jumpscale import j # J due to recursive import issue
-
-from .SSHKey import SSHKey
-
 import os
-JSConfigBase = j.tools.configmanager.base_class_configs
-from .AgentSSHKeys import *
+from .AgentSSHKeys import AgentWithName
 
 
-class SSHKeys(JSConfigBase):
+class SSHKeys:
+
+    __jslocation__ = "j.clients.sshkey"
+    __jsbase__ = "j.tools.configmanager._base_class_configs"
 
     def __init__(self):
-        self.__jslocation__ = "j.clients.sshkey"
-        JSConfigBase.__init__(self, SSHKey)
         self._sshagent = None
+
+    @property
+    def _child_class(self):
+        return self._jsbase(('SSHKey', 'Jumpscale.clients.sshkey.SSHKey'))
 
     @property
     def sshagent(self):
         # AgentWithName
-        self._sshagent = AgentWithName()
+        DAC = self._jsbase(('AgentWithName',
+                            'Jumpscale.clients.sshkey.AgentSSHKeys'))
+        self._sshagent = DAC()
         return self._sshagent
 
     def key_get(self, path, load=True):
-        instance = j.sal.fs.getBaseName(path)
-        sshkey = self.get(instance, data={'path': path}, interactive=j.tools.configmanager.interactive)
+        instance = self.j.sal.fs.getBaseName(path)
+        sshkey = self.get(instance, data={'path': path}, interactive=self.j.tools.configmanager.interactive)
 
         if load:
             sshkey.load()
@@ -31,13 +33,13 @@ class SSHKeys(JSConfigBase):
     def key_generate(self, path, passphrase="", overwrite=False, load=False, returnObj=True):
         self.logger.debug("generate ssh key")
         if overwrite:
-            j.sal.fs.remove(path)
+            self.j.sal.fs.remove(path)
 
-        if not j.sal.fs.exists(path):
+        if not self.j.sal.fs.exists(path):
             cmd = 'ssh-keygen -t rsa -f %s -q -P "%s"' % (path, passphrase)
-            j.sal.process.execute(cmd, timeout=10)
+            self.j.sal.process.execute(cmd, timeout=10)
 
-        j.sal.fs.chmod(path, 0o600)
+        self.j.sal.fs.chmod(path, 0o600)
 
         # make sure key is loaded
         if load:
@@ -48,9 +50,9 @@ class SSHKeys(JSConfigBase):
             data = {}
             data["path"] = path
             data["passphrase_"] = passphrase
-            data["pubkey"] = j.sal.fs.fileGetContents(path+".pub")
-            data["privkey_"] = j.sal.fs.fileGetContents(path)
-            instance = j.sal.fs.getBaseName(path)
+            data["pubkey"] = self.j.sal.fs.fileGetContents(path+".pub")
+            data["privkey_"] = self.j.sal.fs.fileGetContents(path)
+            instance = self.j.sal.fs.getBaseName(path)
 
             sshkeyobj = self.get(instance=instance, data=data, interactive=False)
 
@@ -61,23 +63,23 @@ class SSHKeys(JSConfigBase):
         load the key on path
 
         """
-        if not j.sal.fs.exists(path):
+        if not self.j.sal.fs.exists(path):
             raise RuntimeError("Cannot find path:%sfor sshkey (private key)" % path)
 
-        j.clients.sshkey.sshagent_check()
+        self.j.clients.sshkey.sshagent_check()
 
-        if not j.sal.fs.exists(path):
+        if not self.j.sal.fs.exists(path):
             raise RuntimeError("sshkey not found in:'%s'" % path)
 
-        name = j.sal.fs.getBaseName(path)
+        name = self.j.sal.fs.getBaseName(path)
 
         if name in self.listnames():
             return self.get(instance=name, data={'path': path})
 
-        path0 = j.sal.fs.pathNormalize(path)  # otherwise the expect script will fail
+        path0 = self.j.sal.fs.pathNormalize(path)  # otherwise the expect script will fail
 
         self.logger.info("load ssh key: %s" % path0)
-        j.sal.fs.chmod(path, 0o600)
+        self.j.sal.fs.chmod(path, 0o600)
         if passphrase:
             self.logger.debug("load with passphrase")
             C = """
@@ -87,13 +89,13 @@ class SSHKeys(JSConfigBase):
                 echo {passphrase} | SSH_ASKPASS=./ap-cat.sh ssh-add -t {duration} {path}
                 """.format(path=path0, passphrase=passphrase, duration=duration)
             try:
-                j.sal.process.executeBashScript(content=C, showout=False)
+                self.j.sal.process.executeBashScript(content=C, showout=False)
             finally:
-                j.sal.fs.remove("ap-cat.sh")
+                self.j.sal.fs.remove("ap-cat.sh")
         else:
             # load without passphrase
             cmd = "ssh-add -t %s %s " % (duration, path0)
-            j.sal.process.execute(cmd)
+            self.j.sal.process.execute(cmd)
 
         self._sshagent = None  # to make sure it gets loaded again
 
@@ -110,10 +112,10 @@ class SSHKeys(JSConfigBase):
         '''
 
         bashprofile_path = os.path.expanduser("~/.profile_js")
-        if not j.sal.fs.exists(bashprofile_path):
-            j.sal.process.execute('touch %s' % bashprofile_path)
+        if not self.j.sal.fs.exists(bashprofile_path):
+            self.j.sal.process.execute('touch %s' % bashprofile_path)
 
-        content = j.sal.fs.readFile(bashprofile_path)
+        content = self.j.sal.fs.readFile(bashprofile_path)
         out = ""
         for line in content.split("\n"):
             if line.find("#JSSSHAGENT") != -1:
@@ -126,7 +128,7 @@ class SSHKeys(JSConfigBase):
         out += "export SSH_AUTH_SOCK=%s" % self._get_ssh_socket_path()
         out = out.replace("\n\n\n", "\n\n")
         out = out.replace("\n\n\n", "\n\n")
-        j.sal.fs.writeFile(bashprofile_path, out)
+        self.j.sal.fs.writeFile(bashprofile_path, out)
 
     def _init_ssh_env(self, force=True):
         if force or "SSH_AUTH_SOCK" not in os.environ:
@@ -138,7 +140,7 @@ class SSHKeys(JSConfigBase):
         if "SSH_AUTH_SOCK" in os.environ:
             return(os.environ["SSH_AUTH_SOCK"])
 
-        socketpath = "%s/sshagent_socket" % j.dirs.TMPDIR
+        socketpath = "%s/sshagent_socket" % self.j.dirs.TMPDIR
         os.environ['SSH_AUTH_SOCK'] = socketpath
         return socketpath
 
@@ -158,8 +160,8 @@ class SSHKeys(JSConfigBase):
         Returns Path of public key that is loaded in the agent
         @param keyname: name of key loaded to agent to get its path
         """
-        keyname = j.sal.fs.getBaseName(keyname)
-        for item in j.clients.sshkey.list():
+        keyname = self.j.sal.fs.getBaseName(keyname)
+        for item in self.j.clients.sshkey.list():
             if item.endswith(keyname):
                 return item
         if die:
@@ -172,8 +174,8 @@ class SSHKeys(JSConfigBase):
         Returns Content of public key that is loaded in the agent
         @param keyname: name of key loaded to agent to get content from
         """
-        keyname = j.sal.fs.getBaseName(keyname)
-        for name, pubkey in j.clients.sshkey.list(True):
+        keyname = self.j.sal.fs.getBaseName(keyname)
+        for name, pubkey in self.j.clients.sshkey.list(True):
             if name.endswith(keyname):
                 return pubkey
         if die:
@@ -187,21 +189,21 @@ class SSHKeys(JSConfigBase):
     #     adds sshkey to ssh-agent
     #     :param key: can be path or name of key
     #     """
-    #     if keyname_path ==j.sal.fs.getBaseName(keyname_path):
+    #     if keyname_path ==self.j.sal.fs.getBaseName(keyname_path):
     #         #is keyname
     #         keyname=keyname_path
-    #         keypath = "%s/.ssh/%s"%( j.dirs.HOMEDIR,keyname)
+    #         keypath = "%s/.ssh/%s"%( self.j.dirs.HOMEDIR,keyname)
     #     else:
-    #         if not j.sal.fs.exists(keyname_path):
+    #         if not self.j.sal.fs.exists(keyname_path):
     #             raise ValueError("cannot find key with path: %s" % keyname_path)
-    #         keyname=j.sal.fs.getBaseName(keyname_path)
+    #         keyname=self.j.sal.fs.getBaseName(keyname_path)
     #         keypath=keyname_path
 
     #     if keyname in self.listnames():
     #         return True
 
     #     cmd = "ssh-add %s" % keypath
-    #     return j.sal.process.executeInteractive(cmd)
+    #     return self.j.sal.process.executeInteractive(cmd)
 
     def list(self, key_included=False):
         """
@@ -224,7 +226,7 @@ class SSHKeys(JSConfigBase):
         #     self._init_ssh_env()
         # self.sshagent_check()
         # cmd = "ssh-add -L"
-        # return_code, out, err = j.sal.process.execute(cmd, showout=False, die=False, timeout=1)
+        # return_code, out, err = self.j.sal.process.execute(cmd, showout=False, die=False, timeout=1)
         # if return_code:
         #     if return_code == 1 and out.find("The agent has no identities") != -1:
         #         return []
@@ -237,24 +239,24 @@ class SSHKeys(JSConfigBase):
         #     return list(map(lambda key: key[2], keys))
 
     def listnames(self):
-        return [j.sal.fs.getBaseName(item) for item in self.list()]
+        return [self.j.sal.fs.getBaseName(item) for item in self.list()]
 
     def exists(self, name):
-        name = j.sal.fs.getBaseName(name)
+        name = self.j.sal.fs.getBaseName(name)
         return name in self.listnames()
 
     def knownhosts_remove(self, item):
         """
         :param item: is ip addr or hostname to be removed from known_hosts
         """
-        path = "%s/.ssh/known_hosts" % j.dirs.HOMEDIR
-        if j.sal.fs.exists(path):
+        path = "%s/.ssh/known_hosts" % self.j.dirs.HOMEDIR
+        if self.j.sal.fs.exists(path):
             out = ""
-            for line in j.sal.fs.readFile(path).split("\n"):
+            for line in self.j.sal.fs.readFile(path).split("\n"):
                 if line.find(item) is not -1:
                     continue
                 out += "%s\n" % line
-            j.sal.fs.writeFile(path, out)
+            self.j.sal.fs.writeFile(path, out)
 
     def sshagent_start(self):
         """
@@ -262,24 +264,24 @@ class SSHKeys(JSConfigBase):
         """
         socketpath = self._get_ssh_socket_path()
 
-        ssh_agents = j.sal.process.getPidsByFilter('ssh-agent')
+        ssh_agents = self.j.sal.process.getPidsByFilter('ssh-agent')
         for pid in ssh_agents:
-            p = j.sal.process.getProcessObject(pid)
+            p = self.j.sal.process.getProcessObject(pid)
             if socketpath not in p.cmdline():
-                j.sal.process.kill(pid)
+                self.j.sal.process.kill(pid)
 
-        if not j.sal.fs.exists(socketpath):
-            j.sal.fs.createDir(j.sal.fs.getParent(socketpath))
+        if not self.j.sal.fs.exists(socketpath):
+            self.j.sal.fs.createDir(self.j.sal.fs.getParent(socketpath))
             # ssh-agent not loaded
             self.logger.info("load ssh agent")
-            rc, out, err = j.sal.process.execute("ssh-agent -a %s" % socketpath,
+            rc, out, err = self.j.sal.process.execute("ssh-agent -a %s" % socketpath,
                                                  die=False,
                                                  showout=False,
                                                  timeout=20)
             if rc > 0:
                 raise RuntimeError("Could not start ssh-agent, \nstdout:%s\nstderr:%s\n" % (out, err))
             else:
-                if not j.sal.fs.exists(socketpath):
+                if not self.j.sal.fs.exists(socketpath):
                     err_msg = "Serious bug, ssh-agent not started while there was no error, "\
                               "should never get here"
                     raise RuntimeError(err_msg)
@@ -296,10 +298,10 @@ class SSHKeys(JSConfigBase):
 
                 pid = int(piditems[-1].split(" ")[-1].strip("; "))
 
-                socket_path = j.sal.fs.joinPaths("/tmp", "ssh-agent-pid")
-                j.sal.fs.writeFile(socket_path, str(pid))
+                socket_path = self.j.sal.fs.joinPaths("/tmp", "ssh-agent-pid")
+                self.j.sal.fs.writeFile(socket_path, str(pid))
                 self.sshagent_init()
-                j.clients.sshkey._sshagent = None
+                self.j.clients.sshkey._sshagent = None
             return
 
         # ssh agent should be loaded because ssh-agent socket has been
@@ -307,7 +309,7 @@ class SSHKeys(JSConfigBase):
         if os.environ.get("SSH_AUTH_SOCK") != socketpath:
             self._init_ssh_env()
 
-        j.clients.sshkey._sshagent = None
+        self.j.clients.sshkey._sshagent = None
 
     def sshagent_available(self):
         """
@@ -315,19 +317,19 @@ class SSHKeys(JSConfigBase):
         :return: bool
         """
         socket_path = self._get_ssh_socket_path()
-        if not j.sal.fs.exists(socket_path):
+        if not self.j.sal.fs.exists(socket_path):
             return False
         if "SSH_AUTH_SOCK" not in os.environ:
             self._init_ssh_env()
-        return_code, out, _ = j.sal.process.execute("ssh-add -l",
+        return_code, out, _ = self.j.sal.process.execute("ssh-add -l",
                                                     showout=False,
                                                     die=False)
         if 'The agent has no identities.' in out:
             return True
         if return_code != 0:
             # Remove old socket if can't connect
-            if j.sal.fs.exists(socket_path):
-                j.sal.fs.remove(socket_path)
+            if self.j.sal.fs.exists(socket_path):
+                self.j.sal.fs.remove(socket_path)
             return False
         else:
             return True
@@ -337,10 +339,10 @@ class SSHKeys(JSConfigBase):
         Kill all agents if more than one is found
         :param socketpath: socketpath
         """
-        j.sal.process.killall("ssh-agent")
+        self.j.sal.process.killall("ssh-agent")
         socketpath = self._get_ssh_socket_path() if not socketpath else socketpath
-        j.sal.fs.remove(socketpath)
-        j.sal.fs.remove(j.sal.fs.joinPaths('/tmp', "ssh-agent-pid"))
+        self.j.sal.fs.remove(socketpath)
+        self.j.sal.fs.remove(self.j.sal.fs.joinPaths('/tmp', "ssh-agent-pid"))
         self.logger.debug("ssh-agent killed")
 
     def test(self):
@@ -349,7 +351,7 @@ class SSHKeys(JSConfigBase):
         """
 
         self.logger_enable()
-        self.logger.info("sshkeys:%s" % j.clients.sshkey.listnames())
+        self.logger.info("sshkeys:%s" % self.j.clients.sshkey.listnames())
 
         self.sshagent_kill()  # goal is to kill & make sure it get's loaded automatically
 
@@ -366,7 +368,7 @@ class SSHKeys(JSConfigBase):
 
         assert skey.is_loaded()
 
-        if not j.core.platformtype.myplatform.isMac:
+        if not self.j.core.platformtype.myplatform.isMac:
             # on mac does not seem to work
             skey.unload()
             assert skey.is_loaded() is False

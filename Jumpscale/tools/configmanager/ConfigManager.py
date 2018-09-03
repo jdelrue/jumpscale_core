@@ -1,7 +1,7 @@
 import os
 import copy
-from .JSBaseClassConfig import JSBaseClassConfig
-from .JSBaseClassConfigs import JSBaseClassConfigs
+from .JSBaseClassConfig import JSBaseClassConfig, _JSBaseClassConfig
+from .JSBaseClassConfigs import JSBaseClassConfigs, _JSBaseClassConfigs
 import sys
 
 
@@ -22,7 +22,7 @@ js_config init
 """
 
 
-class ConfigFactory(object):
+class ConfigFactory:
 
     __jslocation__ = "j.tools.configmanager"
 
@@ -35,6 +35,12 @@ class ConfigFactory(object):
 
         self.Config = self._jsbase(("Config",
             'Jumpscale.tools.configmanager.Config'))
+        # these can be put in here later, can't use them until all
+        # code is converted to j-less
+        #self.JSBaseClassConfigs = self._jsbase(('_JSBaseClassConfigs',
+        #                  'Jumpscale.tools.configmanager.JSBaseClassConfigs'))
+        #self.JSBaseClassConfig = self._jsbase(('_JSBaseClassConfig',
+        #                  'Jumpscale.tools.configmanager.JSBaseClassConfig'))
 
     def reset(self, location=None, instance=None, force=False):
         """
@@ -208,6 +214,14 @@ class ConfigFactory(object):
 
         return cpath, g.remoteUrl
 
+
+    @property
+    def _base_class_config(self):
+        return _JSBaseClassConfig
+
+    @property
+    def _base_class_configs(self):
+        return _JSBaseClassConfigs
 
     @property
     def base_class_config(self):
