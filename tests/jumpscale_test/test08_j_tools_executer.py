@@ -4,7 +4,7 @@ import random
 import platform
 import sys
 from .testcases_base import TestcasesBase, squash_dictionaries
-from nose_parameterized import parameterized
+from parameterized import parameterized
 
 
 class EXECUTER(TestcasesBase):

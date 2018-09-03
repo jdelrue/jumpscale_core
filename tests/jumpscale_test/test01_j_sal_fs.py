@@ -2,7 +2,7 @@ import os
 import shutil
 from random import randint
 from .testcases_base import TestcasesBase
-from nose_parameterized import parameterized
+from parameterized import parameterized
 
 
 class TestJSALFS(TestcasesBase):
