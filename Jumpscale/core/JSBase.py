@@ -68,7 +68,8 @@ def jspath_import(modulepath, fullpath):
                                 (parent_fullpath, parent_name))
                     jspath_import(parent_name, parent_fullpath)
                 else:
-                    parent = importlib.import_module(parent_name)
+                    #parent = importlib.import_module(parent_name)
+                    __import__(parent_name)
                     #print ("jspath_imported parent %s %s" % \
                     #            (parent_name, repr(parent)))
         spec = importlib.util.spec_from_file_location(modulepath, fullpath)
