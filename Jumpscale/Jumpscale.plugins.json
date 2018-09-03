@@ -1,0 +1,347 @@
+[
+    {
+        "j.clients": {
+            "git": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/clients/git/GitFactory.py",
+                "GitFactory",
+                []
+            ],
+            "http": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/clients/http/HttpClient.py",
+                "HttpClient",
+                []
+            ],
+            "redis": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/clients/redis/RedisFactory.py",
+                "RedisFactory",
+                []
+            ],
+            "ssh": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/clients/ssh/SSHClientFactory.py",
+                "SSHClientFactory",
+                [
+                    "paramiko"
+                ]
+            ],
+            "sshkey": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/clients/sshkey/SSHKeys.py",
+                "SSHKeys",
+                []
+            ],
+            "tarantool": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/clients/tarantool/TarantoolFactory.py",
+                "TarantoolFactory",
+                [
+                    "tarantool"
+                ]
+            ]
+        },
+        "j.core": {
+            "application": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/core/Application.py",
+                "Application",
+                []
+            ],
+            "dirs": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/core/Dirs.py",
+                "Dirs",
+                []
+            ],
+            "errorhandler": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/errorhandler/ErrorHandler.py",
+                "ErrorHandler",
+                []
+            ],
+            "events": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/errorhandler/EventHandler.py",
+                "EventHandler",
+                []
+            ],
+            "exceptions": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/errorhandler/JSExceptions.py",
+                "JSExceptions",
+                []
+            ],
+            "logging": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/logging/LoggerFactory.py",
+                "LoggerFactory",
+                []
+            ],
+            "platformtype": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/core/PlatformTypes.py",
+                "PlatformTypes",
+                []
+            ],
+            "state": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/core/State.py",
+                "State",
+                []
+            ]
+        },
+        "j.data": {
+            "datacache": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/data/cache/Cache.py",
+                "Cache",
+                []
+            ],
+            "hash": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/data/hash/HashTool.py",
+                "HashTool",
+                [
+                    "pyblake2"
+                ]
+            ],
+            "idgenerator": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/data/idgenerator/IDGenerator.py",
+                "IDGenerator",
+                []
+            ],
+            "kvs": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/data/key_value_store/StoreFactory.py",
+                "StoreFactory",
+                [
+                    "msgpack"
+                ]
+            ],
+            "nacl": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/data/nacl/NACLFactory.py",
+                "NACLFactory",
+                []
+            ],
+            "regex": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/data/regex/RegexTools.py",
+                "RegexTools",
+                []
+            ],
+            "serializers": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/data/serializers/SerializersFactory.py",
+                "SerializersFactory",
+                []
+            ],
+            "state": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/data/state/StateFactory.py",
+                "StateFactory",
+                []
+            ],
+            "tags": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/data/tags/TagsFactory.py",
+                "TagsFactory",
+                []
+            ],
+            "text": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/data/text/Text.py",
+                "Text",
+                []
+            ],
+            "time": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/data/time/Time.py",
+                "Time_",
+                []
+            ],
+            "treemanager": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/data/treemanager/Treemanager.py",
+                "TreemanagerFactory",
+                []
+            ],
+            "types": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/data/types/Types.py",
+                "Types",
+                []
+            ]
+        },
+        "j.data.time": {
+            "timeinterval": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/data/time/TimeInterval.py",
+                "TimeInterval",
+                []
+            ]
+        },
+        "j.data_units": {
+            "bytes": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/data/numtools/units/Units.py",
+                "Bytes",
+                []
+            ],
+            "sizes": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/data/numtools/units/Units.py",
+                "Sizes",
+                []
+            ]
+        },
+        "j.sal": {
+            "fs": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/fs/SystemFS.py",
+                "SystemFS",
+                []
+            ],
+            "fswalker": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/fs/SystemFSWalker.py",
+                "SystemFSWalker",
+                []
+            ],
+            "nettools": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/sal/nettools/NetTools.py",
+                "NetTools",
+                [
+                    "netaddr"
+                ]
+            ],
+            "process": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/sal/process/SystemProcess.py",
+                "SystemProcess",
+                []
+            ],
+            "rsync": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/sal/rsync/RsyncFactory.py",
+                "RsyncFactory",
+                []
+            ]
+        },
+        "j.tools": {
+            "alerthandler": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/errorhandler/AlertHandler.py",
+                "AlertHandler",
+                []
+            ],
+            "bash": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/tools/bash/BashFactory.py",
+                "BashFactory",
+                []
+            ],
+            "builder": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/tools/builder/Builder.py",
+                "Builder",
+                []
+            ],
+            "configmanager": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/tools/configmanager/ConfigManager.py",
+                "ConfigFactory",
+                []
+            ],
+            "console": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/tools/console/Console.py",
+                "Console",
+                []
+            ],
+            "cython": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/tools/cython/CythonFactory.py",
+                "CythonFactory",
+                [
+                    "cython"
+                ]
+            ],
+            "develop": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/tools/develop/DevelopTools.py",
+                "DevelopToolsFactory",
+                [
+                    "watchdog"
+                ]
+            ],
+            "email": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/data/email/Email.py",
+                "EmailTool",
+                []
+            ],
+            "executor": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/tools/executor/ExecutorFactory.py",
+                "ExecutorFactory",
+                []
+            ],
+            "executorLocal": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/tools/executor/ExecutorLocal.py",
+                "ExecutorLocal",
+                []
+            ],
+            "formbuilder": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/tools/formbuilder/FormBuilder.py",
+                "FormBuilderFactory",
+                []
+            ],
+            "jsloader": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/tools/jsloader/JSLoader.py",
+                "JSLoader",
+                [
+                    "-1:"
+                ]
+            ],
+            "lock": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/tools/lock/Lock.py",
+                "LockFactory",
+                []
+            ],
+            "myconfig": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/tools/myconfig/MyConfig.py",
+                "MyConfig",
+                []
+            ],
+            "nodemgr": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/tools/nodemgr/Nodes.py",
+                "Nodes",
+                []
+            ],
+            "numtools": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/data/numtools/NumTools.py",
+                "NumTools",
+                [
+                    "numpy"
+                ]
+            ],
+            "path": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/tools/path/PathFactory.py",
+                "PathFactory",
+                []
+            ],
+            "performancetrace": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/tools/performancetrace/PerformanceTrace.py",
+                "PerformanceTraceFactory",
+                []
+            ],
+            "perftesttools": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/tools/perftesttools/PerfTestToolsFactory.py",
+                "PerfTestToolsFactory",
+                [
+                    "psutil"
+                ]
+            ],
+            "tarfile": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/data/tarfile/TarFile.py",
+                "TarFileFactory",
+                []
+            ],
+            "tfbot": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/tools/tfbot/TFBotFactory.py",
+                "TFBotFactory",
+                []
+            ],
+            "tmux": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/tools/tmux/Tmux.py",
+                "Tmux",
+                [
+                    "libtmux"
+                ]
+            ],
+            "zerorobot": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/tools/zerorobot/ZeroRobot.py",
+                "ZeroRobot",
+                []
+            ],
+            "zipfile": [
+                "/Users/kristofdespiegeleer/code/github/threefoldtech/jumpscale_core/Jumpscale/data/zip/ZipFile.py",
+                "ZipFileFactory",
+                []
+            ]
+        }
+    },
+    {
+        "j.atyourservice": "AtYourService",
+        "j.clients": "Clients",
+        "j.core": "Core",
+        "j.data": "Data",
+        "j.data_units": "DataUnits",
+        "j.portal": "Portal",
+        "j.sal": "Sal",
+        "j.sal_zos": "SALZos",
+        "j.servers": "Servers",
+        "j.tools": "Tools"
+    }
+]
