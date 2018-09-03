@@ -9,7 +9,11 @@ class TestSALLSSHD(TestcasesBase):
     def setUp(self):
         super().setUp()
         self.sshd = self.j.sal.sshd
-        self.authorized_keys = self.sshd.SSH_AUTHORIZED_KEYS.text().splitlines()
+        keyfile = self.sshd.SSH_AUTHORIZED_KEYS
+        if keyfile.exists():
+            self.authorized_keys = keyfile.text().splitlines()
+        else:
+            self.authorized_keys = []
 
     def tearDown(self):
         self.sshd.SSH_AUTHORIZED_KEYS.write_lines(self.authorized_keys)
@@ -17,9 +21,12 @@ class TestSALLSSHD(TestcasesBase):
 
     def read_authorized_keys_file(self):
         path = str(self.sshd.SSH_AUTHORIZED_KEYS)
-        with open(path, 'r') as f:
-            lines = [x.strip() for x in f.readlines()]
-            return lines
+        try:
+            with open(path, 'r') as f:
+                lines = [x.strip() for x in f.readlines()]
+        except FileNotFoundError:
+            lines = []
+        return lines
 
     def test01_keys(self):
         """ JS-057
