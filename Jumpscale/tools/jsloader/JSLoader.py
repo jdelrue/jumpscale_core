@@ -362,6 +362,7 @@ class JSLoader():
     def manage_jsonmodules(self, plugin, modbase):
         self.j.__jsmodbase__[plugin] = modbase
         pluginpath = os.path.dirname(self.plugins[plugin]) # strip library name
+        pluginpath = os.path.realpath(pluginpath) # resolve to any symlinks
         (modlist, baselist) = modbase
         for jlocationRoot, jlocationRootDict in modlist.items():
             #print ("root", jlocationRoot, jlocationRootDict)
@@ -370,9 +371,11 @@ class JSLoader():
             for subname, sublist in jlocationRootDict.items():
                 fullchildname = "j.%s.%s" % (jname, subname)
                 modulename, classname, imports = sublist
+                realmodname = os.path.realpath(modulename)
                 plen = len(pluginpath)
-                assert modulename[:plen] == pluginpath
-                pmodname = modulename[plen+1:-3] # strip plugpath and ".py"
+                #print (pluginpath, realmodname, realmodname[:plen])
+                assert realmodname[:plen] == pluginpath
+                pmodname = realmodname[plen+1:-3] # strip plugpath and ".py"
                 pmodname = '.'.join(pmodname.split('/'))
                 info = (modulename, classname, plugin, fullchildname)
                 self.j.__jsmodlookup__[pmodname] = info
