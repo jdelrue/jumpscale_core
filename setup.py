@@ -4,7 +4,7 @@ import os
 # (e.g. in unit tests)
 if os.environ.get("PYSTUCK", None):
     import gevent.monkey
-    gevent.monkey.patch_all
+    gevent.monkey.patch_all()
     import pystuck
     pystuck.run_server()
 
