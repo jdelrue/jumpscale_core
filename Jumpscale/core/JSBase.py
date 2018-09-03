@@ -53,18 +53,24 @@ def jspath_import(modulepath, fullpath):
         # XXX however... ahh slightly unfortunate: we also need to check
         # all the plugins - not just the current parent path - to see if
         # the parent name matches there.  whoops.
-        if False and parent_name:
+        if parent_name:
             parentmodule = sys.modules.get(parent_name, None)
             if not parentmodule:
-                print ("jspath_import parent fullpath %s modulepath %s" % \
-                            (fullpath, modulepath))
-                parent_fullpath, parentimport = os.path.split(fullpath)
-                if parentimport == '__init__.py':
-                    parent_fullpath = os.path.dirname(parent_fullpath)
-                parent_fullpath = os.path.join(parent_fullpath, "__init__.py")
-                print ("parent fullpath %s modulepath %s" % \
-                            (parent_fullpath, parent_name))
-                jspath_import(parent_name, parent_fullpath)
+                #print ("jspath_import parent fullpath %s modath %s" % \
+                #            (parent_name, modulepath))
+                if False: # TODO
+                    parent_fullpath, parentimport = os.path.split(fullpath)
+                    if parentimport == '__init__.py':
+                        parent_fullpath = os.path.dirname(parent_fullpath)
+                    parent_fullpath = os.path.join(parent_fullpath,
+                                                   "__init__.py")
+                    print ("parent fullpath %s modulepath %s" % \
+                                (parent_fullpath, parent_name))
+                    jspath_import(parent_name, parent_fullpath)
+                else:
+                    parent = importlib.import_module(parent_name)
+                    #print ("jspath_imported parent %s %s" % \
+                    #            (parent_name, repr(parent)))
         spec = importlib.util.spec_from_file_location(modulepath, fullpath)
         #print ("parentname", modulepath, parent_name)
         #print ("spec", spec, dir(spec))
