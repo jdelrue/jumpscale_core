@@ -72,6 +72,7 @@ js_shell
 
 to run the test suite:
 
+* apt-get install python3-pytest-cov python3-nose
 * python3 setup.py test
 
 Note that it is a really, REALLY good idea to set up a chroot for running
