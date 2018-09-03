@@ -14,9 +14,9 @@ from stat import ST_MTIME
 import stat
 from functools import wraps
 import copy
-from .SystemFSDecorators import (pathShorten, pathClean, pathDirClean,
-                                 dirEqual, pathNormalize, cleanupString,
-                                 path_check)
+from Jumpscale.fs.SystemFSDecorators import (pathShorten, pathClean,
+                                 pathDirClean, dirEqual, pathNormalize,
+                                 cleanupString, path_check)
 
 class SystemFS:
 
