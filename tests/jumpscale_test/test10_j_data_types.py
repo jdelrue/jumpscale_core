@@ -1,6 +1,6 @@
 import unittest
 from .testcases_base import TestcasesBase
-from parameterized import parameterized
+from nose_parameterized import parameterized
 
 
 class TestJDataTypes(TestcasesBase):
