@@ -50,6 +50,7 @@ class RedisDict(dict):
 
 class Redis(redis.Redis):
     hgetalldict = redis.Redis.hgetall
+    dbtype = 'RDB'
 
     def getDict(self, key):
         return RedisDict(self, key)
