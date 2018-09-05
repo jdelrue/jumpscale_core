@@ -1,9 +1,18 @@
+import os
+
+# extremely useful for investigating where things might go wrong
+# (e.g. in unit tests)
+if os.environ.get("PYSTUCK", None):
+    import gevent.monkey
+    gevent.monkey.patch_all()
+    import pystuck
+    pystuck.run_server()
+
 from setuptools import setup, find_packages
 #from distutils.core import setup <- needed for dynamic bootstrap (TODO)
 from distutils.sysconfig import get_python_lib
 from setuptools.command.install import install as _install
 from setuptools.command.develop import develop as _develop
-import os
 
 
 def _post_install(libname, libpath):

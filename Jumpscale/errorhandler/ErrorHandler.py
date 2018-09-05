@@ -1,6 +1,5 @@
 import sys
 import inspect
-from . import JSExceptions
 
 try:
     import colored_traceback

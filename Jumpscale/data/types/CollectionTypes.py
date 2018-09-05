@@ -1,6 +1,7 @@
 '''Definition of several collection types (list, dict, set,...)'''
 
-from .PrimitiveTypes import (String, StringMultiLine, Bytes, Boolean, Integer,
+from Jumpscale.data.types.PrimitiveTypes import (String, StringMultiLine, Bytes,
+                             Boolean, Integer,
                              Float, Percent, Object, JSObject)
 
 import struct

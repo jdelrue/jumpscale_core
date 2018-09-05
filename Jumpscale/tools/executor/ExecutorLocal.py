@@ -1,4 +1,4 @@
-from .ExecutorBase import ExecutorBase
+from Jumpscale.tools.executor.ExecutorBase import ExecutorBase
 import subprocess
 import os
 import pytoml
