@@ -140,10 +140,14 @@ class ZOSContainer(JSBASE):
             self.logger.info('container deployed')
             self.logger.info("to connect to it do: 'ssh root@%s -p %s' (password: rooter)" % (self.zos_private_address,self.model.port))
             self.logger.info("can also connect using js_node toolset, recommended: 'js_node ssh -i %s'"%self.name)
-
-        sshclient = j.clients.ssh.new(addr=self.zos_private_address, port=self.model.port, instance=self.name,
-                                      die=True, login="root", passwd="rooter",
-                                      stdout=True, allow_agent=True, use_paramiko=True)
+        key_path =j.clients.ssh.get('builder').sshkey.path
+        keyname_paths=os.path.split(key_path)
+        keyname=keyname_paths[len(keyname_paths)-1]
+        sshclient = j.clients.ssh.new(addr=self.zos_private_address,
+                                      port=self.model.port, instance=self.name,
+                                      die=True, login="root", keyname=keyname,
+                                      stdout=True, allow_agent=True,
+                                      use_paramiko=True)
         self._node_connected = True
 
         return self._node
