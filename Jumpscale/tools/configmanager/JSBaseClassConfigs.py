@@ -31,7 +31,7 @@ class _JSBaseClassConfigs:
 
         # self.getall()
 
-    def get(self, instance="main", data={}, create=True,
+    def get(self, instance="main", data=None, create=True,
             die=True, interactive=True, **kwargs):
         """ Get an instance of the child_class set in the constructor
 
@@ -41,6 +41,8 @@ class _JSBaseClassConfigs:
             @param interactive: means that the config will be shown
                                 to user when new and user needs to accept
         """
+        if data is None:
+            data = {}
         if not create and instance not in self.list():
             if die:
                 raise RuntimeError("could not find instance:%s" % (instance))
@@ -53,7 +55,9 @@ class _JSBaseClassConfigs:
     def exists(self, instance):
         return instance in self.list()
 
-    def new(self, instance, data={}):
+    def new(self, instance, data=None):
+        if data is None:
+            data = {}
         return self.get(instance=instance, data=data, create=True)
 
     def reset(self):
