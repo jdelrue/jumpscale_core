@@ -1,3 +1,9 @@
+""" unit test for key-value stores.
+
+    currently only does etcd, should be possible to use on redis,
+    as it has a similar high-level API
+"""
+
 import unittest
 from .testcases_base import TestcasesBase
 
