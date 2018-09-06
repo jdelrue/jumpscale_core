@@ -86,6 +86,22 @@ def jspath_import(modulepath, fullpath):
 
     return module
 
+def resolve_relative(modname, parent):
+    """ resolves a module name relative to the parent
+    """
+    if not modname.startswith("."): # relative import
+        return modname
+    #print ("resolve_klsmodule relative", modname, parent)
+    numdots = 0
+    while modname and modname[0] == '.':
+        numdots += 1
+        modname = modname[1:]
+    pth = parent.split(".")[:-numdots]
+    pth.append(modname)
+    modname = '.'.join(pth)
+    #print ("resolve_klsmodule relative", modname)
+    return modname
+
 def resolve_klsmodule(__jsfullpath__, __jsmodulepath__, kls):
     #print ("resolve_klsmodule", __jsfullpath__, __jsmodulepath__, kls)
     # ok we assume it's a jumpscale class, FOR NOW
@@ -95,10 +111,15 @@ def resolve_klsmodule(__jsfullpath__, __jsmodulepath__, kls):
     #module = __import__(modulename)
     #mpathname, _, objectname = kls.rpartition('.')
     if not isinstance(kls, str): # either "classname" or "module.classname"
+        if isinstance(kls, tuple):
+            (kls, mpathname) = kls
+            mpathname = resolve_relative(mpathname, __jsmodulepath__)
+            return (kls, mpathname)
         return kls
     if '.' not in kls: # classname: must be relative
         return (kls, __jsmodulepath__)
     # module.classname
+    kls = resolve_relative(kls, __jsmodulepath__)
     mpathname, _, objectname = kls.rpartition('.')
     return (objectname, mpathname)
 
