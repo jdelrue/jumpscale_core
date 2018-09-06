@@ -22,8 +22,7 @@ class ErrorHandler:
 
     def __init__(self):
         self.setExceptHook()
-        self.exceptionsfactory = self._jsbase(('JSExceptions',
-                    'Jumpscale.errorhandler.JSExceptions'))
+        self.exceptionsfactory = self._jsbase(('JSExceptions', '.JSExceptions'))
         self.redis = False
         self.exit_on_error = True
 
