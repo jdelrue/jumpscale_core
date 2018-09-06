@@ -20,13 +20,20 @@ class TestJDataTypes(TestcasesBase):
         ns = self.random_string()
         db = etcd.namespace_get(ns)
 
+        # check get and delete on non-existent value
         self.assertRaises(KeyError, db.get, 'hello')
         self.assertRaises(KeyError, db.delete, 'hello')
+
+        # add value and check it
         db.set('hello', b'val')
         get = db.get('hello')
         self.assertTrue(get == b'val')
+
+        # change value and check it
         db.set('hello', b'newval')
         get = db.get('hello')
         self.assertTrue(get == b'newval')
+
+        # delete once (should be ok), delete again (raises KeyError)
         db.delete('hello')
         self.assertRaises(KeyError, db.delete, 'hello') # second delete
