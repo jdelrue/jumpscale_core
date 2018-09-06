@@ -21,7 +21,12 @@ class TestJDataTypes(TestcasesBase):
         db = etcd.namespace_get(ns)
 
         self.assertRaises(KeyError, db.get, 'hello')
+        self.assertRaises(KeyError, db.delete, 'hello')
         db.set('hello', b'val')
         get = db.get('hello')
         self.assertTrue(get == b'val')
-
+        db.set('hello', b'newval')
+        get = db.get('hello')
+        self.assertTrue(get == b'newval')
+        db.delete('hello')
+        self.assertRaises(KeyError, db.delete, 'hello') # second delete
