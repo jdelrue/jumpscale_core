@@ -15,6 +15,10 @@ class TestJDataTypes(TestcasesBase):
         etcd.namespace_del(ns)
         self.assertFalse(etcd.namespace_exists(ns))
 
-        #import IPython
-        #IPython.embed()
+    def test002_etcd_getset(self):
+        etcd = self.j.clients.etcd.get()
+        ns = self.random_string()
+        db = etcd.namespace_get(ns)
+
+        self.assertRaises(KeyError, db.get, 'hello')
 
