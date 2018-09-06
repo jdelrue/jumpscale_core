@@ -303,7 +303,11 @@ onlyproperties = [
     #'j.clients.zdb.test',
     #'j.data',
     #'j.data.schema',
+    #'j.data.schema.test1',
     #'j.data.schema.test2',
+    #'j.data.schema.test3',
+    #'j.data.bcdb',
+    #'j.data.bcdb.test',
     ]
 
 compare('j', j, j, j, 3, _listtests, includeonly=onlyproperties,
