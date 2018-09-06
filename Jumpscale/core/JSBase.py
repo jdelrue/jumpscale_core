@@ -97,7 +97,7 @@ def resolve_klsmodule(__jsfullpath__, __jsmodulepath__, kls):
     if not isinstance(kls, str): # either "classname" or "module.classname"
         return kls
     if '.' not in kls: # classname: must be relative
-        return (__jsmodulepath__, kls)
+        return (kls, __jsmodulepath__)
     # module.classname
     mpathname, _, objectname = kls.rpartition('.')
     return (objectname, mpathname)
