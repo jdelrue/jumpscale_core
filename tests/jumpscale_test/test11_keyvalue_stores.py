@@ -21,4 +21,7 @@ class TestJDataTypes(TestcasesBase):
         db = etcd.namespace_get(ns)
 
         self.assertRaises(KeyError, db.get, 'hello')
+        db.set('hello', b'val')
+        get = db.get('hello')
+        self.assertTrue(get == b'val')
 
