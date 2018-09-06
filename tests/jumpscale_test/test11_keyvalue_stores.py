@@ -50,4 +50,6 @@ class TestEtcd(TestcasesBase):
 
     def test002_etcd_incr(self):
 
-        value = self.db.incr('hello')
+        for i in range(1, 10):
+            value = self.db.incr('hello')
+            self.assertTrue(value == i)
