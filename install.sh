@@ -97,11 +97,11 @@ ZCodeGetJS() {
     done
 
     if [ -z "$reponame" ]; then
-        ZCodeGetJS -r jumpscale_core  -b $branch || return 1
-        ZCodeGetJS -r jumpscale_lib -b $branch || return 1
-        ZCodeGetJS -r jumpscale_prefab -b $branch || return 1
-        ZCodeGetJS -r digital_me -b $branch || return 1
-        ZCodeGetJS -r digital_me_recipes -b $branch || return 1
+        ZCodeGetJS -r jumpscale_core  -b $JUMPSCALEBRANCH || return 1
+        ZCodeGetJS -r jumpscale_lib -b $JUMPSCALEBRANCH || return 1
+        ZCodeGetJS -r jumpscale_prefab -b $JUMPSCALEBRANCH || return 1
+        ZCodeGetJS -r digital_me -b $JUMPSCALEBRANCH || return 1
+        ZCodeGetJS -r digital_me_recipes -b $JUMPSCALEBRANCH || return 1
         return 0
     fi
 
@@ -110,10 +110,13 @@ ZCodeGetJS() {
 
     # check if specificed branch or $JUMPSCALEBRANCH exist, if not then fallback to development_dynamic
 
-    JUMPSCALEBRANCHExists ${githttpsurl} ${branch} || branch=development_dynamic
+    JUMPSCALEBRANCHExists ${githttpsurl} ${JUMPSCALEBRANCH} || JUMPSCALEBRANCH=development_dynamic
+    JUMPSCALEBRANCHExists ${githttpsurl} ${JUMPSCALEBRANCH} || JUMPSCALEBRANCH=development
+
+    echo "get code: ${githttpsurl} ${JUMPSCALEBRANCH}"
 
     # ZCodeGet -r $reponame -a $account -u $giturl -b $branch  || ZCodeGet -r $reponame -a $account -u $githttpsurl -b $branch || return 1
-    ZCodeGet -r $reponame -a $account -u $githttpsurl -b $branch || return 1
+    ZCodeGet -r $reponame -a $account -u $githttpsurl -b $JUMPSCALEBRANCH || return 1
 
 }
 
@@ -382,13 +385,13 @@ cd /tmp
 rm -rf /usr/local/bin/js9_*
 rm -rf /usr/local/bin/js_*
 rm -f ~/jsenv.sh
-rm -f ~/jsinit.sh
-sed -i.bak '/jsenv.sh/d' $HOMEDIR/.profile
-sed -i.bak '/export SSHKEYNAME/d' $HOMEDIR/.bashrc
-sed -i.bak '/jsenv.sh/d' $HOMEDIR/.bashrc
-sed -i.bak '/jsenv.sh/d' $HOMEDIR/.profile_js
-sed -i.bak '/.*zlibs.sh/d' $HOMEDIR/.bashrc
-sed -i.bak '/.*zlibs.sh/d' $HOMEDIR/.profile_js
+rm -f ~/jsinit.sh 
+sed -i.bak '/jsenv.sh/d' $HOMEDIR/.profile > /dev/null 2>&1
+sed -i.bak '/export SSHKEYNAME/d' $HOMEDIR/.bashrc > /dev/null 2>&1
+sed -i.bak '/jsenv.sh/d' $HOMEDIR/.bashrc > /dev/null 2>&1
+sed -i.bak '/jsenv.sh/d' $HOMEDIR/.profile_js > /dev/null 2>&1
+sed -i.bak '/.*zlibs.sh/d' $HOMEDIR/.bashrc > /dev/null 2>&1
+sed -i.bak '/.*zlibs.sh/d' $HOMEDIR/.profile_js > /dev/null 2>&1
 rm ~/opt/jumpscale/cfg/me.toml > /dev/null 2>&1
 rm ~/opt/jumpscale/cfg/jumpscale.toml > /dev/null 2>&1
 rm -rf ~/JShost* > /dev/null 2>&1
@@ -401,7 +404,7 @@ find /usr/local/lib -iname jumpscale.py -exec rm {} \;
 find /usr/lib -iname jumpscale.py -exec rm {} \;
 
 echo "INSTALL Jumpscale on branch $JUMPSCALEBRANCH"
-
+set -x
 # ZInstall_host_base || die "Could not prepare the base system" || exit 1
 ZCodeGetJS || die "Could not download jumpscale code" || exit 1
 ZInstall_jumpscale || die "Could not install core of jumpscale" || exit 1
