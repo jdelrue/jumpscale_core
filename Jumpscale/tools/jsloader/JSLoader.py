@@ -135,16 +135,19 @@ class JSLoader():
             print("WARNING: COULD NOT PIP INSTALL:%s\n\n" % item)
         return rc
 
-    def process_location(self, jlocationSubName, jlocationSubList):
+    def process_location(self, path, jlocationSubName, jlocationSubList):
         # import a specific location sub (e.g. j.clients.git)
 
         classfile, classname, imports = jlocationSubList
 
+        classfile = os.path.join(path, classfile) # put back abspath for now
         generationParamsSub = {}
         generationParamsSub["classname"] = classname
         generationParamsSub["name"] = jlocationSubName
-        importlocation = remove_dir_part(
-            classfile)[:-3].replace("//", "/").replace("/", ".")
+        if classfile.startswith("/"):
+            classfile = remove_dir_part(classfile)
+        importlocation = classfile[:-3].replace("//", "/").replace("/", ".")
+        #print ("process", classfile, importlocation)
         generationParamsSub["importlocation"] = importlocation
         prefix = importlocation.split('.')[:-1]
         prefix = map(lambda x: x[0].upper() + x[1:], prefix)
@@ -257,7 +260,7 @@ class JSLoader():
                     (jlocationRoot, jlocationRootDict))
 
             for subname, sublist in jlocationRootDict.items():
-                rc, _ = self.process_location(subname, sublist)
+                rc, _ = self.process_location(path, subname, sublist)
                 if rc != 0:
                     # remove unneeded items
                     del jlocationRootDict[subname]
@@ -371,6 +374,13 @@ class JSLoader():
             for subname, sublist in jlocationRootDict.items():
                 fullchildname = "j.%s.%s" % (jname, subname)
                 modulename, classname, imports = sublist
+                #print ("sublist", subname, sublist)
+                if not modulename.startswith("/"): # issue #133, relative
+                    ppath = os.path.dirname(pluginpath)
+                    modulename = os.path.join(ppath, modulename)
+                    #print ("relative path, now %s" % modulename)
+                    sublist = (modulename, classname, imports)
+                    jlocationRootDict[subname] = sublist
                 realmodname = os.path.realpath(modulename)
                 plen = len(pluginpath)
                 #print (pluginpath, realmodname, realmodname[:plen])
@@ -506,7 +516,7 @@ class JSLoader():
         return res
 
     def find_modules(self, path, moduleList=None, baseList=None, depth=None,
-                     recursive=True):
+                     recursive=True, return_relative=True):
         """ walk over code files & find locations for jumpscale modules
             return as two dicts.
 
@@ -571,6 +581,9 @@ class JSLoader():
                 locSubName = location.split(".")[-1]
                 if locRoot not in moduleList:
                     moduleList[locRoot] = {}
+                if return_relative:
+                    # strip path off of front
+                    classfile = remove_dir_part(classfile)
                 item = (classfile, classname, imports)
                 moduleList[locRoot][locSubName] = item
 
