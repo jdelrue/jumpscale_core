@@ -177,6 +177,10 @@ class JSLoader():
             plugins = state.configGet('plugins', defaultplugins)
             if 'Jumpscale' not in plugins:
                 plugins['Jumpscale'] = defaultplugins['Jumpscale']
+            for k in plugins:
+                # issue #133, plugins are a bit fragile, have to have / on end
+                if not plugins[k].endswith("/"):
+                    plugins[k] += "/"
             self._plugins = plugins
         return self._plugins
 
