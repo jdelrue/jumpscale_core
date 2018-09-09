@@ -1,16 +1,11 @@
-from inspect import isclass
-from Jumpscale import j # required because jumpscale.py doesn't exist at setup
-
+from Jumpscale import j
 JSBASE = j.application.jsbase_get_class()
+from inspect import isclass
 
 
-class _JSBaseClassConfigs:
+class JSBaseClassConfigs(JSBASE):
     """ collection class to deal with multiple instances
     """
-
-    # XXX don't add __jslocation__ it recursively loads configs
-    # and things get very confuUuused...
-    # __jslocation__ = 'j.tools.configmanager.base_class_configs'
 
     def __init__(self, child_class=None, single_item=False):
         """
@@ -19,6 +14,7 @@ class _JSBaseClassConfigs:
                             ever return the same instance
                             set single_item to True
         """
+        JSBASE.__init__(self)
         if child_class is not None:
             self._child_class = child_class
         #print ("JSBaseClassConfigs", self, self._child_class)
@@ -61,7 +57,7 @@ class _JSBaseClassConfigs:
         return self.get(instance=instance, data=data, create=True)
 
     def reset(self):
-        self.j.tools.configmanager.delete(location=self.__jslocation__,
+        j.tools.configmanager.delete(location=self.__jslocation__,
                                           instance="*")
         self.getall()
 
@@ -70,7 +66,7 @@ class _JSBaseClassConfigs:
             for item in self.list(prefix=prefix):
                 self.delete(instance=item)
             return
-        self.j.tools.configmanager.delete(location=self.__jslocation__,
+        j.tools.configmanager.delete(location=self.__jslocation__,
                                      instance=instance)
 
     def count(self):
@@ -78,7 +74,7 @@ class _JSBaseClassConfigs:
 
     def list(self, prefix=""):
         res = []
-        items = self.j.tools.configmanager.list(location=self.__jslocation__)
+        items = j.tools.configmanager.list(location=self.__jslocation__)
         for item in items:
             if prefix != "":
                 if item.startswith(prefix):
@@ -89,12 +85,12 @@ class _JSBaseClassConfigs:
 
     def getall(self):
         res = []
-        items = self.j.tools.configmanager.list(location=self.__jslocation__)
+        items = j.tools.configmanager.list(location=self.__jslocation__)
         for name in items:
             res.append(self.get(name, create=False))
         return res
 
-class JSBaseClassConfigs(JSBASE, _JSBaseClassConfigs):
-    def __init__(self, child_class=None, single_item=False):
-        JSBASE.__init__(self)
-        _JSBaseClassConfigs.__init__(self, child_class, single_item)
+# class JSBaseClassConfigs(JSBASE, _JSBaseClassConfigs):
+#     def __init__(self, child_class=None, single_item=False):
+#         JSBASE.__init__(self)
+#         _JSBaseClassConfigs.__init__(self, child_class, single_item)

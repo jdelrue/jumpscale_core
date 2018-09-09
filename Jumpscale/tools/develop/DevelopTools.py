@@ -1,4 +1,6 @@
-from jumpscale import j
+from Jumpscale import j
+JSBASE = j.application.jsbase_get_class()
+
 
 from .CodeDirs import CodeDirs
 from .MyFileSystemEventHandler import MyFileSystemEventHandler
@@ -6,8 +8,6 @@ from watchdog.observers import Observer
 
 import time
 import pytoml
-
-JSBASE = j.application.jsbase_get_class()
 
 
 class DevelopToolsFactory(JSBASE):

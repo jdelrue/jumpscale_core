@@ -13,7 +13,7 @@ class NumTools:
 
     @property
     def currencies(self):
-        return self.j.clients.currencylayer.cur2usd
+        return j.clients.currencylayer.cur2usd
 
     def _getYearFromMonthId(self, monthid, startyear=0):
         """
@@ -73,7 +73,7 @@ class NumTools:
 
         for xpos in range(len(tointerpolate)):
             if not tointerpolate[xpos] is None \
-                and not self.j.data.types.int.check(
+                and not j.data.types.int.check(
                     tointerpolate[xpos]):
                 isint = False
             if tointerpolate[xpos] is None:
@@ -159,14 +159,14 @@ class NumTools:
         j.tools.numtools.text2val("0.1mEUR")
 
         """
-        d = self.j.data.types.numeric.str2bytes(value)
-        return self.j.data.types.numeric.bytes2cur(d, curcode=curcode)
+        d = j.data.types.numeric.str2bytes(value)
+        return j.data.types.numeric.bytes2cur(d, curcode=curcode)
 
     def int_to_bitstring(self, val):
         """
         bitstring is like '10101011'
         """
-        if self.j.data.types.int.check(val):
+        if j.data.types.int.check(val):
             bits = "{0:b}".format(val)
         else:
             raise RuntimeError("bits need to be an integer")
@@ -177,7 +177,7 @@ class NumTools:
         return bits
 
     def bitstring8_to_int(self, val):
-        if not self.j.data.types.string.check(val):
+        if not j.data.types.string.check(val):
             raise RuntimeError("bits need to be string")
         if len(val) != 8:
             raise RuntimeError("bitstring needs to be 8 char")
@@ -197,7 +197,7 @@ class NumTools:
 
         bitsnew = self.int_to_bitstring(int(math.pow(2, pos)))
 
-        if not self.j.data.types.string.check(bits):
+        if not j.data.types.string.check(bits):
             bits = self.int_to_bitstring(bits)
 
         bits = int(bits, 2) | int(bitsnew, 2)
@@ -216,7 +216,7 @@ class NumTools:
 
         """
 
-        if not self.j.data.types.string.check(bits):
+        if not j.data.types.string.check(bits):
             bits = self.int_to_bitstring(bits)
 
         bitsnew = self.int_to_bitstring(int(math.pow(2, pos)))

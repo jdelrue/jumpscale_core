@@ -135,7 +135,7 @@ pip3 install -e git+https://github.com/threefoldtech/jumpscale_core@development#
 - In Python
 
   ```bash
-  python3 -c 'from jumpscale import j;print(j.application.getMemoryUsage())'
+  python3 -c 'from Jumpscale import j;print(j.application.getMemoryUsage())'
   ```
 
   the default mem usage < 23 MB and lazy loading of the modules.

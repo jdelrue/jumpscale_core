@@ -60,8 +60,8 @@ class SerializerTOML(SerializerBase):
         if secure then will look for key's ending with _ and will use your secret key to encrypt (see nacl client)
         """
 
-        if not self.j.data.types.dict.check(obj):
-            raise self.j.exceptions.Input("need to be dict")
+        if not j.data.types.dict.check(obj):
+            raise j.exceptions.Input("need to be dict")
 
         keys = sorted([item for item in obj.keys()])
 
@@ -87,9 +87,9 @@ class SerializerTOML(SerializerBase):
             # else:
                 # print("PREFIXNOCHANGE:%s:%s" % (prefix, lastprefix))
 
-            ttype = self.j.data.types.type_detect(val)
+            ttype = j.data.types.type_detect(val)
             if secure and key.endswith("_") and ttype.BASETYPE == "string":
-                val = self.j.data.nacl.default.encryptSymmetric(
+                val = j.data.nacl.default.encryptSymmetric(
                     val, hex=True, salt=val)
 
             out += "%s\n" % (ttype.toml_string_get(val, key=key))
@@ -99,7 +99,7 @@ class SerializerTOML(SerializerBase):
 
         out = out.replace("\n\n\n", "\n\n")
 
-        return self.j.data.text.strip(out)
+        return j.core.text.strip(out)
 
     def dumps(self, obj):
         return pytoml.dumps(obj, sort_keys=True)
@@ -112,12 +112,12 @@ class SerializerTOML(SerializerBase):
         except Exception as e:
             raise RuntimeError(
                 "Toml deserialization failed for:\n%s.\nMsg:%s" %
-                (self.j.data.text.indent(s), str(e)))
-        if secure and self.j.data.types.dict.check(val):
+                (j.core.text.indent(s), str(e)))
+        if secure and j.data.types.dict.check(val):
             res = {}
             for key, item in val.items():
                 if key.endswith("_"):
-                    res[key] = self.j.data.nacl.default.decryptSymmetric(
+                    res[key] = j.data.nacl.default.decryptSymmetric(
                         item, hex=True).decode()
             val = res
         return val
@@ -145,7 +145,7 @@ class SerializerTOML(SerializerBase):
         @return dict,errors
 
         """
-        if self.j.data.types.string.check(tomlsource):
+        if j.data.types.string.check(tomlsource):
             try:
                 dictsource = self.loads(tomlsource)
             except Exception:
@@ -153,7 +153,7 @@ class SerializerTOML(SerializerBase):
                     "toml file source is not properly formatted.")
         else:
             dictsource = tomlsource
-        if self.j.data.types.string.check(tomlupdate):
+        if j.data.types.string.check(tomlupdate):
             try:
                 dictupdate = self.loads(tomlupdate)
             except Exception:
@@ -162,7 +162,7 @@ class SerializerTOML(SerializerBase):
         else:
             dictupdate = tomlupdate
 
-        return self.j.data.serializers.dict.merge(
+        return j.data.serializers.dict.merge(
             dictsource, dictupdate, keys_replace=keys_replace,
             add_non_exist=add_non_exist, die=die, errors=errors,
             listunique=listunique, listsort=listsort, liststrip=liststrip)

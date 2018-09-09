@@ -1,5 +1,5 @@
 
-from jumpscale import j
+from Jumpscale import j
 import sys
 import inspect
 
@@ -101,9 +101,9 @@ class ZeroTemplates(JSBASE):
             if state in ["end","method"]:
                 out+=line+"\n"
 
-        out=j.data.text.strip(out)
-        doc=j.data.text.strip(doc)
-        config=j.data.text.strip(config)
+        out=j.core.text.strip(out)
+        doc=j.core.text.strip(doc)
+        config=j.core.text.strip(config)
         
         if config.strip()!="":
             try:

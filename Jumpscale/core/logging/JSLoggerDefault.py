@@ -10,6 +10,7 @@ class JSLoggerDefault(logging.Logger):
         self.DEFAULT = True
         # print("DEFAULT:%s"%name)
         self.factory = factory
+        self._j = self.factory._j
 
     def error(self, msg, *args, **kwargs):
         """
@@ -21,7 +22,7 @@ class JSLoggerDefault(logging.Logger):
         logger.error("Houston, we have a %s", "major problem", exc_info=1)
 
         """
-        j = self.factory.j
+        j = self._j
         if self.isEnabledFor(logging.ERROR):
             eco = j.errorhandler.getErrorConditionObject(
                 ddict={}, msg=msg, msgpub=msg, category=self.name,
@@ -40,7 +41,7 @@ class JSLoggerDefault(logging.Logger):
 
         logger.critical("Houston, we have a %s", "major disaster", exc_info=1)
         """
-        j = self.factory.j
+        j = self._j
         if self.isEnabledFor(logging.CRITICAL):
             eco = j.errorhandler.getErrorConditionObject(
                 ddict={}, msg=msg, msgpub=msg, category=self.name,
@@ -55,12 +56,12 @@ class JSLoggerDefault(logging.Logger):
     # def error(self, msg, *args, **kwargs):
     #     """
     #     """
-    #     self.factory.j.logger.logger.error(msg)
+    #     self._j.logger.logger.error(msg)
 
     # def critical(self, msg, *args, **kwargs):
     #     """
     #     """
-    #     self.factory.j.logger.logger.critical(msg)
+    #     self._j.logger.logger.critical(msg)
 
     def info(self, msg, *args, **kwargs):
         print ("* %s"%msg)

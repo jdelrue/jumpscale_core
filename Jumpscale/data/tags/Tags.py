@@ -1,6 +1,6 @@
 
 
-from jumpscale import j
+from Jumpscale import j
 try:
     from urllib.parse import unquote, quote
 except BaseException:
@@ -38,7 +38,7 @@ class Tags(JSBASE):
         @type tagstring: string
         """
 
-        tagstring = j.data.text.hrd2machinetext(tagstring)
+        tagstring = j.core.text.hrd2machinetext(tagstring)
 
         if not tagstring:
             return
@@ -49,12 +49,12 @@ class Tags(JSBASE):
                 key = tag.split(':', 1)[0]
                 value = tag.split(':', 1)[1]
                 key = unquote(key)
-                value = unquote(str(j.data.text.machinetext2val(value)))
+                value = unquote(str(j.core.text.machinetext2val(value)))
                 if not keepcase:
                     self.tags[key.lower()] = value
                 self.tags[key] = value
             else:
-                self.labels.add(unquote(str(j.data.text.machinetext2val(tag))))
+                self.labels.add(unquote(str(j.core.text.machinetext2val(tag))))
 
         self.tagstring = tagstring
 

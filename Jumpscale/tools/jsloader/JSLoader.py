@@ -97,9 +97,9 @@ def remove_dir_part(path):
     return "/".join(res)
 
 
-class JSLoader():
+class JSLoaderDONTUSE():
 
-    __jslocation__ = "j.tools.jsloader"
+    # __jslocation__ = "j.tools.jsloader"
 
     def __init__(self):
         self.tryimport = False
@@ -109,27 +109,27 @@ class JSLoader():
     @property
     def logger(self):
         if self._logger is None:
-            self._logger = self.j.logging.get("jsloader")
+            self._logger = j.logging.get("jsloader")
         return self._logger
 
     @property
     def autopip(self):
-        return self.j.core.state.configGet("system")["autopip"] in \
+        return j.core.state.configGet("system")["autopip"] in \
             [True, "true", "1", 1]
 
     def _installDevelopmentEnv(self):
         cmd = "apt-get install python3-dev libssl-dev -y"
-        self.j.sal.process.execute(cmd)
-        self.j.sal.process.execute("pip3 install pudb")
+        j.sal.process.execute(cmd)
+        j.sal.process.execute("pip3 install pudb")
 
     def _pip(self, item):
-        rc, out, err = self.j.sal.process.execute(
+        rc, out, err = j.sal.process.execute(
             "pip3 install %s" %
             item, die=False)
         if rc > 0:
             if "gcc' failed" in out:
                 self._installDevelopmentEnv()
-                rc, out, err = self.j.sal.process.execute(
+                rc, out, err = j.sal.process.execute(
                     "pip3 install %s" % item, die=False)
         if rc > 0:
             print("WARNING: COULD NOT PIP INSTALL:%s\n\n" % item)
@@ -173,7 +173,7 @@ class JSLoader():
         if self._plugins is None:
             defaultplugins = {'Jumpscale': top_level_path}
 
-            state = self.j.tools.executorLocal.state
+            state = j.tools.executorLocal.state
             plugins = state.configGet('plugins', defaultplugins)
             if 'Jumpscale' not in plugins:
                 plugins['Jumpscale'] = defaultplugins['Jumpscale']
@@ -209,7 +209,7 @@ class JSLoader():
 
         # make sure the jumpscale toml file is set / will also link cmd files
         # to system
-        self.j.tools.executorLocal.env_check_init()
+        j.tools.executorLocal.env_check_init()
 
         if not pluginsearch:
             pluginsearch = []
@@ -237,9 +237,9 @@ class JSLoader():
             path = os.path.join(*path)
             logfn("find modules in jumpscale for %s: '%s'" % (name, path))
             #print ("startpath: %s depth: %d" % (startpath, depth))
-            if not self.j.sal.fs.exists(_path, followlinks=True):
+            if not j.sal.fs.exists(_path, followlinks=True):
                 raise RuntimeError("Could not find plugin dir:%s" % _path)
-            if not self.j.sal.fs.exists(path, followlinks=True):
+            if not j.sal.fs.exists(path, followlinks=True):
                 continue
             if False:  # XXX hmmm.... nasty hack... disable....
                 pth = path
@@ -254,7 +254,7 @@ class JSLoader():
                                                      recursive=recursive)
 
         for jlocationRoot, jlocationRootDict in moduleList.items():
-            # is per item under j e.g. self.j.clients
+            # is per item under j e.g. j.clients
 
             print ("jlocationRoot", jlocationRoot, jlocationRootDict)
             if jlocationRoot == 'j':
@@ -355,9 +355,9 @@ class JSLoader():
         """ returns nearest module in the table.  could really use a range
             search here.
         """
-        if modulepath in self.j.__jsmodlookup__:
-            return self.j.__jsmodlookup__[modulepath]
-        for k, info in self.j.__jsmodlookup__.items():
+        if modulepath in j.__jsmodlookup__:
+            return j.__jsmodlookup__[modulepath]
+        for k, info in j.__jsmodlookup__.items():
             if not k.startswith(modulepath):
                 continue
             #print ("match", modulepath, info)
@@ -366,11 +366,11 @@ class JSLoader():
 
     def reset_jsonmodules(self):
         self._plugins = None
-        self.j.__jsmodlookup__ = {} # table that turns module to path
-        self.j.__jsmodbase__ = {}
+        j.__jsmodlookup__ = {} # table that turns module to path
+        j.__jsmodbase__ = {}
 
     def manage_jsonmodules(self, plugin, modbase):
-        self.j.__jsmodbase__[plugin] = modbase
+        j.__jsmodbase__[plugin] = modbase
         pluginpath = os.path.dirname(self.plugins[plugin]) # strip library name
         pluginpath = os.path.realpath(pluginpath) # resolve to any symlinks
         print("pluginpath",pluginpath)
@@ -400,7 +400,7 @@ class JSLoader():
                 pmodname = realmodname[plen+1:-3] # strip plugpath and ".py"
                 pmodname = '.'.join(pmodname.split('/'))
                 info = (modulename, classname, plugin, fullchildname)
-                self.j.__jsmodlookup__[pmodname] = info
+                j.__jsmodlookup__[pmodname] = info
                 #print ("child", pluginpath, fullchildname, pmodname, info)
 
 
@@ -413,7 +413,7 @@ class JSLoader():
         for plugin, outJSON in self.jsonfiles.items():
             self.logger.debug("* jumpscale json path:%s" % outJSON)
             try:
-                outJSON = self.j.sal.fs.fileGetContents(outJSON)
+                outJSON = j.sal.fs.fileGetContents(outJSON)
                 modbase = json.loads(outJSON)
             except ValueError as e:
                 modbase = ({}, {})
@@ -425,7 +425,7 @@ class JSLoader():
     def generate_json(self, pluginsearch=None):
         """ generates the jumpscale json file(s), walking the plugin directories
             and saving the results in $HOSTCFGDIR/jumpscale.json.  also
-            stores the results in self.j.__jsjson__
+            stores the results in j.__jsjson__
 
             may be restricted to a single plugin library (pluginsearch)
 
@@ -448,13 +448,13 @@ class JSLoader():
             self.logger.info("* jumpscale json path:%s" % outJSON)
 
             modlistout_json = json.dumps(modbase, sort_keys=True, indent=4)
-            self.j.sal.fs.writeFile(outJSON, modlistout_json)
+            j.sal.fs.writeFile(outJSON, modlistout_json)
             self.manage_jsonmodules(plugin, modbase)
 
     def _pip_installed(self):
         """ return the list of all installed pip packages
         """
-        _, out, _ = self.j.sal.process.execute(
+        _, out, _ = j.sal.process.execute(
             'pip3 list --format json', die=False, showout=False)
         pip_list = json.loads(out)
         return [p['name'] for p in pip_list]
@@ -473,7 +473,7 @@ class JSLoader():
                 [$classname]["import"] = $importitems
         """
         res = {}
-        C = self.j.sal.fs.fileGetContents(path)
+        C = j.sal.fs.fileGetContents(path)
         classname = None
         locfound = False
         for line in C.split("\n"):
@@ -549,14 +549,14 @@ class JSLoader():
         # ok search for files up to the requested depth, BUT, __init__ files
         # are treated differently: they are depth+1 because searching e.g.
         # "j.core" we want to look for Jumpscale/core/__init__.py
-        initfiles = self.j.sal.fs.listFilesInDir(
+        initfiles = j.sal.fs.listFilesInDir(
             path, recursive, "__init__.py", depth=depth + 1)
-        pyfiles = self.j.sal.fs.listFilesInDir(path, recursive, "*.py",
+        pyfiles = j.sal.fs.listFilesInDir(path, recursive, "*.py",
                                                depth=depth)
         pyfiles = initfiles + pyfiles
         for classfile in pyfiles:
             #print("found", classfile)
-            basename = self.j.sal.fs.getBaseName(classfile)
+            basename = j.sal.fs.getBaseName(classfile)
             if basename.startswith('__init__'):
                 for classname, item in self.find_jslocations(
                         classfile).items():
@@ -602,11 +602,11 @@ class JSLoader():
         return moduleList, baseList
 
     def removeEggs(self):
-        for key, path in self.j.clients.git.getGitReposListLocal(
+        for key, path in j.clients.git.getGitReposListLocal(
                 account="jumpscale").items():
-            for item in [item for item in self.j.sal.fs.listDirsInDir(
+            for item in [item for item in j.sal.fs.listDirsInDir(
                     path) if item.find("egg-info") != -1]:
-                self.j.sal.fs.removeDirTree(item)
+                j.sal.fs.removeDirTree(item)
 
     def generate(self, autocompletepath=None):
         """

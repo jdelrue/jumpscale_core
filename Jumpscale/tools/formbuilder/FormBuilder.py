@@ -1,4 +1,4 @@
-from Jumpscale import j # recursive imports cause this to fail with small-j
+from Jumpscale import j
 
 import npyscreen
 
@@ -109,7 +109,7 @@ class FormBuilderBaseClass(npyscreen.NPSAppManaged, JSBASE):
         """
         if description == "":
             description = name
-        description = j.data.text.pad(description, 20)
+        description = j.core.text.pad(description, 20)
 
         val = self.config[name]
         ttype = j.data.types.type_detect(val)
@@ -129,7 +129,7 @@ class FormBuilderBaseClass(npyscreen.NPSAppManaged, JSBASE):
         if description == "":
             description = name
         self.widget_types[name] = "multichoice"
-        description = j.data.text.pad(description, 20)
+        description = j.core.text.pad(description, 20)
         widget = self.form.add_widget(npyscreen.TitleSelectOne, name=description, values=choices)
         # check if there is pre-filled value if yes pre-select it
         if self.config[name] != "":

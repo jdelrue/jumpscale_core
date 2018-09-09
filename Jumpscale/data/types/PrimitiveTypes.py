@@ -74,7 +74,7 @@ class StringMultiLine(String):
         will do a strip on multiline
         """
         value = str(value)
-        return self.j.data.text.strip(value)
+        return j.core.text.strip(value)
 
     def toString(self, v):
         v = self.clean(v)
@@ -204,7 +204,7 @@ class Boolean():
         """
         if value in ["1", 1, True]:
             value = True
-        elif self.j.data.types.string.check(value) and value.strip().lower() in ["true", "yes", "y"]:
+        elif j.data.types.string.check(value) and value.strip().lower() in ["true", "yes", "y"]:
             value = True
         else:
             value = False
@@ -266,7 +266,7 @@ class Integer():
         return self.clean(v)
 
     def fromString(self, s):
-        return self.j.data.text.getInt(s)
+        return j.core.text.getInt(s)
 
     def get_default(self):
         return 0
@@ -324,7 +324,7 @@ class Float():
         return self.clean(v)
 
     def fromString(self, s):
-        return self.j.data.text.getFloat(s)
+        return j.core.text.getFloat(s)
 
     def get_default(self):
         return 0.0

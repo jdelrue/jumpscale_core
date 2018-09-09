@@ -1,6 +1,6 @@
 
 
-from jumpscale import j
+from Jumpscale import j
 from .Tags import Tags
 
 JSBASE = j.application.jsbase_get_class()

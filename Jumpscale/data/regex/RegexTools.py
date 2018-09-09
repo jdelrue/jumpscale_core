@@ -83,7 +83,7 @@ class RegexTools:
             return result
         else:
             if dieIfNotFound:
-                raise self.j.exceptions.RuntimeError(
+                raise j.exceptions.RuntimeError(
                     "Could not find %s in htmldoc %s" %
                     (tofind, path))
             else:
@@ -109,7 +109,7 @@ class RegexTools:
         search if there is at least 1 match
         """
         if pattern == "" or text == "":
-            raise self.j.exceptions.RuntimeError(
+            raise j.exceptions.RuntimeError(
                 "Cannot do .codetools.regex.match when "
                 "pattern or text parameter is empty")
         #j.logger.log("Regextools: pattern:%s in text:%s" % (pattern,text),5)
@@ -123,7 +123,7 @@ class RegexTools:
 
     def matchContent( self, path, contentRegexIncludes=[],
                       contentRegexExcludes=[]):
-        content = self.j.sal.fs.fileGetContents(path)
+        content = j.sal.fs.fileGetContents(path)
         return self.matchMultiple( patterns=contentRegexIncludes,
                                 text=content) and \
                not self.matchMultiple( patterns=contentRegexExcludes,
@@ -139,13 +139,13 @@ class RegexTools:
         if patterns=[] then will return False
         """
         if patterns == "":
-            raise self.j.exceptions.RuntimeError(
+            raise j.exceptions.RuntimeError(
                 "Cannot do .codetools.regex.matchMultiple when "
                 "pattern is empty")
         if text == "":
             return False
         if type(patterns).__name__ != 'list':
-            raise self.j.exceptions.RuntimeError(
+            raise j.exceptions.RuntimeError(
                 "patterns has to be of type list []")
         if patterns == []:
             return False
@@ -177,11 +177,11 @@ class RegexTools:
         @param text: Text where you want to search and replace
         """
         if not regexFind or not regexFindsubsetToReplace or not text:
-            raise self.j.exceptions.RuntimeError(
+            raise j.exceptions.RuntimeError(
                 "Cannot do .codetools.regex.replace when "
                 "any of the four variables is empty.")
         if regexFind.find(regexFindsubsetToReplace) == -1:
-            raise self.j.exceptions.RuntimeError(
+            raise j.exceptions.RuntimeError(
                 'regexFindsubsetToReplace must be part or '
                 'all of regexFind "ex: regexFind="Some example text", '
                 'regexFindsubsetToReplace="example"')
@@ -200,7 +200,7 @@ class RegexTools:
             @param text: Text to search in
         """
         if not pattern or not text:
-            raise self.j.exceptions.RuntimeError(
+            raise j.exceptions.RuntimeError(
                 "Cannot do .codetools.regex.findOne when "
                 "pattern or text parameter is empty")
         pattern = self._patternFix(pattern)
@@ -210,7 +210,7 @@ class RegexTools:
             finalResult.append(item.group())
 
         if len(finalResult) > 1:
-            raise self.j.exceptions.RuntimeError(
+            raise j.exceptions.RuntimeError(
                 "found more than 1 result of regex %s in text %s" %
                 (pattern, text))
         if len(finalResult) == 1:
@@ -223,7 +223,7 @@ class RegexTools:
             @param text: Text to search in
         """
         if pattern == "" or text == "":
-            raise self.j.exceptions.RuntimeError(
+            raise j.exceptions.RuntimeError(
                 "Cannot do .codetools.regex.findAll when "
                 "pattern or text parameter is empty")
         pattern = self._patternFix(pattern)
@@ -239,7 +239,7 @@ class RegexTools:
         return RegexMatches  (is array of RegexMatch)
         """
         if pattern == "" or text == "":
-            raise self.j.exceptions.RuntimeError(
+            raise j.exceptions.RuntimeError(
                 "Cannot do j.data.regex.getRegexMatches when "
                 "pattern or text parameter is empty")
         pattern = self._patternFix(pattern)
@@ -255,7 +255,7 @@ class RegexTools:
             which would improve the performance of the search function.
         """
         if pattern == "" or text == "":
-            raise self.j.exceptions.RuntimeError(
+            raise j.exceptions.RuntimeError(
                 "Cannot do j.data.regex.getRegexMatches when "
                 "pattern or text parameter is empty")
         pattern = self._patternFix(pattern)
@@ -280,7 +280,7 @@ class RegexTools:
             @return RegexMatch object, or None if didn't match any.
         """
         if pattern == "" or text == "":
-            raise self.j.exceptions.RuntimeError(
+            raise j.exceptions.RuntimeError(
                 "Cannot do j.data.regex.getRegexMatches when "
                 "pattern or text parameter is empty")
         pattern = self._patternFix(pattern)
@@ -299,7 +299,7 @@ class RegexTools:
         """ remove lines based on pattern
         """
         if pattern == "" or text == "":
-            raise self.j.exceptions.RuntimeError(
+            raise j.exceptions.RuntimeError(
                 "Cannot do j.data.regex.removeLines when "
                 "pattern or text parameter is empty")
         pattern = self._patternFix(pattern)
@@ -433,7 +433,7 @@ class RegexTools:
            not isinstance(blockStopPatternsNegative, list) or \
            not isinstance(linesIncludePatterns, list) or \
            not isinstance(linesExcludePatterns, list):
-            raise self.j.exceptions.RuntimeError(
+            raise j.exceptions.RuntimeError(
                 "Blockstartpatterns, blockStartPatternsNegative,"
                 "blockStopPatterns, blockStopPatternsNegative,"
                 "linesIncludePatterns, linesExcludePatterns "
@@ -507,7 +507,7 @@ class RegexTools:
         return result
 
     def test(self):
-        #content = self.j.sal.fs.fileGetContents("examplecontent1.txt")
+        #content = j.sal.fs.fileGetContents("examplecontent1.txt")
         #print(self.getClassName("class iets(test):"))
         content="class iets(test):"
         # find all occurences of class and find positions

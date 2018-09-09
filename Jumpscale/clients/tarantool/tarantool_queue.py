@@ -5,7 +5,7 @@ import msgpack
 from threading import Lock
 
 import tarantool
-from jumpscale import j
+from Jumpscale import j
 JSBASE = j.application.jsbase_get_class()
 
 

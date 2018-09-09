@@ -65,7 +65,7 @@ this will create something like
 example configure script which will inser configuration information in local secure config
 
 ```python
-from jumpscale import j
+from Jumpscale import j
 
 
 def configure_zerotier():

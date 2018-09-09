@@ -1,13 +1,15 @@
 from Jumpscale import j
-from collections import OrderedDict
-
 JSBASE = j.application.jsbase_get_class()
 
-class _JSBaseClassConfig:
+from collections import OrderedDict
+
+class JSBaseClassConfig(JSBASE):
 
     def __init__(self, instance="main", data=None, parent=None,
                  template=None, ui=None,
                  interactive=False): # XXX issue #36, set to False (was True)
+        JSBASE.__init__(self)
+
         if data is None: # issue #131 - REALLY important
             data = {}
 
@@ -17,7 +19,7 @@ class _JSBaseClassConfig:
         self._single_item = True
 
         if ui is None:
-            self._ui = self.j.tools.formbuilder.baseclass_get() # the default class
+            self._ui = j.tools.formbuilder.baseclass_get() # the default class
         else:
             self._ui = ui
         if template is not None:
@@ -28,9 +30,9 @@ class _JSBaseClassConfig:
         self._config = None
         self._instance = instance
         self._parent = parent
-        self.interactive = interactive and self.j.tools.configmanager.interactive
+        self.interactive = interactive and j.tools.configmanager.interactive
 
-        self._config = self.j.tools.configmanager._get_for_obj(
+        self._config = j.tools.configmanager._get_for_obj(
             self, instance=self._instance, data=data,
             template=self._template, ui=self._ui)
 
@@ -44,7 +46,7 @@ class _JSBaseClassConfig:
     @property
     def logger(self):
         if self._logger is None:
-            self._logger = self.j.logging.get(
+            self._logger = j.logging.get(
                 "%s.%s" % (self.__jslocation__, self._instance),
                 force=self._logger_force)
         return self._logger
@@ -92,7 +94,7 @@ class _JSBaseClassConfig:
             msg = self.config_check()
             if msg is not None and msg != "":
                 self.logger.debug(msg)
-                self.j.tools.console.askString("please correct the information in "
+                j.tools.console.askString("please correct the information in "
                                         "next configuraton screen, press enter")
             else:
                 break
@@ -112,11 +114,11 @@ class _JSBaseClassConfig:
     __repr__ = __str__
 
 
-class JSBaseClassConfig(JSBASE, _JSBaseClassConfig):
-
-    def __init__(self, instance="main", data=None, parent=None,
-                 template=None, ui=None,
-                 interactive=False):
-        JSBASE.__init__(self)
-        _JSBaseClassConfig.__init__(self, instance, data, parent,
-                 template, ui, interactive)
+# class JSBaseClassConfig(JSBASE, _JSBaseClassConfig):
+#
+#     def __init__(self, instance="main", data=None, parent=None,
+#                  template=None, ui=None,
+#                  interactive=False):
+#         JSBASE.__init__(self)
+#         _JSBaseClassConfig.__init__(self, instance, data, parent,
+#                  template, ui, interactive)

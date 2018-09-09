@@ -102,9 +102,9 @@ class SerializersFactory:
         if val is None or val == "" or val == []:
             return default
 
-        if self.j.data.types.list.check(default):
+        if j.data.types.list.check(default):
             res = []
-            if self.j.data.types.list.check(val):
+            if j.data.types.list.check(val):
                 for val0 in val:
                     if val0 not in res:
                         res.append(val0)
@@ -118,14 +118,14 @@ class SerializersFactory:
                 else:
                     if val not in res:
                         res.append(val)
-        elif self.j.data.types.bool.check(default):
+        elif j.data.types.bool.check(default):
             if str(val).lower() in ['true', "1", "y", "yes"]:
                 res = True
             else:
                 res = False
-        elif self.j.data.types.int.check(default):
+        elif j.data.types.int.check(default):
             res = int(val)
-        elif self.j.data.types.float.check(default):
+        elif j.data.types.float.check(default):
             res = int(val)
         else:
             res = str(val)
@@ -139,14 +139,14 @@ class SerializersFactory:
 #         self.serializationstr = serializationstr
 #         self.key = key
 #         for k in self.serializationstr:
-#             self.j.data.serializer.getSerializerType(k, self.key)
+#             j.data.serializer.getSerializerType(k, self.key)
 
 #     def dumps(self, val):
 #         if self.serializationstr == "":
 #             return val
 #         for key in self.serializationstr:
 #             # print "dumps:%s"%key
-#             val = self.j.data.serializer.types[key].dumps(val)
+#             val = j.data.serializer.types[key].dumps(val)
 #         return val
 
 #     def loads(self, data):
@@ -155,5 +155,5 @@ class SerializersFactory:
 
 #         for key in reversed(self.serializationstr):
 #             # print "loads:%s"%key
-#             data = self.j.data.serializer.types[key].loads(data)
+#             data = j.data.serializer.types[key].loads(data)
 #         return data

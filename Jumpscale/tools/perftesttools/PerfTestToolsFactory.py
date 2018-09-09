@@ -1,4 +1,5 @@
-from jumpscale import j
+from Jumpscale import j
+JSBASE = j.application.jsbase_get_class()
 
 from .NodeNas import NodeNas
 from .NodeHost import NodeHost
@@ -8,7 +9,7 @@ from .InfluxDumper import *
 
 import os
 
-class PerfTestToolsFactory:
+class PerfTestToolsFactory(JSBASE):
     """ j.tools.perftesttools.getNodeMonitor("localhost",22)
         make sure there is influxdb running on monitor node (root/root)
         make sure there is redis running on monitor node with passwd as
@@ -21,6 +22,7 @@ class PerfTestToolsFactory:
     __jslocation__ = "j.tools.perftesttools"
 
     def __init__(self):
+        JSBASE.__init__(self)
         self.__imports__ = "psutil"
         self.monitorNodeIp = None
         self.monitorNodeSSHPort = None
@@ -38,15 +40,15 @@ class PerfTestToolsFactory:
         self.monitorNodeIp = monitorNodeIp
         self.monitorNodeSSHPort = sshPort
         self.redispasswd = redispasswd
-        if sshkey is not None and self.j.sal.fs.exists(path=sshkey):
-            sshkey = self.j.sal.fs.fileGetContents(sshkey)
+        if sshkey is not None and j.sal.fs.exists(path=sshkey):
+            sshkey = j.sal.fs.fileGetContents(sshkey)
             self.sshkey = sshkey
 
             path = "%s/.ssh/testevn" % os.environ["HOME"]
-            self.j.sal.fs.writeFile(path, self.sshkey)
-            self.j.sal.fs.chmod(path, 0o600)
+            j.sal.fs.writeFile(path, self.sshkey)
+            j.sal.fs.chmod(path, 0o600)
 
-        self.j.sal.ssh.sshkeys_load()
+        j.sal.ssh.sshkeys_load()
 
     def getNodeNAS(self, ipaddr, sshport=22, nrdisks=0, fstype="xfs",
                 role='', debugdisk="", name=""):
@@ -75,11 +77,11 @@ class PerfTestToolsFactory:
         return n
 
     def getExampleScript(self, path=None):
-        dirpath = self.j.sal.fs.getDirName(os.path.realpath(__file__))
+        dirpath = j.sal.fs.getDirName(os.path.realpath(__file__))
         path2 = "%s/exampleScriptexampleScript" % dirpath
-        C = self.j.sal.fs.fileGetContents(path2)
+        C = j.sal.fs.fileGetContents(path2)
         if path is not None:
-            self.j.sal.fs.writeFile(filename=path, contents=C)
+            j.sal.fs.writeFile(filename=path, contents=C)
         return C
 
     def monitor(self):
@@ -88,14 +90,14 @@ class PerfTestToolsFactory:
         """
         nodename = os.environ.get("nodename", None)
         if not nodename:
-            nodename = self.j.sal.process.execute("hostname")[1].strip()
+            nodename = j.sal.process.execute("hostname")[1].strip()
 
         net = os.environ["net"] == '1'
         disks = [item.strip() for item in os.environ["disks"].split(",") \
                     if item.strip() != ""]
 
         cpu = os.environ["cpu"] == '1'
-        redis = self.j.clients.redis.get(os.environ["redishost"],
+        redis = j.clients.redis.get(os.environ["redishost"],
                     os.environ["redisport"])
 
         m = MonitorTools(redis, nodename)
@@ -106,7 +108,7 @@ class PerfTestToolsFactory:
             get config parameters from
             influxdb is always on localhost & std login/passwd
         """
-        redis = self.j.clients.redis.get(os.environ["redishost"],
+        redis = j.clients.redis.get(os.environ["redishost"],
                                     os.environ["redisport"])
         d = InfluxDumper(os.environ["testname"], redis,
                                     server=os.environ['idbhost'],

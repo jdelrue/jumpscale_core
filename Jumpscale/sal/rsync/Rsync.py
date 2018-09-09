@@ -1,4 +1,4 @@
-from jumpscale import j
+from Jumpscale import j
 
 JSBASE = j.application.jsbase_get_class()
 class RsyncInstance(JSBASE):
@@ -90,7 +90,7 @@ class RsyncServer(JSBASE):
         list = no
 
         """
-        C = j.data.text.strip(C)
+        C = j.core.text.strip(C)
         users = ""
         for name, secret in list(self.users.items()):
             users += "%s," % name

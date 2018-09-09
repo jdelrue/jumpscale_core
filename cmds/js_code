@@ -10,7 +10,7 @@ print(j.core.state.mascot)
 #!/usr/bin/env jspython
 import os
 import sys
-from jumpscale import j
+from Jumpscale import j
 j.tools.bash.local.locale_check()
 import click
 

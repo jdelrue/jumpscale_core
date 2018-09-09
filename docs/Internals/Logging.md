@@ -35,7 +35,7 @@ See handlers and filter for more informations:
 
 # Example
 ```python
-from jumpscale import j
+from Jumpscale import j
 
 class TestLog(object):
     def __init__(self):

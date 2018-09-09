@@ -1,8 +1,11 @@
-import threading
+from Jumpscale import j
+JSBASE = j.application.jsbase_get_class()
+
+# import threading
 
 
-class ExecutorFactory(object):
-    _lock = threading.Lock()
+class ExecutorFactory(JSBASE):
+    # _lock = threading.Lock()
 
     _executors = {}
     _executors_async = {}
@@ -24,8 +27,8 @@ class ExecutorFactory(object):
 
     def ssh_get(self, sshclient):
         with self._lock:
-            if self.j.data.types.string.check(sshclient):
-                sshclient = self.j.clients.ssh.get(instance=sshclient)
+            if j.data.types.string.check(sshclient):
+                sshclient = j.clients.ssh.get(instance=sshclient)
             key = '%s:%s:%s' % (
                 sshclient.config.data['addr'],
                 sshclient.config.data['port'],
@@ -54,8 +57,8 @@ class ExecutorFactory(object):
         pubkey: uses this particular key (path) to connect
         usecache: gets cached executor if available. False to get a new one.
         """
-        if self.j.data.types.string.check(sshclient):
-            sshclient = self.j.clients.ssh.get(instance=sshclient)
+        if j.data.types.string.check(sshclient):
+            sshclient = j.clients.ssh.get(instance=sshclient)
         # @TODO: *1 needs to be fixed
         raise RuntimeError("not implemented")
         with self._lock:
@@ -83,10 +86,10 @@ class ExecutorFactory(object):
         if executor is None:
             self._executors = {}
             self._executors_async = {}
-            self.j.tools.prefab.prefabs_instance = {}
+            j.tools.prefab.prefabs_instance = {}
             return
 
-        if self.j.data.types.string.check(executor):
+        if j.data.types.string.check(executor):
             key = executor
         elif executor.type == 'ssh':
             sshclient = executor.sshclient
@@ -95,10 +98,10 @@ class ExecutorFactory(object):
                 sshclient.config.data['port'],
                 sshclient.config.data['login'])
         else:
-            raise self.j.exceptions.Input(
+            raise j.exceptions.Input(
                 message='executor type not recognize.')
         with self._lock:
             if key in self._executors:
                 exe = self._executors[key]
-                self.j.tools.prefab.reset(exe.prefab)
+                j.tools.prefab.reset(exe.prefab)
                 del self._executors[key]

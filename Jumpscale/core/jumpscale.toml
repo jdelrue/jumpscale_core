@@ -1,0 +1,36 @@
+[system]
+debug = false
+autopip = false
+readonly = false
+container = false
+
+[myconfig]
+giturl = ""
+sshkeyname = ""
+path = ""
+
+[logging]
+enabled = true
+filter = ["*"]
+exclude = ["sal.fs"]
+level = 20
+
+[dirs]
+TMPDIR = "/tmp"
+BASEDIRJS = "{{HOME}}/opt/jumpscale"
+JSAPPSDIR = "{{HOME}}/opt/jumpscale/apps"
+TEMPLATEDIR = "{{HOME}}/opt/var/templates"
+DATADIR = "{{HOME}}/opt/var/data"
+BUILDDIR = "{{HOME}}/opt/var/build"
+LIBDIR = "{{HOME}}/opt/lib/"
+LOGDIR = "{{HOME}}/opt/var/log"
+BINDIR = "{{HOME}}/opt/bin"
+HOMEDIR = "{{HOME}}"
+BASEDIR = "{{HOME}}/opt/"
+CODEDIR = "{{HOME}}/code"
+HOSTDIR = "{{HOME}}/opt/"
+HOSTCFGDIR = "{{HOME}}/opt/jumpscale/cfg/"
+CFGDIR = "{{HOME}}/opt/jumpscale/cfg/"
+VARDIR = "{{HOME}}/opt/var"
+
+

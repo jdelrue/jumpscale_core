@@ -2,7 +2,7 @@ import re
 from io import StringIO
 import os
 import locale
-
+from Jumpscale import j
 
 class Profile(object):
     env_pattern = re.compile(r'^([^=\n]+)="([^"\n]+)"$', re.MULTILINE)
@@ -26,7 +26,7 @@ class Profile(object):
     @property
     def pathProfile(self):
         if not self._pathProfile:
-            self._pathProfile = self.j.sal.fs.joinPaths(
+            self._pathProfile = j.sal.fs.joinPaths(
                 self.home, ".profile_js")
         return self._pathProfile
 
@@ -211,7 +211,7 @@ class Profile(object):
         '''
         return true of locale is properly set
         '''
-        if self.j.core.platformtype.myplatform.isMac:
+        if j.core.platformtype.myplatform.isMac:
             a = self.bash.env.get('LC_ALL') == 'en_US.UTF-8'
             b = self.bash.env.get('LANG') == 'en_US.UTF-8'
         else:
@@ -235,7 +235,7 @@ class Profile(object):
             self.envSet("LC_ALL", "C.UTF-8")
             self.envSet("LANG", "C.UTF-8")
             return
-        raise self.j.exceptions.Input(
+        raise j.exceptions.Input(
             "Cannot find C.UTF-8, cannot fix locale's")
 
 
@@ -248,29 +248,27 @@ class BashFactory(object):
     @property
     def local(self):
         if not self._local:
-            DBash = self._jsbase(('Bash', 'Jumpscale.tools.bash.BashFactory'))
-            self._local = DBash()
+            self._local = Bash()
         return self._local
 
     def get(self, executor=None):
         """
         if executor==None then will be local
         """
-        DBash = self._jsbase(('Bash', 'Jumpscale.tools.bash.BashFactory'))
-        b = DBash(executor=executor)
-        return b
+        return Bash(executor=executor)
 
 
 class Bash(object):
 
     def __init__(self, executor=None):
         self._executor = executor
-        self._add_late_init(self.reset)
+        self._profile = None
+        # self.reset()
 
     @property
     def executor(self):
         if self._executor is None:
-            self.executor = self.j.tools.executorLocal
+            self.executor = j.tools.executorLocal
         return self._executor
 
     @executor.setter
@@ -301,7 +299,7 @@ class Bash(object):
             "source ~/.profile_js;which %s" % cmd, die=False, showout=False)
         if rc > 0:
             if die:
-                raise self.j.exceptions.RuntimeError(
+                raise j.exceptions.RuntimeError(
                     "Did not find command: %s" % cmd)
             else:
                 return False

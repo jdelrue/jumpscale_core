@@ -1,11 +1,13 @@
+from Jumpscale import j
+JSBASE = j.application.jsbase_get_class() = j.application.jsbase_get_class()
 import tarantool
 import os
-from jumpscale import j
+from Jumpscale import j
 from .TarantoolDB import TarantoolDB
 from .TarantoolClient import TarantoolClient
 
 
-class TarantoolFactory:
+class TarantoolFactory(JSBASE):
 
     """
     #server_start
@@ -16,12 +18,13 @@ class TarantoolFactory:
 
     """
 
-    __jslocation__ = "j.clients.tarantool"
-    __jsbase__ = 'j.tools.configmanager._base_class_configs'
-    _child_class = TarantoolClient
+
 
     def __init__(self):
+        JSBASE.__init__(self)
+        self.__jslocation__ = "j.clients.tarantool"
         self.__imports__ = "tarantool"
+
         if j.core.platformtype.myplatform.isMac:
             self.cfgdir = "/usr/local/etc/tarantool/instances.enabled"
         else:

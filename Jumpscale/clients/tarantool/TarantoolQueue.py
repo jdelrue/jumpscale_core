@@ -1,4 +1,4 @@
-from jumpscale import j
+from Jumpscale import j
 import tarantool
 from .TarantoolDB import TarantoolDB
 # import itertools

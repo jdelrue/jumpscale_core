@@ -1,10 +1,11 @@
 
-from jumpscale import j
+from Jumpscale import j
 
 from Jumpscale.core.State import State
 
 JSBASE = j.application.jsbase_get_class()
 
+from Jumpscale.core.State import State
 
 class StateFactory(JSBASE):
 

@@ -1,5 +1,5 @@
 from json import load
-from jumpscale import j
+from Jumpscale import j
 
 EMAILS_DIR = j.sal.fs.joinPaths(j.dirs.VARDIR, 'email')
 

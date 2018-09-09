@@ -7,7 +7,7 @@ This is the script which maninipulates a local tfbot as deployed in a Zero-OS
 import time
 
 import click
-from jumpscale import j
+from Jumpscale import j
 import time
 
 

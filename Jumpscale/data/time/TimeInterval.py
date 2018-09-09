@@ -20,7 +20,7 @@ class TimeInterval():
     MONTHS = 5
     YEARS = 6
 
-    __jslocation__ = 'j.data.time.timeinterval'
+    __jslocation__ = 'j.data.timeinterval'
 
 def printdelta():
     """

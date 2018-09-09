@@ -19,30 +19,20 @@ count = 0
 class AlertHandler(JSBASE):
 
     def __init__(self):
-        self.__jslocation__ = "j.tools.alerthandler"
+        self.__jscorelocation__ = "j.tools.alerthandler"
         JSBASE.__init__(self)
-
-        # XXX issue #94 - cannot do anything, can't start apps, nothing
-        # unless schemas are installed (through digitalme)
-        self.enabled = hasattr(j.application, 'schemas')
-        if not self.enabled:
-            return
+        if not j.application.schemas:
+            raise RuntimeError("cannot use alerthandler because digital me has not been installed")
         self.schema_alert = j.data.schema.schema_add(SCHEMA_ALERT)
 
         self.db = j.core.db
         self.serialize_json = False  # will be serialized as capnp
-
-    def _check_enabled(self):
-        if not self.enabled:
-            raise RuntimeError("cannot use alerthandler because "
-                               "digital me has not been installed")
 
     def log(self, error, tb_text=""):
         """
         :param error: is python exception (can be from jumpscale_core/Jumpscale/errorhandling/JSExceptions.py)
         :return: jumpscale.alerthandler.alert object
         """
-        self._check_enabled() # issue #94 - remove when sorted out
         e = self.schema_alert.new()
         e.time_first = j.data.time.epoch
         if "trace_do" in error.__dict__:
@@ -63,9 +53,9 @@ class AlertHandler(JSBASE):
             e.cat = "python.%s" % name
         e.trace = tb_text
 
-        key_input = j.data.text.pad("%s_%s_%s" % (e.cat, e.level, e.message), 150)
+        key_input = j.core.text.pad("%s_%s_%s" % (e.cat, e.level, e.message), 150)
         key_input = key_input.strip()
-        key_input = j.data.text.strip_to_ascii_dense(key_input)
+        key_input = j.core.text.strip_to_ascii_dense(key_input)
         key = "alerts:%s" % j.data.hash.md5_string(key_input)
 
         e2 = self.get(key, die=False)
@@ -156,9 +146,9 @@ class AlertHandler(JSBASE):
     def count(self):
         return len(self.list())
 
-    def report(self): # name "print" conflicts with print (lib2to3 error)
+    def print(self):
         """
-        js9 'j.tools.alerthandler.report()'
+        js9 'j.tools.alerthandler.print()'
         """
         for (key, obj) in self.list():
             tb_text = obj.trace
@@ -192,7 +182,7 @@ class AlertHandler(JSBASE):
 
         print(j.tools.alerthandler.list())
 
-        j.tools.alerthandler.report()
+        j.tools.alerthandler.print()
 
     # DO NOT REMOVE, can do traicks later with the eco.lua to make faster
     # def redis_enable(self):

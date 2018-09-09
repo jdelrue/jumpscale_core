@@ -1,9 +1,9 @@
-from jumpscale import j
+from Jumpscale import j
+JSBASE = j.application.jsbase_get_class()
 import time
 
 import psutil
 
-JSBASE = j.application.jsbase_get_class()
 
 
 class MonitorClient(JSBASE):

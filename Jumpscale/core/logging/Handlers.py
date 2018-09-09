@@ -7,7 +7,7 @@ from logging.handlers import TimedRotatingFileHandler
 from logging.handlers import MemoryHandler
 
 # XXX not used? from .Filter import ModuleFilter
-
+from .LimitFormatter import LimitFormatter
 
 FILE_FORMAT = '%(asctime)s - %(pathname)s:%(lineno)d - %(levelname)-8s - %(message)s'
 CONSOLE_FORMAT = '%(cyan)s[%(asctime)s]%(reset)s - %(filename)-18s:%(lineno)-4d:%(name)-20s - %(log_color)s%(levelname)-8s%(reset)s - %(message)s'
@@ -16,7 +16,8 @@ CONSOLE_FORMAT = '%(cyan)s[%(asctime)s]%(reset)s - %(filename)-18s:%(lineno)-4d:
 
 class Handlers():
 
-    def __init__(self):
+    def __init__(self,j):
+        self._j = j 
         self._fileRotateHandler = None
         self._consoleHandler = None
         self._memoryHandler = None
@@ -26,9 +27,9 @@ class Handlers():
     @property
     def fileRotateHandler(self, name='jumpscale'):
         if self._fileRotateHandler is None:
-            if not self.j.sal.fs.exists("%s/log/" % self.j.dirs.VARDIR):
-                self.j.sal.fs.createDir("%s/log/" % self.j.dirs.VARDIR)
-            filename = "%s/log/%s.log" % (self.j.dirs.VARDIR, name)
+            if not self._j.sal.fs.exists("%s/log/" % self._j.dirs.VARDIR):
+                self._j.sal.fs.createDir("%s/log/" % self._j.dirs.VARDIR)
+            filename = "%s/log/%s.log" % (self._j.dirs.VARDIR, name)
             formatter = logging.Formatter(FILE_FORMAT)
             fh = TimedRotatingFileHandler(
                 filename, when='D', interval=1, backupCount=7, encoding=None, delay=False, utc=False, atTime=None)
@@ -41,8 +42,6 @@ class Handlers():
     @property
     def consoleHandler(self):
         if self._consoleHandler is None:
-            LimitFormatter = self._jsbase(('LimitFormatter',
-                                'Jumpscale.logging.LimitFormatter'))
             formatter = LimitFormatter(
                 fmt=CONSOLE_FORMAT,
                 datefmt="%a%d %H:%M",
@@ -67,7 +66,7 @@ class Handlers():
 
     def redisHandler(self, redis_client=None):
         if redis_client is None:
-            self.redis_client = self.j.core.db
+            self.redis_client = self._j.core.db
         raise RuntimeError("need to implement redishandler")
 
     @property

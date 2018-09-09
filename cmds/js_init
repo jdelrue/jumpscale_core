@@ -1,30 +1,31 @@
 #! /usr/bin/env python3
 
 
-# from jumpscale import j
-# needs to be the original one because am generating the above one
 from Jumpscale import j
+j.tools.bash.local.locale_check()
+import click
 
-try:
-    from Jumpscale.data.capnp.Capnp import Capnp
-    j.data.capnp = Capnp()
-except:
+logger = j.logger.get("js_node", force=True)
+
+
+@click.group()
+def cli():
     pass
 
-import sys
+
 
 print(j.core.state.mascot)
 
 
 #make sure we don't do autopip
-j.core.state.configSetInDict('system','autopip',False)
+# j.core.state.configSetInDict('system','autopip',False)
 
 j.tools.jsloader.generate()
-j.tools.executorLocal.initEnv()
+
 
 #try:
 #print ("WARNING: dockerconfig was not done")
-#from jumpscale import j as h
+#from Jumpscale import j as h
 #h.tools.develop.dockerconfig() #make sure required config/sshkeys are made available to docker or installed in docker
 #except:
 #    pass

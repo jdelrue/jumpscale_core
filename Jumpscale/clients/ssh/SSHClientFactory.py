@@ -2,7 +2,7 @@
 import os
 import threading
 
-from jumpscale import j
+from Jumpscale import j
 
 from .SSHClient import SSHClient
 from .SSHClientParamiko import SSHClientParamiko

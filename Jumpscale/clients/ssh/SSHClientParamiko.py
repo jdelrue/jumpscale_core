@@ -7,7 +7,7 @@ import queue
 import socket
 import time
 import os
-from jumpscale import j
+from Jumpscale import j
 from paramiko.ssh_exception import (AuthenticationException,
                                     BadHostKeyException, SSHException, BadAuthenticationType)
 from .SSHClientBase import SSHClientBase
@@ -338,7 +338,7 @@ class SSHClientParamiko(SSHClientBase):
                     elif line == 'E':
                         err_eof = True
                     continue
-                line = j.data.text.toAscii(line)
+                line = j.core.text.toAscii(line)
                 if chan == 'O':
                     if showout:
                         with self._lock:

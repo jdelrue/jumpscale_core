@@ -10,7 +10,7 @@ This container is used to build flist, it contains already preinstalled tools li
 import time
 
 import click
-from jumpscale import j
+from Jumpscale import j
 
 
 @click.group()

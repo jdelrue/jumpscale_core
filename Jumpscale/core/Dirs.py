@@ -21,54 +21,24 @@ class Dirs(object):
     """ Utility class to configure and store all relevant directory paths
     """
 
-    __jslocation__ = "j.core.dirs"
+    __jscorelocation__ = "j.core.dirs"
 
-    def __init__(self):
+    def __init__(self,j):
         ''' jumpscale sandbox base folder
         '''
-        #self.reload() # isn't needed: done manually in bootstrap anyway
-        self._TEMPLATEDIR = None
-        self._JSAPPSDIR = None
-        self._templatedir_set = False
-        self._jsappsdir_set = False
+        self._j = j
+        self.reload()
+
 
     def reload(self):
         """ loads the environment (NOTE: does not clear out the old environment)
             from the config file [dirs] section.
         """
-        # when bootstrapping there *is* no config entry [dirs], consequently
-        # an exception is attempted to be raised... but exceptions aren't
-        # set up either!  this is called very very early.
-        if self.j.core.state.configExists("dirs"):
-            dirs = self.j.core.state.configGet("dirs")
-        else:
-            dirs = {}
-
+        dirs = self._j.core.config["dirs"]
         for key, val in dirs.items():
             self.__dict__[key] = val
             os.environ[key] = val
 
-    @property
-    def JSAPPSDIR(self):
-        if self._jsappsdir_set:
-            return self._JSAPPSDIR
-        return self.VARDIR + "/apps/"
-
-    @JSAPPSDIR.setter
-    def JSAPPSDIR(self, d):
-        self._JSAPPSDIR = d
-        self._jsappsdir_set = True
-
-    @property
-    def TEMPLATEDIR(self):
-        if self._templatedir_set:
-            return self._TEMPLATEDIR
-        return self.VARDIR + "/templates/"
-
-    @TEMPLATEDIR.setter
-    def TEMPLATEDIR(self, d):
-        self._TEMPLATEDIR = d
-        self._templatedir_set = True
 
     def replace_txt_dir_vars(self, txt, additional_args={}):
         """
@@ -102,15 +72,6 @@ class Dirs(object):
             txt = txt.replace("$%s" % key, str(value))
         return txt
 
-    @property
-    def JSLIBDIR(self):
-        """
-        Returns location of Jumpscale library
-        """
-        return self.j.sal.fs.getParent(
-            self.j.sal.fs.getDirName(
-                self.j.sal.fs.getPathOfRunningFunction(
-                    self.j.logger.__init__)))
 
     def replace_files_dir_vars(
             self,
@@ -150,7 +111,7 @@ class Dirs(object):
             if key[0] == "_":
                 continue
             out += "%-20s : %s\n" % (key, value)
-        out = self.j.data.text.sort(out)
+        out = self._j.core.text.sort(out)
         return out
 
     __repr__ = __str__

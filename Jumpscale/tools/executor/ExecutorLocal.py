@@ -1,4 +1,8 @@
+from Jumpscale import j
+JSBASE = j.application.jsbase_get_class()
+
 from Jumpscale.tools.executor.ExecutorBase import ExecutorBase
+
 import subprocess
 import os
 import pytoml
@@ -8,109 +12,16 @@ import sys
 
 class ExecutorLocal(ExecutorBase):
 
-    __jslocation__ = "j.tools.executorLocal"
-
     def __init__(self, debug=False, checkok=False):
         self._cache_expiration = 3600
         ExecutorBase.__init__(self, debug=debug, checkok=debug)
         self.type = "local"
         self._id = 'localhost'
 
-        # self.cache = self.j.data.cache.get(id="executor:%s" %
-        #               self.id,expiration=3600)
+        self.cache = j.data.cache.get(id="executor:%s" %self.id,expiration=3600)
 
     def exists(self, path):
-        return self.j.sal.fs.exists(path)
-
-    @property
-    def stateOnSystem(self):
-        """
-        is dict of all relevant param's on system
-        """
-
-        def getenv():
-            res = {}
-            for key, val in os.environ.items():
-                res[key] = val
-            return res
-
-        def cfg_path(homedir):
-            if "HOSTCFGDIR" in os.environ.keys():
-                cfgdir = os.environ['HOSTCFGDIR']
-            else:
-                cfgdir="/DOESNOTEXIST"
-            for path in [cfgdir, "/opt/jumpscale/cfg","%s/opt/jumpscale/cfg" % homedir,"%s/jumpscale/cfg" % homedir]:
-                if os.path.exists(path):
-                    return path
-            raise RuntimeError("could not find cfg path for jumpscale")
-
-        def do():
-            # print ("INFO: stateonsystem for local")
-
-            if self.isBuildEnv:
-                homedir = os.environ["PBASE"]
-                cfgdir = "%s/cfg" % homedir
-            elif "HOMEDIR" in os.environ:
-                    homedir = os.environ["HOMEDIR"]
-            else:
-                # if os.path.exists("/root/.iscontainer"):
-                #     homedir = "/host"
-                # else:
-                homedir = os.environ["HOME"]
-
-            cfgdir = cfg_path(homedir)
-
-            res = {}
-
-            def load(name):
-                path = "%s/%s.toml" % (cfgdir, name)
-                try:
-                    return pytoml.loads(self.j.sal.fs.fileGetContents(path))
-                except ValueError:
-                    return {}
-
-            res["cfg_jumpscale"] = load("jumpscale")
-            res["cfg_state"] = load("state")
-            res["cfg_me"] = load("me")
-            res["env"] = getenv()
-
-            # res["uname"] = subprocess.Popen("uname -mnprs",
-            #               stdout=subprocess.PIPE,
-            #               shell=True).stdout.read().decode().strip()
-            # res["hostname"] = subprocess.Popen("hostname",
-            #               stdout=subprocess.PIPE,
-            #               shell=True).stdout.read().decode().strip()
-            res["uname"] = None
-            res["hostname"] = socket.gethostname()
-
-            if "darwin" in sys.platform.lower():
-                res["os_type"] = "darwin"
-            elif "linux" in sys.platform.lower():
-                # dirty hack, will need to do something better, but keep fast
-                res["os_type"] = "ubuntu"
-            else:
-                print("need to fix for other types (check executorlocal")
-                sys.exit(1)
-
-            path = "%s/.profile_js" % (homedir)
-            if os.path.exists(path):
-                res["bashprofile"] = self.j.sal.fs.fileGetContents(path)
-            else:
-                res["bashprofile"] = ""
-
-            res["path_jscfg"] = cfgdir
-
-            if os.path.exists("/root/.iscontainer"):
-                res["iscontainer"] = True
-            else:
-                res["iscontainer"] = False
-
-            return res
-
-        if self._stateOnSystem is None:
-            self._stateOnSystem = do()  # don't use cache
-
-        return self._stateOnSystem
+        return j.sal.fs.exists(path)
 
     def executeRaw(self, cmd, die=True, showout=False):
         return self.execute(cmd, die=die, showout=showout)
@@ -138,7 +49,7 @@ class ExecutorLocal(ExecutorBase):
         cmds2 = self.commands_transform(
             cmds, die=die, checkok=checkok, env=env, sudo=sudo)
 
-        rc, out, err = self.j.sal.process.execute(
+        rc, out, err = j.sal.process.execute(
             cmds2, die=die, showout=showout, timeout=timeout)
 
         if checkok:
@@ -148,13 +59,13 @@ class ExecutorLocal(ExecutorBase):
 
     def executeInteractive(self, cmds, die=True, checkok=None):
         cmds = self.commands_transform(cmds, die, checkok=checkok)
-        return self.j.sal.process.executeWithoutPipe(cmds)
+        return j.sal.process.executeWithoutPipe(cmds)
 
     def upload(self, source, dest, dest_prefix="", recursive=True):
         if dest_prefix != "":
-            dest = self.j.sal.fs.joinPaths(dest_prefix, dest)
-        if self.j.sal.fs.isDir(source):
-            self.j.sal.fs.copyDirTree(
+            dest = j.sal.fs.joinPaths(dest_prefix, dest)
+        if j.sal.fs.isDir(source):
+            j.sal.fs.copyDirTree(
                 source,
                 dest,
                 keepsymlinks=True,
@@ -168,17 +79,17 @@ class ExecutorLocal(ExecutorBase):
                 ssh=False,
                 recursive=recursive)
         else:
-            self.j.sal.fs.copyFile(source, dest, overwriteFile=True)
+            j.sal.fs.copyFile(source, dest, overwriteFile=True)
         self.cache.reset()
 
     def download(self, source, dest, source_prefix=""):
         if source_prefix != "":
-            source = self.j.sal.fs.joinPaths(source_prefix, source)
+            source = j.sal.fs.joinPaths(source_prefix, source)
 
-        if self.j.sal.fs.isFile(source):
-            self.j.sal.fs.copyFile(source, dest)
+        if j.sal.fs.isFile(source):
+            j.sal.fs.copyFile(source, dest)
         else:
-            self.j.sal.fs.copyDirTree(
+            j.sal.fs.copyDirTree(
                 source,
                 dest,
                 keepsymlinks=True,
@@ -192,13 +103,13 @@ class ExecutorLocal(ExecutorBase):
                 ssh=False)
 
     def file_read(self, path):
-        return self.j.sal.fs.readFile(path)
+        return j.sal.fs.readFile(path)
 
     def file_write(self, path, content, mode=None, owner=None,
                    group=None, append=False, sudo=False,showout=True):
-        self.j.sal.fs.createDir(self.j.sal.fs.getDirName(path))
-        self.j.sal.fs.writeFile(path, content, append=append)
+        j.sal.fs.createDir(j.sal.fs.getDirName(path))
+        j.sal.fs.writeFile(path, content, append=append)
         if owner is not None or group is not None:
-            self.j.sal.fs.chown(path, owner, group)
+            j.sal.fs.chown(path, owner, group)
         if mode is not None:
-            self.j.sal.fs.chmod(path, mode)
+            j.sal.fs.chmod(path, mode)

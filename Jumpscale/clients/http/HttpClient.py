@@ -12,7 +12,7 @@ from urllib.parse import urlencode, urlparse, urlunparse
 import urllib.parse
 import urllib.request
 import urllib.error
-from jumpscale import j
+from Jumpscale import j
 JSBASE = j.application.jsbase_get_class()
 
 

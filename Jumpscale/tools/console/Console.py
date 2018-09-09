@@ -1,7 +1,9 @@
 
+from Jumpscale import j
+JSBASE = j.application.jsbase_get_class()
+
 import re
 import sys
-from Jumpscale import j
 # from JumpscaleAYS.core.types import IPv4Address, IPv4Range
 import textwrap
 import string
@@ -26,8 +28,6 @@ import sys
 # import logging
 #
 # log = logging.getLogger('stdxxx')
-
-JSBASE = j.application.jsbase_get_class()
 
 
 class Console(JSBASE):

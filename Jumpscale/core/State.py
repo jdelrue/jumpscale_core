@@ -43,36 +43,36 @@ class State(object):
 
     """
 
-    __jslocation__ = 'j.core.state'
+    __jscorelocation__ = 'j.core.state'
 
-    def __init__(self, executor):
-        self.readonly = False
-        self.executor = executor
-
-    def load(self, reset=False):
-        if reset:
-            self.executor.reset()
-
-        if self.executor.stateOnSystem is None:
-            raise RuntimeError(
-                "cannot load state because state on system in executor == None")
-
-        self.configJSPath = self.executor.stateOnSystem["path_jscfg"] + "/jumpscale.toml"
-        self.configStatePath = self.executor.stateOnSystem["path_jscfg"] + "/state.toml"
-        self._configState = self.executor.stateOnSystem["cfg_state"]
-        self._configJS = self.executor.stateOnSystem["cfg_jumpscale"]
+    def __init__(self, j, executor=None,readonly=False):
+        self._j = j
+        self.readonly = readonly
+        if executor is not None:
+            #need to load the toml file from the executor, will always put on home !
+            self._j.shell()
+            self.executor = executor
+        else:
+            self.executor = None
+            self._config = self._j.core.config
 
     @property
     def cfgPath(self):
-        return self.executor.stateOnSystem["path_jscfg"]
+        return self._config["dirs"]["CFGDIR"]
 
     @property
     def versions(self):
         versions = {}
         for name, path in self.configGet('plugins', {}).items():
-            repo = self.j.clients.git.get(path)
+            repo = self._j.clients.git.get(path)
             _, versions[name] = repo.getBranchOrTag()
         return versions
+
+    def stateKey(self,key):
+        #if executor known need to use other key per executor
+        if executor is not None:
+            self._j.shell()
+        return key
 
     def stateSet(self, key, val, save=True):
         """Set a section in Jumpscale's state.toml
@@ -86,15 +86,13 @@ class State(object):
         :return: true if new value is set, false if already exists
         :rtype: bool
         """
+        key = self.stateKey(key)
+        if not isinstance(val, dict):
+            raise RuntimeError("state set input needs to be dict")
+        val = pytoml.dumps(val)
+        self._j.core.db.hset("jumpscale:state",key,val)
 
-        return self._set(
-            key=key,
-            val=val,
-            save=save,
-            config=self._configState,
-            path=self.configStatePath)
-
-    def stateGet(self, key, defval=None, set=False):
+    def stateGet(self, key, defval={}, set=False):
         """gets a section from state.toml
 
         :param key: section name
@@ -106,13 +104,31 @@ class State(object):
         :return: the section data
         :rtype: dict
         """
+        key = self.stateKey(key)
+        if not isinstance(defval, dict):
+            raise RuntimeError("defval needs to be dict")
+        res = self._j.core.db.hget("jumpscale:state", key, val)
+        if res==None and defval is not {}:
+            res = defval
+            if set:
+                self.stateSet(key,defval,True)
+        elif res == None:
+            res={}
+        else:
+            res = pytoml.loads(res)
+        return res
 
-        return self._get(
-            key=key,
-            defval=defval,
-            set=set,
-            config=self._configState,
-            path=self.configStatePath)
+    def stateExists(self, key):
+        """ checks if a section in jumpscale.toml exists
+
+        :param key: section name
+        :type key: str
+        :return: true if the section exists
+        :rtype: bool
+        """
+        key = self.stateKey(key)
+        return not self._j.core.db.hget("jumpscale:state", key) == None
+
 
     def configExists(self, key):
         """ checks if a section in jumpscale.toml exists
@@ -122,7 +138,7 @@ class State(object):
         :return: true if the section exists
         :rtype: bool
         """
-        return key in self._configJS
+        return key in self._config
 
     def configGet(self, key, defval=None, set=False):
         """gets a section from jumpscale.toml
@@ -139,9 +155,7 @@ class State(object):
         return self._get(
             key=key,
             defval=defval,
-            set=set,
-            config=self._configJS,
-            path=self.configJSPath)
+            set=set)
 
     def configSet(self, key, val, save=True):
         """Set a section in Jumpscale's jumpscale.toml
@@ -158,49 +172,47 @@ class State(object):
         return self._set(
             key=key,
             val=val,
-            save=save,
-            config=self._configJS,
-            path=self.configJSPath)
+            save=save)
 
     @property
     def mascot(self):
         return mascot
 
-    def _get(self, key, defval=None, set=False, config=None, path=""):
+    def _get(self, key, defval=None, set=False):
         """
         """
-        if key in config:
-            return config[key]
+        if key in self._config:
+            return self._config[key]
         else:
             if defval is not None:
                 if set:
-                    self._set(key, defval, config=config, path=path)
+                    self._set(key, defval)
                 return defval
             else:
                 raise self.j.exceptions.Input(
                     message="could not find config key:%s in executor:%s" % (key, self))
 
-    def _set(self, key, val, save=True, config=None, path=""):
+    def _set(self, key, val, save=True):
         """
         @return True if changed
         """
-        if key in config:
-            val2 = config[key]
+        if key in self._config:
+            val2 = self._config[key]
         else:
             val2 = None
         if val != val2:
-            config[key] = val
+            self._config[key] = val
             self._config_changed = True
             if save:
-                self.configSave(config, path)
+                self.configSave()
             return True
         else:
             if save:
-                self.configSave(config, path)
+                self.configSave()
             return False
 
     def configSetInDict(self, key, dkey, dval):
-        """Set a value to a key in a section in the config file
+        """Set a value to a key in a section in the self._config file
         For example:
         [section]
         key = "value"
@@ -216,50 +228,26 @@ class State(object):
         self._setInDict(
             key=key,
             dkey=dkey,
-            dval=dval,
-            config=self._configJS,
-            path=self.configJSPath)
+            dval=dval)
 
-    def stateSetInDict(self, key, dkey, dval):
-        """Set a value to a key in a section in the state file
-        For example:
-        [section]
-        key = "value"
-
-        :param key: section name
-        :type key: str
-        :param dkey: key to set its value
-        :type dkey: str
-        :param dval: value to set
-        :type dval: str
-        """
-        self._setInDict(
-            key=key,
-            dkey=dkey,
-            dval=dval,
-            config=self._configState,
-            path=self.configStatePath)
-
-    def _setInDict(self, key, dkey, dval, config, path=""):
+    def _setInDict(self, key, dkey, dval):
         """
         will check that the val is a dict, if not set it and put key & val in
         """
-        if key in config:
-            val2 = config[key]
+        if key in self._config:
+            val2 = self._config[key]
         else:
-            self._set(key, {}, save=True, config=config, path=path)
+            self._set(key, {}, save=True)
             val2 = {}
         if dkey in val2:
             if val2[dkey] != dval:
-                self._config_changed = True
+               self._config_changed = True
         else:
-            self._config_changed = True
-
+           self._config_changed = True
         val2[dkey] = dval
-
-        config[key] = val2
+        self._config[key] = val2
         # print("config set dict %s:%s:%s" % (key, dkey, dval))
-        self.configSave(path)
+        self.configSave()
 
     def configGetFromDict(self, key, dkey, default=None):
         """Get value of key in a section in the config file
@@ -280,47 +268,25 @@ class State(object):
         return self._getFromDict(
             key=key,
             dkey=dkey,
-            default=default,
-            config=self._configJS,
-            path=self.configJSPath)
+            default=default)
 
-    def stateGetFromDict(self, key, dkey, default=None):
-        """Get value of key in a section in the state file
-        For example:
-        [section]
-        key = "value"
 
-        :param key: section name
-        :type key: str
-        :param dkey: key to get its value
-        :type dkey: str
-        :param default: default value to return if not found, defaults to None
-        :param default: str, optional
-        :return: key value
-        :rtype: str
-        """
-        return self._getFromDict(
-            key=key,
-            dkey=dkey,
-            default=default,
-            config=self._configState,
-            path=self.configStatePath)
-
-    def _getFromDict(self, key, dkey, default=None, config=None, path=""):
+    def _getFromDict(self, key, dkey, default=None):
         """
         get val from subdict
         """
-        if key not in config:
-            self._set(key, val={}, save=True, config=config, path=path)
 
-        if dkey not in config[key]:
+        if key not in self._config:
+            self._set(key, val={}, save=True)
+
+        if dkey not in self._config[key]:
             if default is not None:
                 return default
             raise RuntimeError(
                 "Cannot find dkey:%s in state config for dict '%s'" %
                 (dkey, key))
 
-        return config[key][dkey]
+        return self._config[key][dkey]
 
     def configGetFromDictBool(self, key, dkey, default=None):
         """Get boolean value of key if value is in [1, 0, 'yes', 'no', 'y', 'n']
@@ -340,8 +306,7 @@ class State(object):
         return self._getFromDictBool(
             key=key,
             dkey=dkey,
-            default=default,
-            config=self._configJS)
+            default=default)
 
     def stateGetFromDictBool(self, key, dkey, default=None):
         """Get boolean value of key if value is in [1, 0, 'yes', 'no', 'y', 'n']
@@ -361,21 +326,20 @@ class State(object):
         self._getFromDictBool(
             key=key,
             dkey=dkey,
-            default=default,
-            config=self._configState)
+            default=default)
 
-    def _getFromDictBool(self, key, dkey, default=None, config=None, path=""):
-        if key not in config:
-            self._set(key, val={}, save=True, config=config, path=path)
+    def _getFromDictBool(self, key, dkey, default=None):
+        if key not in self._config:
+            self._set(key, val={}, save=True)
 
-        if dkey not in config[key]:
+        if dkey not in self._config[key]:
             if default is not None:
                 return default
             raise RuntimeError(
                 "Cannot find dkey:%s in state config for dict '%s'" %
                 (dkey, key))
 
-        val = config[key][dkey]
+        val = self._config[key][dkey]
         if val in [
                 1,
                 True] or (
@@ -406,9 +370,7 @@ class State(object):
         self._setInDictBool(
             key=key,
             dkey=dkey,
-            dval=dval,
-            config=self._configJS,
-            path=self.configJSPath)
+            dval=dval)
 
     def stateSetInDictBool(self, key, dkey, dval):
         """Set a value to a key in a section in the state file, value in [1, 0, 'yes', 'no', 'y', 'n']
@@ -426,11 +388,9 @@ class State(object):
         self._setInDictBool(
             key=key,
             dkey=dkey,
-            dval=dval,
-            config=self._configState,
-            path=self.configStatePath)
+            dval=dval)
 
-    def _setInDictBool(self, key, dkey, dval, config, path):
+    def _setInDictBool(self, key, dkey, dval):
         """
         will check that the val is a dict, if not set it and put key & val in
         """
@@ -444,7 +404,7 @@ class State(object):
             dval = "1"
         else:
             dval = "0"
-        return self._setInDict(key, dkey, dval, config, path)
+        return self._setInDict(key, dkey, dval)
 
     def configUpdate(self, ddict, overwrite=True):
         """
@@ -460,58 +420,53 @@ class State(object):
                 raise RuntimeError(
                     "Value of first level key has to be another dict.")
 
-            if key0 not in self._configJS:
-                self.configSet(key0, val0, save=False)
+            if key0 not in self._config:
+                self._configSet(key0, val0, save=False)
             else:
                 for key1, val1 in val0.items():
-                    if key1 not in self._configJS[key0]:
-                        self._configJS[key0][key1] = val1
+                    if key1 not in self._config[key0]:
+                        self._config[key0][key1] = val1
                         self._config_changed = True
                     else:
                         if overwrite:
-                            self._configJS[key0][key1] = val1
+                            self._config[key0][key1] = val1
                             self._config_changed = True
         self.configSave()
 
-    def configSave(self, config=None, path=""):
+    def configSave(self):
         """
         Writes config to specified path
         """
-        if self.executor.state_disabled:
-            return
+        self._j.shell()
         if self.readonly:
             raise self.j.exceptions.Input(
                 message="cannot write config to '%s', because is readonly" %
                 self)
-        if config and path:
-            data = pytoml.dumps(config)
+        if self.config and path:
+            data = pytoml.dumps(self.config)
             self.executor.file_write(path, data)
             return
-        data = pytoml.dumps(self._configJS)
-        self.executor.file_write(self.configJSPath, data, sudo=True)
-        data = pytoml.dumps(self._configState)
-        self.executor.file_write(self.configStatePath, data, sudo=True)
+        data = pytoml.dumps(self.config)
+        self.executor.file_write(self.self.configJSPath, data, sudo=True)
+        data = pytoml.dumps(self._self.configState)
+        self.executor.file_write(self.self.configStatePath, data, sudo=True)
         self.executor.reset()  # make sure all caching is reset
 
     @property
     def config_js(self):
-        return self._configJS
+        return self._config
 
     @property
     def config_my(self):
-        return self._configJS["myconfig"]
+        return self._config["myself.config"]
 
     @property
     def config_system(self):
-        return self._configJS["system"]
+        return self._config["system"]
 
-    def reset(self):
-        self._configJS = {}
-        self._configState = {}
-        self.configSave()
 
     def __repr__(self):
-        return str(self._configJS)
+        return str(self._config)
 
     def __str__(self):
-        return str(self._configJS)
+        return str(self._config)

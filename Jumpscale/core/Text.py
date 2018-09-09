@@ -24,8 +24,9 @@ except BaseException:
 
 class Text(object):
 
-    def __init__(self):
-        self.__jslocation__ = "j.data.text"
+    def __init__(self,j):
+        self.__jscorelocation__ = "j.core.text."
+        self._j = j
 
     def unicodedata(self, text):
         return unicodedata.normalize('NFKD', text.decode("utf-8")).encode('ascii', 'ignore')
@@ -645,7 +646,7 @@ class Text(object):
                 for key, item in list(string.items()):
                     result[key] = str(self.machinetext2val(item))
         elif isinstance(string, str) or isinstance(string, float) or isinstance(string, int):
-            ttype, result = self._str2var(self.j.data.text.toStr(string))
+            ttype, result = self._str2var(self.j.core.text.toStr(string))
         else:
             raise self.j.exceptions.Input(
                 "Could not convert '%s' to basetype, input was %s. Expected string, dict or list." %
@@ -694,7 +695,7 @@ class Text(object):
                     for key, item in list(string.items()):
                         result[key] = str(self.machinetext2val(item))
             elif isinstance(string, str) or isinstance(string, float) or isinstance(string, int):
-                ttype, result = self._str2var(self.j.data.text.toStr(string))
+                ttype, result = self._str2var(self.j.core.text.toStr(string))
             else:
                 raise self.j.exceptions.Input(
                     "Could not convert '%s' to basetype, input was %s. Expected string, dict or list." %
@@ -716,7 +717,7 @@ class Text(object):
                 result = eval(item)
             except Exception as e:
                 raise self.j.exceptions.RuntimeError(
-                    "Could not execute code in self.j.data.text,%s\n%s. Error was:%s" % (item, code, e))
+                    "Could not execute code in self.j.core.text.,%s\n%s. Error was:%s" % (item, code, e))
             result = self.pythonObjToStr(result, multiline=False).strip()
             code = code.replace(item, result)
         return code

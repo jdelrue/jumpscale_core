@@ -1,4 +1,4 @@
-from jumpscale import j
+from Jumpscale import j
 from .utils import get_msg_path
 
 JSBASE = j.application.jsbase_get_class()

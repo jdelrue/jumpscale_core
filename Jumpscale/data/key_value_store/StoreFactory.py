@@ -10,13 +10,12 @@ class StoreFactory(JSBASE):
     also caches the stores based on their type, name and namespace.
     '''
 
-    __jslocation__ = 'j.data.kvs'
-
     def __init__(self):
         JSBASE.__init__(self)
         self.__imports__ = "msgpack"
         self._cache = dict()
         self._redisCacheLocal = None
+
 
     def getFileStore(self, name="core", namespace='db', baseDir='/tmp', serializers=[]):
         from Jumpscale.data.key_value_store.file_store import FileKeyValueStore

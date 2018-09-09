@@ -1,6 +1,6 @@
 import os
 import re
-from jumpscale import j
+from Jumpscale import j
 from io import StringIO
 
 

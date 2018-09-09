@@ -3,13 +3,14 @@ import time
 
 class Cache(object):
 
-    __jslocation__ = "j.data.datacache"
+    __jscorelocation__ = "j.data.datacache"
 
-    def __init__(self):
+    def __init__(self,j):
         self._cache = {}
+        self._j = j
 
-    def serialize(self, val):
-        tt = self.j.data.types.type_detect(val)
+    # def serialize(self, val):
+    #     tt = self._j.data.types.type_detect(val)
 
     def get(self, id="main", reset=False, expiration=30):
         """
@@ -17,8 +18,7 @@ class Cache(object):
         db = when none then will be in memory
         """
         if id not in self._cache:
-            DC = self._jsbase(('CacheCategory', 'Jumpscale.data.cache.Cache'))
-            self._cache[id] = DC( id=id, expiration=expiration, reset=reset)
+            self._cache[id] = CacheCategory( id=id, expiration=expiration, reset=reset)
         return self._cache[id]
 
     def resetAll(self):
@@ -90,32 +90,32 @@ class Cache(object):
         assert "somethingElse" not in c.list()
 
     def test(self):
-        """ js_shell 'j.data.cache.test()'
+        """ js_shell 'j.core.cache.test()'
         """
 
         self.logger.debug("REDIS CACHE TEST")
         # make sure its redis
-        self.j.clients.redis.core_get()
-        self.j.core.db_reset()
+        self._j.clients.redis.core_get()
+        self._j.core.db_reset()
         c = self.get("test", expiration=1)
         self._testAll(c)
         self.logger.debug("TESTOK")
 
     def test_without_redis(self):
-        """ js_shell 'j.data.cache.test_without_redis()'
+        """ js_shell 'j.core.cache.test_without_redis()'
 
             NOTE: this test actually stops the redis server
             (and restarts it afterwards).  be careful!
         """
 
         # now stop redis...
-        self.j.clients.redis.kill()
-        self.j.core.db_reset()
+        self._j.clients.redis.kill()
+        self._j.core.db_reset()
         self.logger.debug("MEM CACHE TEST")
         c = self.get("test", expiration=1)
         self._testAll(c)
         # ... and restart it again
-        self.j.clients.redis.start()
+        self._j.clients.redis.start()
         self.logger.debug("TESTOK")
 
 
@@ -123,7 +123,7 @@ class CacheCategory(object):
 
     def __init__(self, id, expiration=10, reset=False):
         self.id = id
-        self.db = self.j.core.db
+        self.db = self._j.core.db
         self.hkey = "cache:%s" % self.id
         self.expiration = expiration
         if reset:
@@ -156,19 +156,19 @@ class CacheCategory(object):
         #print("key:%s res:%s" % (key, res))
         if refresh or res is None:
             if method is None:
-                raise self.j.exceptions.RuntimeError(
+                raise self._j.exceptions.RuntimeError(
                     "Cannot get '%s' from cache,not found & method None" % key)
             # print("cache miss")
             val = method(**kwargs)
             # print(val)
             if val is None or val == "":
-                raise self.j.exceptions.RuntimeError(
+                raise self._j.exceptions.RuntimeError(
                     "cache method cannot return None or empty string.")
             self.set(key, val, expire=expire)
             return val
         else:
             if res is None:
-                raise self.j.exceptions.RuntimeError(
+                raise self._j.exceptions.RuntimeError(
                     "Cannot get '%s' from cache" % key)
             return res
 
@@ -187,7 +187,7 @@ class CacheCategory(object):
         for key in self.db.keys():
             val = self.db.get(key)
             res[key] = val
-        out = self.j.data.serializers.yaml.dumps(res)
+        out = self._j.data.serializers.yaml.dumps(res)
         return out
 
     __repr__ = __str__

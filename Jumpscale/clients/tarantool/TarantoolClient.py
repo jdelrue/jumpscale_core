@@ -1,4 +1,4 @@
-from jumpscale import j
+from Jumpscale import j
 import tarantool
 import os
 import sys
@@ -42,7 +42,7 @@ class TarantoolClient(JSConfigClient):
         return TarantoolQueue(self, name, ttl=ttl, delay=delay)
 
     def eval(self, code):
-        code = j.data.text.strip(code)
+        code = j.core.text.strip(code)
         self.db.eval(code)
 
     def userGrant(self, user="guest", operation=1, objtype="universe", objname=""):
@@ -89,7 +89,7 @@ class TarantoolClient(JSConfigClient):
         template_path = j.sal.fs.joinPaths(self._template_dir,
                         'python', 'model.py.template')
         template = j.sal.fs.fileGetContents(template_path)
-        lcontent += j.data.text.strip(template)
+        lcontent += j.core.text.strip(template)
 
         # TODO: use real templating engine (puppet) ?
         lcontent = lcontent.replace("$dbtype", dbtype)
@@ -127,7 +127,7 @@ class TarantoolClient(JSConfigClient):
             if lcontent.find("local function {}".format(method)) == -1:
                 template_path = j.sal.fs.joinPaths(self._template_dir, 'lua', template_name)
                 template = j.sal.fs.fileGetContents(template_path)
-                lcontent += "\n\n" + j.data.text.strip(template)
+                lcontent += "\n\n" + j.core.text.strip(template)
 
         lcontent = lcontent.replace("$dbtype", dbtype)
         lcontent = lcontent.replace("$name", name)
@@ -178,7 +178,7 @@ class TarantoolClient(JSConfigClient):
             if not j.sal.fs.exists(lpath):
                 template_path = j.sal.fs.joinPaths(self._template_dir, 'lua', "space_create.lua")
                 template = j.sal.fs.fileGetContents(template_path)
-                j.sal.fs.writeFile(lpath, j.data.text.strip(template))
+                j.sal.fs.writeFile(lpath, j.core.text.strip(template))
 
             self._luaModelFix(path=lpath, name=name, dbtype=dbtype, login=login, passwd=passwd)
             self._pyModelFix(path=ppath, name=name, dbtype=dbtype, login=login, passwd=passwd)

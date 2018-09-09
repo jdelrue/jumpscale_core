@@ -1,4 +1,6 @@
-"Docker executor"
+from Jumpscale import j
+JSBASE = j.application.jsbase_get_class()
+
 import uuid
 import os
 from io import BytesIO
@@ -37,7 +39,7 @@ class ExecutorDocker(ExecutorBase):
     @property
     def logger(self):
         if self._logger is None:
-            l = self.j.logging.get("executordocker%s" % self.container.id)
+            l = j.logging.get("executordocker%s" % self.container.id)
             self._logger = l
         return self._logger
 
@@ -172,7 +174,7 @@ class ExecutorDocker(ExecutorBase):
         @return: exit code, output, error output
         @raise runtimeError: output in stderr and die is True
         """
-        cmd_file = self.j.sal.fs.joinPaths("/", str(uuid.uuid4()))
+        cmd_file = j.sal.fs.joinPaths("/", str(uuid.uuid4()))
         try:
             self.file_write(cmd_file, cmd)
             result = self.container.exec_run('bash -c "bash %s 2> %s.stderr"' %
@@ -261,13 +263,13 @@ class ExecutorDocker(ExecutorBase):
             ignoredir = ['.egg-info', '.dist-info', '__pycache__', ".git"]
 
         if dest_prefix != "":
-            dest = self.j.sal.fs.joinPaths(dest_prefix, dest)
+            dest = j.sal.fs.joinPaths(dest_prefix, dest)
         if dest[0] != "/":
-            raise self.j.exceptions.RuntimeError(
+            raise j.exceptions.RuntimeError(
                 "need / in beginning of dest path")
-        tmpdir = self.j.sal.fs.joinPaths("/tmp", str(uuid.uuid4()))
+        tmpdir = j.sal.fs.joinPaths("/tmp", str(uuid.uuid4()))
         try:
-            self.j.sal.fs.copyDirTree(
+            j.sal.fs.copyDirTree(
                 source,
                 tmpdir,
                 keepsymlinks=keepsymlinks,
@@ -281,10 +283,10 @@ class ExecutorDocker(ExecutorBase):
                 createdir=True,
                 rsyncdelete=rsyncdelete)
             archiveid = str(uuid.uuid4())
-            self.j.sal.process.execute(
+            j.sal.process.execute(
                 "tar -cvf %s.tar *" %
                 archiveid, showout=False, cwd=tmpdir)
-            with open(self.j.sal.fs.joinPaths(tmpdir, 
+            with open(j.sal.fs.joinPaths(tmpdir,
                                               " % s.tar" % archiveid), 
                                             'rb') as fileh:
                 data=fileh.read()
@@ -292,7 +294,7 @@ class ExecutorDocker(ExecutorBase):
                 self.executeRaw("mkdir -p %s" % dest)
                 self.container.put_archive(dest, data)
         finally:
-            self.j.sal.fs.removeDirTree(tmpdir)
+            j.sal.fs.removeDirTree(tmpdir)
 
     def download(self, source, dest, source_prefix="", recursive=True):
         """
@@ -305,21 +307,21 @@ class ExecutorDocker(ExecutorBase):
         """
 
         if source_prefix != "":
-            source=self.j.sal.fs.joinPaths(source_prefix, source)
+            source=j.sal.fs.joinPaths(source_prefix, source)
         if source[0] != "/":
-            raise self.j.exceptions.RuntimeError(
+            raise j.exceptions.RuntimeError(
                 "need / in beginning of source path")
-        tmptar=self.j.sal.fs.joinPaths("/tmp", "%s.tar" % str(uuid.uuid4()))
-        tmpdir=self.j.sal.fs.joinPaths("/tmp", str(uuid.uuid4()))
+        tmptar=j.sal.fs.joinPaths("/tmp", "%s.tar" % str(uuid.uuid4()))
+        tmpdir=j.sal.fs.joinPaths("/tmp", str(uuid.uuid4()))
         try:
             data, _=self.container.get_archive(source)
             with open(tmptar, 'wb') as fileh:
                 for chunk in data:
                     fileh.write(chunk)
-            self.j.sal.process.execute(
+            j.sal.process.execute(
                 "tar -xvf %s" %
                 tmptar, showout=False, cwd=tmpdir)
-            self.j.sal.fs.copyDirTree(
+            j.sal.fs.copyDirTree(
                 tmpdir,
                 dest,
                 keepsymlinks=True,
@@ -332,8 +334,8 @@ class ExecutorDocker(ExecutorBase):
                 rsync=True,
                 recursive=recursive)
         finally:
-            self.j.sal.fs.remove(tmptar)
-            self.j.sal.fs.removeDirTree(tmpdir)
+            j.sal.fs.remove(tmptar)
+            j.sal.fs.removeDirTree(tmpdir)
 
     def __repr__(self):
         return "Executor docker: %s" % self.id

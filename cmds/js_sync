@@ -1,4 +1,4 @@
 #! /usr/bin/env python3
-from jumpscale import j
+from Jumpscale import j
 
 j.tools.develop.monitor()

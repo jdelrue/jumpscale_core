@@ -56,7 +56,7 @@ class TestcasesBase(TestCase):
         # record the old global_j, create a new j for use in the test
         self.old_global_j = JSBase.global_j
         JSBase.global_j = None
-        from Jumpscale import Jumpscale
+        from Jumpscale import jumpscale
 
         j = Jumpscale(config_dir=tempcfg)
 

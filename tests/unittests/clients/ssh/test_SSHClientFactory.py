@@ -3,7 +3,7 @@ import unittest
 import sys
 from unittest.mock import MagicMock
 from unittest.mock import patch
-from jumpscale import j
+from Jumpscale import j
 
 from ... import base
 

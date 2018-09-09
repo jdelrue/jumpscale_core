@@ -1,6 +1,6 @@
 import os
 import re
-from jumpscale import j
+from Jumpscale import j
 KEYP = re.compile(r"(\w+(\.\w+)*)\s*=\s*(.*)", re.DOTALL)
 
 DEFAULTLOCALE = 'en'

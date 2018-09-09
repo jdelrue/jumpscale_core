@@ -1,8 +1,9 @@
-from jumpscale import j
+from Jumpscale import j
+JSBASE = j.application.jsbase_get_class()
+
+
 from .ExecutorSSH import ExecutorSSH
 import os
-
-JSBASE = j.application.jsbase_get_class()
 
 
 class ExecutorAsyncSSH(ExecutorSSH):

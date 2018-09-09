@@ -3,7 +3,7 @@ import os
 import time
 import re
 
-from jumpscale import j
+from Jumpscale import j
 
 _LOCKDICTIONARY = dict()
 

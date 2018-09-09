@@ -19,7 +19,7 @@ import os
 from rpyc.utils.server import ForkingServer
 from rpyc.core.service import SlaveService
 from rpyc.lib import setup_logger
-from Jumpscale import Jumpscale
+from Jumpscale import jumpscale
 
 server = None
 cur_dir = os.getcwd()

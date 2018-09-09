@@ -3,7 +3,7 @@
 
 - references to version of jumpscale are removed (no longer 9)
     - means all commands are now js_shell, js_init, ...
-    - from jumpscale import j (no longer js9)
+    - from Jumpscale import j (no longer js9)
 - bash tools removed
 - docker support removed -> we now do everything in 0-OS (eat our own dogfood)
 - less repositories to deal with (core,lib,prefab) 
@@ -32,7 +32,7 @@ need to redo:
   JSBase class that allows access to it.
 * Any class that is derived from JSBase can therefore access the global
   "j" as "self'j" instead.
-* The legacy "from Jumpscale import j" as well as "from jumpscale import j"
+* The legacy "from Jumpscale import j" as well as "from Jumpscale import j"
   are temporarily still supported, although strongly not recommended:
   however there are still classes that do not inherit from JSBase which will
   have to temporarily use the global import until they are converted.
@@ -93,7 +93,7 @@ need to redo:
   is harder to break.  Some form of default "self-built-in"
   logging system into JSBase that outputs to stdout/stderr
   would probably do the trick (issue #66).
-* With that all working, "from jumpscale import j" can now
+* With that all working, "from Jumpscale import j" can now
   be replaced TEMPORARILY with "from Jumpscale import j"
   but even that should now be completely REMOVED as only
   self.j should ever be used.

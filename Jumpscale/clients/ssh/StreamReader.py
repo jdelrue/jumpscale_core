@@ -1,11 +1,8 @@
 import threading
 
-# JSBASE = j.application.jsbase_get_class()
-
 class StreamReader(threading.Thread):
 
     def __init__(self, stream, channel, queue, flag):
-        # JSBASE.__init__(self)
         super(StreamReader, self).__init__()
         self.stream = stream
         self.channel = channel

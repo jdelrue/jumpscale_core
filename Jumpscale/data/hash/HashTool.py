@@ -1,23 +1,28 @@
+
+from jumpscale import j
+JSBASE = j.application.jsbase_get_class()
+
 import hashlib
 import binascii
-import zlib
 try:
     from pyblake2 import blake2b
 except:
     pass
 
-class HashTool:
 
-    __jslocation__ = "j.data.hash"
+class HashTool(JSBASE):
 
     def __init__(self):
+        self.__jslocation__ = "j.data.hash"
+        JSBASE.__init__(self)
         self.__imports__ = "pyblake2"
+
 
     def hashDir(self, rootpath):
         """
         walk over all files, calculate md5 and of sorted list also calc md5 this is the resulting hash for the dir independant from time and other metadata (appart from path)
         """
-        paths = self.j.sal.fs.listFilesInDir(
+        paths = j.sal.fs.listFilesInDir(
             rootpath, recursive=True, followSymlinks=False)
         if paths == []:
             return "", ""
@@ -30,10 +35,10 @@ class HashTool:
         paths2.sort()
         out = ""
         for path2 in paths2:
-            realpath = self.j.sal.fs.joinPaths(rootpath, path2)
-            if not self.j.core.platformtype.myplatform.isWindows or not self.j.sal.windows.checkFileToIgnore(realpath):
+            realpath = j.sal.fs.joinPaths(rootpath, path2)
+            if not j.core.platformtype.myplatform.isWindows or not j.sal.windows.checkFileToIgnore(realpath):
                 #                print "realpath %s %s" % (rootpath,path2)
-                hhash = self.j.data.hash.md5(realpath)
+                hhash = j.data.hash.md5(realpath)
                 out += "%s|%s\n" % (hhash, path2)
                 import hashlib
         if isinstance(out, str):

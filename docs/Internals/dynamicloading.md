@@ -153,7 +153,7 @@ Also, the old pattern (importing manually from JSBase) will also still work,
 however it is critically important that the JSBase.\_\_init\_\_(self) be
 moved to the top of the \_\_init\_\_ function, otherwise things break.
 
-    from jumpscale import j
+    from Jumpscale import j
     JSBASE = j.application.jsbase_get_class()
 
     class KeyValueStoreBase(JSBASE):

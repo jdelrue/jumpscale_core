@@ -5,7 +5,7 @@ j.tools.bash.local.locale_check()
 import os
 os.environ["LC_ALL"] = 'en_US.UTF-8'
 
-from jumpscale import j
+from Jumpscale import j
 j.tools.bash.local.locale_check()
 import click
 

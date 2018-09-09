@@ -1,6 +1,6 @@
 '''The TarFile class provides convenience methods to work with tar archives'''
 
-from jumpscale import j
+from Jumpscale import j
 import tarfile
 
 # NOTE: When implementing, see documentation on the 'errorlevel' attribute of

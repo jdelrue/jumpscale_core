@@ -21,7 +21,8 @@ import platform
 
 class PlatformTypes(object):
 
-    def __init__(self):
+    def __init__(self,j):
+        self._j = j
         self.__jslocation__ = "j.core.platformtype"
         self._myplatform = None
         self._platformParents = {}
@@ -69,8 +70,7 @@ class PlatformTypes(object):
     @property
     def myplatform(self):
         if self._myplatform is None:
-            DP = self._jsbase(('PlatformType', 'Jumpscale.core.PlatformTypes'))
-            self._myplatform = DP()
+            self._myplatform = PlatformType()
         return self._myplatform
 
     def getParents(self, name):
@@ -93,8 +93,7 @@ class PlatformTypes(object):
         """
         key = executor.id
         if key not in self._cache:
-            DP = self._jsbase(('PlatformType', 'Jumpscale.core.PlatformTypes'))
-            self._cache[key] = DP(executor=executor)
+            self._cache[key] = PlatformType(executor=executor)
         return self._cache[key]
 
 
@@ -108,10 +107,7 @@ class PlatformType(object):
         self._osversion = None
         self._hostname = None
         self._uname = None
-        if executor is None:
-            self.executor = self.j.tools.executorLocal
-        else:
-            self.executor = executor
+        self.executor = executor
 
         # print("PLATFORMTYPE:%s"%self.executor)
 
@@ -121,7 +117,7 @@ class PlatformType(object):
     @property
     def platformtypes(self):
         if self._platformtypes is None:
-            platformtypes = self.j.core.platformtype.getParents(self.myplatform)
+            platformtypes = self._j.core.platformtype.getParents(self.myplatform)
             self._platformtypes = [
                 item for item in platformtypes if item != ""]
         return self._platformtypes
@@ -130,15 +126,18 @@ class PlatformType(object):
     def uname(self):
         if self._uname is not None:
             return self._uname
-        if self.executor.type == "local":
+        if self.executor == None:
             unn = os.uname()
             self._hostname = unn.nodename
             distro_info = platform.linux_distribution()
-            os_type = self.j.tools.executorLocal.stateOnSystem['os_type'].lower()
+            os_type = self._j.tools.executorLocal.stateOnSystem['os_type'].lower()
             if 'Ubuntu' in distro_info:
                 self._osversion = distro_info[1]
             elif 'ubuntu' in os_type:
-                version = self.executor.execute('lsb_release -r')[1]
+                # version = self.executor.execute('lsb_release -r')[1]
+                print("TODO:*1 needs to use direct execution using python only")
+                self._j.shell()
+                w
                 # version should be something like: 'Release:\t16.04\n
                 self._osversion = version.split(':')[-1].strip()
             else:
@@ -237,7 +236,7 @@ class PlatformType(object):
 
     def dieIfNotPlatform(self, platform):
         if not self.has_parent(platform):
-            raise self.j.exceptions.RuntimeError(
+            raise self._j.exceptions.RuntimeError(
                 "Can not continue, supported platform is %s, " +
                 "this platform is %s" % (platform, self.myplatform))
 
@@ -271,7 +270,7 @@ class PlatformType(object):
     @property
     def isXen(self):
         '''Checks whether Xen support is enabled'''
-        return self.j.sal.process.checkProcessRunning('xen') == 0
+        return self._j.sal.process.checkProcessRunning('xen') == 0
 
     @property
     def isVirtualBox(self):

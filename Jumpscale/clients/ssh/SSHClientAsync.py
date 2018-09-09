@@ -3,7 +3,7 @@ import asyncssh
 import sys
 from io import StringIO
 import functools
-from jumpscale import j
+from Jumpscale import j
 from .SSHClientBase import SSHClientBase
 
 

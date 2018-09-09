@@ -1,6 +1,8 @@
+from Jumpscale import j
+JSBASE = j.application.jsbase_get_class()
+
 import time
 import inspect
-from jumpscale import j
 import sys
 
 import pyximport

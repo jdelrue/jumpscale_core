@@ -1,10 +1,108 @@
-import gevent.monkey
-gevent.monkey.patch_all() # issue #111 - has to be done *really* early
-
 import os
+import socket
+import pytoml
+import sys
+os.environ["LC_ALL"]='en_US.UTF-8'
 
-from .core.JSBase import JSBase, global_j
-from .tools.jsloader.JSLoader import add_dynamic_instance
+def tcpPortConnectionTest(ipaddr, port, timeout=None):
+    conn = None
+    try:
+        conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        if timeout:
+            conn.settimeout(timeout)
+        try:
+            conn.connect((ipaddr, port))
+        except BaseException:
+            return False
+    finally:
+        if conn:
+            conn.close()
+    return True
+
+
+class Core():
+    def __init__(self,j):
+        self._db = None
+        self._dir_home = None
+        self._dir_jumpscale_core = None
+
+        conf = ""
+        if self.db.get("jumpscale.config") is not None:
+            conf = self.db.get("jumpscale.config").decode()
+
+        if conf == "":
+            for path in ["/opt/jumpscale.toml","/opt/jumpscale.toml","/opt/jumpscale.toml","%s/opt/cfg/jumpscale.toml"%self.dir_home]:
+                if os.path.exists(path):
+                    with open(path, 'rb') as ff:
+                        conf = ff.read().decode()
+        if conf == "":
+            with open(os.path.join(self.dir_jumpscale_core,"Jumpscale","core","jumpscale.toml"), 'rb') as ff:
+                conf = ff.read().decode()
+        conf = conf.replace("{{HOME}}",self.dir_home)
+        self.config = pytoml.loads(conf)
+
+
+    @property
+    def db(self):
+        if not self._db:
+            if tcpPortConnectionTest("localhost", 6379):
+                from redis import StrictRedis
+                # print("CORE_REDIS")
+                self._db = StrictRedis(host='localhost', port=6379, db=0)
+                self._db_fakeredis = False
+            else:
+                # print("CORE_MEMREDIS")
+                import fakeredis
+                self._db = fakeredis.FakeStrictRedis()
+                self._db_fakeredis = True
+        return self._db
+
+    def db_reset(self):
+        j.data.cache._cache = {}
+        self._db = None
+
+    @property
+    def dir_home(self):
+        if "HOMEDIR" in os.environ:
+            self._dir_home = os.environ["HOMEDIR"]
+        elif "HOME" in os.environ:
+            self._dir_home = os.environ["HOME"]
+        else:
+            self._dir_home = "/root"
+        return self._dir_home
+
+    @property
+    def dir_jumpscale_core(self):
+        if self._dir_jumpscale_core is None:
+            self._dir_jumpscale_core = os.path.dirname(os.path.dirname(__file__))
+        return self._dir_jumpscale_core
+
+
+class Jumpscale():
+
+    def __init__(self):
+        self._shell = None
+        self.exceptions = None
+
+    def shell(self,name="",loc=True):
+        if self._shell == None:
+            from IPython.terminal.embed import InteractiveShellEmbed
+            if name is not "":
+                name = "SHELL:%s" % name
+            self._shell = InteractiveShellEmbed(banner1= name, exit_msg="")
+        if loc:
+            import inspect
+            curframe = inspect.currentframe()
+            calframe = inspect.getouterframes(curframe, 2)
+            f = calframe[1]
+            print("\n*** file: %s"%f.filename)
+            print("*** function: %s [linenr:%s]\n" % (f.function,f.lineno))
+        return self._shell(stack_depth=2)
+
+
+
+j = Jumpscale()
+j.core = Core(j)
 
 def profileStart():
     import cProfile
@@ -22,159 +120,61 @@ def profileStop(pr):
     ps.print_stats()
     print(s.getvalue())
 
-bootstrap = [
-('', 'core', 'core', 'Core'),
-('', 'tools', 'tools', 'Tools'),
-('', 'sal', 'sal', 'Sal'),
-('', 'data', 'data', 'Data'),
-('', 'clients', 'clients', 'Clients'),
-('', 'servers', 'servers', 'Servers'),
-('', 'data_units', 'data_units', 'DataUnits'),
-('', 'sal_zos', 'sal_zos', 'SALZos'),
-#('', 'errorhandling', 'errorhandling', 'Exceptions'),
-('data', 'types', 'data.types.Types', 'Types'),
-('data', 'text', 'data.text.Text', 'Text'),
-# idgen not strictly needed for bootstrap but for error reporting
-('data', 'idgenerator', 'data.idgenerator.IDGenerator', 'IDGenerator'),
-('sal', 'fs', 'fs.SystemFS', 'SystemFS'),
-('core', 'application', 'core.Application', 'Application'),
-('core', 'errorhandler', 'errorhandler.ErrorHandler', 'ErrorHandler'),
-('data', 'datacache', 'data.cache.Cache', 'Cache'),
-('tools', 'jsloader', 'tools.jsloader.JSLoader', 'JSLoader'),
-('tools', 'executorLocal', 'tools.executor.ExecutorLocal',
-                         'ExecutorLocal'),
-('core', 'exceptions', 'errorhandler.JSExceptions',
-                        'JSExceptions'),
-('', 'dirs', 'core.Dirs', 'Dirs'),
-('core', 'platformtype', 'core.PlatformTypes', 'PlatformTypes'),
-# needed in cases where config file doesn't exist
-('sal', 'process', 'sal.process.SystemProcess', 'SystemProcess'),
-('', 'application', 'core.application', None),
-('', 'cache', 'data.cache', None),
-#('core', 'state', 'tools.executorLocal.state', None),
-('core', 'dirs', 'dirs', None),
-('', 'errorhandler', 'core.errorhandler', None),
-('', 'exceptions', 'core.exceptions', None),
-('', 'errorhandler.exceptions', 'exceptions', None),
-# annoyingly needed due to name confusion (not for bootstrap)
-('data', 'serializers', 'data.serializers.SerializersFactory',
-                        'SerializersFactory'),
-('data', 'serializer', 'data.serializers', None),
-]
+j._profileStart = profileStart
+j._profileStop = profileStop
 
-class Jumpscale(JSBase): # deliberately deriving from JSBase
+# pr=profileStart()
 
-    __jslocation__ = "j"
+from .core.Text import Text
+j.core.text = Text(j)
 
-    _profileStart = profileStart
-    _profileStop = profileStop
+from .core.Dirs import Dirs
+j.dirs = Dirs(j)
+j.core.dirs = j.dirs
 
-    def __init__(self, logging_enabled=False, filter=None, config_dir=None):
-        JSBase.__init__(self)
-        self._shell = None
-        self.bootstrap(logging_enabled, filter, config_dir)
+from .core.State import State
+j.core.state = State(j)
 
-    def shell(self,name="",loc=True):
-        """ runs an embedded IPython shell - do not use remotely
-            (rpyc) as the terminal (stdout.isatty()) will fail.
-        """
-        if self._shell == None:
-            from IPython.terminal.embed import InteractiveShellEmbed
-            if name is not "":
-                name = "SHELL:%s" % name
-            self._shell = InteractiveShellEmbed(banner1= name, exit_msg="")
-        if loc:
-            import inspect
-            curframe = inspect.currentframe()
-            calframe = inspect.getouterframes(curframe, 2)
-            f = calframe[1]
-            print("\n*** file: %s"%f.filename)
-            print("*** function: %s [linenr:%s]\n" % (f.function,f.lineno))
-        return self._shell(stack_depth=2)
+from .core.logging.LoggerFactory import LoggerFactory
+j.logger = LoggerFactory(j)
+j.core.logger = j.logger
 
-    def bootstrap(self, logging_enabled=False, filter=None,
-                        config_dir=None):
-        """ bootstraps a new jumpscale object: over-rides the global
-            "j" so use with care.  config_dir sets the config directory:
-            the default is usually ~/jumpscale/cfg and can be over-ridden
-            with $HOSTCFGDIR environment variable.
-        """
+# IF YOU WANT TO DEBUG THE STARTUP, YOU NEED TO CHANGE THIS ONE
+j.logger.enabled = False
+j.logger.filter = []  # default filter which captures all is *
 
-        # LoggerFactory isn't instantiated from JSBase so there has to
-        # be a little bit of a dance to get it established and pointing
-        # to the right global j.  JSBase now contains a property "j"
-        # which is actually a singleton (global)
+from .core.Application import Application
+j.application = Application(j)
+j.core.application = j.application
 
-        if config_dir:
-            os.environ['HOSTCFGDIR'] = config_dir
+from .core.cache.Cache import Cache
+j.core.cache = Cache(j)
 
-        #print ("toplevelpth", top_level_path)
+from .core.PlatformTypes import PlatformTypes
+j.core.platformtype = PlatformTypes(j)
 
-        plugin_path = os.path.abspath(__file__)
-        #plugin_path = os.path.dirname(plugin_path)
-
-        self.__jsfullpath__ = os.path.join(plugin_path, "Jumpscale.py")
-        self.__jsmodulepath__ = 'Jumpscale'
-        self.__jsmodbase__ = {}
-        self.__jsmodlookup__ = {}
-        self.j = self  # sets up the global singleton
-        self.j.__dynamic_ready__ = False  # set global dynamic loading OFF
-
-        DLoggerFactory = self._jsbase(
-            ('LoggerFactory', 'Jumpscale.logging.LoggerFactory'),
-            basej=self)
-        l = DLoggerFactory()
-        l.enabled = logging_enabled
-        l.filter = filter or []  # default filter which captures all is *
-        self.logging = l # sigh this is critical, fires off a lot of stuff
-
-        for (parent, child, module, kls) in bootstrap:
-            add_dynamic_instance(self, parent, child, module, kls)
-
-        # initialise
-        self.tools.executorLocal.env_check_init()  # no config: make one!
-        self.dirs.reload()  # ... directories got recreated (possibly)
-        # will reconfigure the logging to use the config file
-        self.logging.init()
-
-        # now load the json files
-        loader = self.tools.jsloader
-        loader.load_json()
-        for pluginname, (modlist, baselist) in self.__jsmodbase__.items():
-            #print (pluginname, modlist.keys())
-            loader._dynamic_merge(self, modlist, baselist, {})
-
-        # now finally set dynamic on.  if the json loader was empty
-        # or if ever something is requested that's not *in* the json
-        # file, dynamic checking kicks in.
-        self.__dynamic_ready__ = True  # set global dynamic loading ON
-
-        # used fake redis up to now: move to real redis (if it exists)
-        self.core.db_reset()
-
-if os.environ.get('JUMPSCALEMODE') == 'TESTING':
-    from unittest.mock import MagicMock
-
-    j = MagicMock()
-
-else:
-
-    # slightly hacky (invisible) way to add a -c/--config option
-    # which (because of add_help=False and del on the help action)
-    # doesn't cause an exit (right here) if ANOTHER argparse happens
-    # to be called (later) with more arguments.
-
-    # hacking things in here avoids the need to have to add "-c" to
-    # absolutely every single one of the core9/cmd/js_* commands.
-    import argparse
-    parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument('-c', '--config', default=None,
-                        help="Config Directory Name")
-    del parser._registries['action']['help'] # remove help action (stops exit)
-    options, args = parser.parse_known_args()
+from .core.errorhandler.ErrorHandler import ErrorHandler
+j.errorhandler = ErrorHandler(j)
+j.core.errorhandler = j.errorhandler
+j.exceptions = j.errorhandler.exceptions
+j.core.exceptions = j.exceptions
 
 
-    if global_j is None:
-        j = Jumpscale(config_dir=options.config)
-    else:
-        j = global_j
+#THIS SHOULD BE THE END OF OUR CORE, EVERYTHING AFTER THIS SHOULD BE LOADED DYNAMICALLY
+
+
+if True or not os.path.exists("%s/jumpscale_generated.py"%j.dirs.TMPDIR):
+    from .core.JSGenerator import JSGenerator
+    j.core.jsgenerator = JSGenerator(j)
+    j.core.jsgenerator.generate()
+
+if j.dirs.TMPDIR not in sys.path:
+    sys.path.append(j.dirs.TMPDIR)
+
+import jumpscale_generated
+
+print ("INIT DONE")
+
+# profileStop(pr)
+
+# j.shell()

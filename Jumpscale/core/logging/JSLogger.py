@@ -10,6 +10,7 @@ class JSLogger(logging.Logger):
         # self.custom_filters = {}
         # self.__only_me = False
         self.factory = factory
+        self._j = factory._j
 
     def error(self, msg, *args, **kwargs):
         """
@@ -21,7 +22,7 @@ class JSLogger(logging.Logger):
         logger.error("Houston, we have a %s", "major problem", exc_info=1)
 
         """
-        j = self.factory.j
+        j = self._j
         if not self.isEnabledFor(logging.ERROR):
             return
         # issue #83 and #81 - error API has now changed.  TODO: escalate
@@ -42,7 +43,7 @@ class JSLogger(logging.Logger):
 
         logger.critical("Houston, we have a %s", "major disaster", exc_info=1)
         """
-        j = self.factory.j
+        j = self._j
         if not self.isEnabledFor(logging.CRITICAL):
             return
         # issue #83 and #81 - error API has now changed.  TODO: escalate

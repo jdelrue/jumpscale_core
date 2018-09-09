@@ -1,5 +1,5 @@
 #! /usr/bin/env python3
-from jumpscale import j
+from Jumpscale import j
 j.tools.bash.local.locale_check()
 import click
 j.logging.disable()
@@ -95,9 +95,9 @@ def list(location,detail = False,unsecure=False):
                 location, instance = item
                 o=j.tools.configmanager.get(location=location,instance=instance)
                 if unsecure:
-                    out+= j.data.text.indent(str(o.data))+"\n"
+                    out+= j.core.text.indent(str(o.data))+"\n"
                 else:
-                    out+= j.data.text.indent(str(o))+"\n"
+                    out+= j.core.text.indent(str(o))+"\n"
 
     else:
         print("\n# configuration items for %s\n"%location)
@@ -106,12 +106,12 @@ def list(location,detail = False,unsecure=False):
             if detail:
                 o=j.tools.configmanager.get(location=location,instance=instance)
                 if unsecure:
-                    out+= j.data.text.indent(str(o.data))+"\n"
+                    out+= j.core.text.indent(str(o.data))+"\n"
                 else:
-                    out+= j.data.text.indent(str(o))+"\n"
+                    out+= j.core.text.indent(str(o))+"\n"
 
     if not detail:
-        print( j.data.text.sort(out))
+        print( j.core.text.sort(out))
     else:
         print(out)
         

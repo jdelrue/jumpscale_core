@@ -1,12 +1,14 @@
 
-from jumpscale import j
+from Jumpscale import j
+JSBASE = j.application.jsbase_get_class()
+
 import npyscreen
 import curses
 
 # TO TEST IN DOCKER
 # ZSSH "js_shell 'j.tools.develop.config()'"
 
-JSBASE = j.application.jsbase_get_class()
+
 
 
 class ConfigUI(npyscreen.NPSAppManaged, JSBASE):

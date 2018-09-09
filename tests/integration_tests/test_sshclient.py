@@ -6,7 +6,7 @@ name of the sshkey is id_rsa
 
 #!/usr/bin/python3
 import os
-from jumpscale import j
+from Jumpscale import j
 
 
 sshkey_name = 'id_rsa'

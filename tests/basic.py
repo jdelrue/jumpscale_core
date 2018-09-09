@@ -2,7 +2,7 @@
 import os
 import time
 import subprocess
-from jumpscale import j
+from Jumpscale import j
 
 if not hasattr(j.tools, "prefab"):
     exit(0)

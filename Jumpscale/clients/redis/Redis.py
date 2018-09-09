@@ -2,6 +2,7 @@ import redis
 import os
 import json
 from .RedisQueue import RedisQueue
+from Jumpscale import j
 
 
 # NOTE: We don't use J here because this file

@@ -1,9 +1,9 @@
-from jumpscale import j
+from Jumpscale import j
+JSBASE = j.application.jsbase_get_class()
+
 
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
-
-JSBASE = j.application.jsbase_get_class()
 
 
 class MyFileSystemEventHandler(FileSystemEventHandler, JSBASE):

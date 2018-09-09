@@ -1,6 +1,6 @@
 import io
 import functools
-from jumpscale import j
+from Jumpscale import j
 from .SSHClientBase import SSHClientBase
 
 # THIS IS NOT THE ORIGINAL FILE, IS JUST A COPY FROM SSHCLientBase.TEMPLATE: CHANGE THERE !!!! (and copy here)

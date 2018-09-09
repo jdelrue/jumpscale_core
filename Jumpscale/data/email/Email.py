@@ -1,5 +1,5 @@
 import json
-from jumpscale import j
+from Jumpscale import j
 from .Message import Message
 from .Sender import Sender
 from .utils import get_msg_path, get_json_msg

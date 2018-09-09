@@ -1,4 +1,6 @@
-from jumpscale import j
+from Jumpscale import j
+JSBASE = j.application.jsbase_get_class()
+
 from .ExecutorBase import *
 import time
 import serial
