@@ -46,8 +46,8 @@ class ErrorHandler:
 
     def _error_process(self, err, tb_text=""):
         try:
-            schemas = self.j.application.jget('schemas')
-            self.j.tools.alerthandler.log(err, tb_text=tb_text)
+            schemas = self._j.application.jget('schemas')
+            self._j.tools.alerthandler.log(err, tb_text=tb_text)
         except AttributeError as e:
             # if schemas don't exist, skip the alerthandler
             pass
@@ -137,7 +137,7 @@ class ErrorHandler:
 
     def bug_escalate_developer(self, errorConditionObject, tb=None):
 
-        self.j.logger.enabled = False  # no need to further log, there is error
+        self._j.logger.enabled = False  # no need to further log, there is error
 
         tracefile = ""
 
@@ -145,23 +145,23 @@ class ErrorHandler:
             apps = ["code", "micro"]
             for app in apps:
                 try:
-                    if self.j.system.unix.checkApplicationInstalled(app):
+                    if self._j.system.unix.checkApplicationInstalled(app):
                         editor = app
                         return editor
                 except BaseException:
                     pass
             return "micro"
 
-        if False and self.j.application.interactive:
+        if False and self._j.application.interactive:
 
             editor = None
-            if self.j.core.platformtype.myplatform.isLinux:
-                #self.j.tools.console.echo("THIS ONLY WORKS WHEN GEDIT IS INSTALLED")
+            if self._j.core.platformtype.myplatform.isLinux:
+                #self._j.tools.console.echo("THIS ONLY WORKS WHEN GEDIT IS INSTALLED")
                 editor = findEditorLinux()
-            elif self.j.core.platformtype.myplatform.isWindows:
-                editorPath = self.j.sal.fs.joinPaths(
-                    self.j.dirs.JSBASEDIR, "apps", "wscite", "scite.exe")
-                if self.j.sal.fs.exists(editorPath):
+            elif self._j.core.platformtype.myplatform.isWindows:
+                editorPath = self._j.sal.fs.joinPaths(
+                    self._j.dirs.JSBASEDIR, "apps", "wscite", "scite.exe")
+                if self._j.sal.fs.exists(editorPath):
                     editor = editorPath
             tracefile = errorConditionObject.log2filesystem()
             # print "EDITOR FOUND:%s" % editor
@@ -169,14 +169,14 @@ class ErrorHandler:
                 # print errorConditionObject.errormessagepublic
                 if tb is None:
                     try:
-                        res = self.j.tools.console.askString(
+                        res = self._j.tools.console.askString(
                             "\nAn error has occurred. Do you want do you want to do? (s=stop, c=continue, t=getTrace)")
                     except BaseException:                        # print "ERROR IN ASKSTRING TO SEE IF WE HAVE TO USE
                         # EDITOR"
                         res = "s"
                 else:
                     try:
-                        res = self.j.tools.console.askString(
+                        res = self._j.tools.console.askString(
                             "\nAn error has occurred. Do you want do you want to do? (s=stop, c=continue, t=getTrace, d=debug)")
                     except BaseException:                        # print "ERROR IN ASKSTRING TO SEE IF WE HAVE TO USE
                         # EDITOR"
@@ -185,41 +185,41 @@ class ErrorHandler:
                     cmd = "%s '%s'" % (editor, tracefile)
                     # print "EDITORCMD: %s" %cmd
                     if editor == "less":
-                        self.j.sal.process.executeWithoutPipe(cmd, die=False)
+                        self._j.sal.process.executeWithoutPipe(cmd, die=False)
                     else:
-                        result, out, err = self.j.sal.process.execute(
+                        result, out, err = self._j.sal.process.execute(
                             cmd, die=False, showout=False)
 
-                self.j.logger.clear()
+                self._j.logger.clear()
                 if res == "c":
                     return
                 elif res == "d":
-                    self.j.tools.console.echo(
+                    self._j.tools.console.echo(
                         "Starting pdb, exit by entering the command 'q'")
                     import pdb
                     pdb.post_mortem(tb)
                 elif res == "s":
                     # print errorConditionObject
-                    self.j.application.stop(1)
+                    self._j.application.stop(1)
             else:
                 # print errorConditionObject
-                res = self.j.tools.console.askString(
+                res = self._j.tools.console.askString(
                     "\nAn error has occurred. Do you want do you want to do? (s=stop, c=continue, d=debug)")
-                self.j.logger.clear()
+                self._j.logger.clear()
                 if res == "c":
                     return
                 elif res == "d":
-                    self.j.tools.console.echo(
+                    self._j.tools.console.echo(
                         "Starting pdb, exit by entering the command 'q'")
                     import pdb
                     pdb.post_mortem()
                 elif res == "s":
                     # print eobject
-                    self.j.application.stop(1)
+                    self._j.application.stop(1)
 
         else:
             # print "ERROR"
             # tracefile=eobject.log2filesystem()
             # print errorConditionObject
-            #self.j.tools.console.echo( "Tracefile in %s" % tracefile)
-            self.j.application.stop(1)
+            #self._j.tools.console.echo( "Tracefile in %s" % tracefile)
+            self._j.application.stop(1)

@@ -38,15 +38,15 @@ class PerfTestToolsFactory:
         self.monitorNodeIp = monitorNodeIp
         self.monitorNodeSSHPort = sshPort
         self.redispasswd = redispasswd
-        if sshkey is not None and self.j.sal.fs.exists(path=sshkey):
-            sshkey = self.j.sal.fs.fileGetContents(sshkey)
+        if sshkey is not None and self._j.sal.fs.exists(path=sshkey):
+            sshkey = self._j.sal.fs.fileGetContents(sshkey)
             self.sshkey = sshkey
 
             path = "%s/.ssh/testevn" % os.environ["HOME"]
-            self.j.sal.fs.writeFile(path, self.sshkey)
-            self.j.sal.fs.chmod(path, 0o600)
+            self._j.sal.fs.writeFile(path, self.sshkey)
+            self._j.sal.fs.chmod(path, 0o600)
 
-        self.j.sal.ssh.sshkeys_load()
+        self._j.sal.ssh.sshkeys_load()
 
     def getNodeNAS(self, ipaddr, sshport=22, nrdisks=0, fstype="xfs",
                 role='', debugdisk="", name=""):
@@ -75,11 +75,11 @@ class PerfTestToolsFactory:
         return n
 
     def getExampleScript(self, path=None):
-        dirpath = self.j.sal.fs.getDirName(os.path.realpath(__file__))
+        dirpath = self._j.sal.fs.getDirName(os.path.realpath(__file__))
         path2 = "%s/exampleScriptexampleScript" % dirpath
-        C = self.j.sal.fs.fileGetContents(path2)
+        C = self._j.sal.fs.fileGetContents(path2)
         if path is not None:
-            self.j.sal.fs.writeFile(filename=path, contents=C)
+            self._j.sal.fs.writeFile(filename=path, contents=C)
         return C
 
     def monitor(self):
@@ -88,14 +88,14 @@ class PerfTestToolsFactory:
         """
         nodename = os.environ.get("nodename", None)
         if not nodename:
-            nodename = self.j.sal.process.execute("hostname")[1].strip()
+            nodename = self._j.sal.process.execute("hostname")[1].strip()
 
         net = os.environ["net"] == '1'
         disks = [item.strip() for item in os.environ["disks"].split(",") \
                     if item.strip() != ""]
 
         cpu = os.environ["cpu"] == '1'
-        redis = self.j.clients.redis.get(os.environ["redishost"],
+        redis = self._j.clients.redis.get(os.environ["redishost"],
                     os.environ["redisport"])
 
         m = MonitorTools(redis, nodename)
@@ -106,7 +106,7 @@ class PerfTestToolsFactory:
             get config parameters from
             influxdb is always on localhost & std login/passwd
         """
-        redis = self.j.clients.redis.get(os.environ["redishost"],
+        redis = self._j.clients.redis.get(os.environ["redishost"],
                                     os.environ["redisport"])
         d = InfluxDumper(os.environ["testname"], redis,
                                     server=os.environ['idbhost'],

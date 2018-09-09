@@ -363,7 +363,7 @@ class Text(object):
             result = "ERROR:UNKNOWN VAL FROM ASK"
 
             prefix, end = line.split("@ASK", 1)
-            tags = self.j.data.tags.getObject(end.strip())
+            tags = self._j.data.tags.getObject(end.strip())
 
             if tags.tagExists("name"):
                 name = tags.tagGet("name")
@@ -433,20 +433,20 @@ class Text(object):
                     question=descr, confirm=False)
 
             elif ttype == "list":
-                result = self.j.tools.console.askString(
+                result = self._j.tools.console.askString(
                     question=descr, defaultparam=default, regex=regex, retry=retry)
 
             elif ttype == "multiline":
-                result = self.j.tools.console.askMultiline(question=descr)
+                result = self._j.tools.console.askMultiline(question=descr)
 
             elif ttype == "float":
-                result = self.j.tools.console.askString(
+                result = self._j.tools.console.askString(
                     question=descr, defaultparam=default, regex=None)
                 # check getFloat
                 try:
                     result = float(result)
                 except BaseException:
-                    raise self.j.exceptions.Input(
+                    raise self._j.exceptions.Input(
                         "Please provide float.", "system.self.ask.neededfloat")
                 result = str(result)
 
@@ -463,13 +463,13 @@ class Text(object):
 
                 if not default:
                     default = None
-                result = self.j.tools.console.askInteger(
+                result = self._j.tools.console.askInteger(
                     question=descr, defaultValue=default, minValue=minValue, maxValue=maxValue, retry=retry)
 
             elif ttype == "bool":
                 if descr != "":
                     self.logger.info(descr)
-                result = self.j.tools.console.askYesNo()
+                result = self._j.tools.console.askYesNo()
                 if result:
                     result = True
                 else:
@@ -479,20 +479,20 @@ class Text(object):
                 if tags.tagExists("dropdownvals"):
                     dropdownvals = tags.tagGet("dropdownvals")
                 else:
-                    raise self.j.exceptions.Input(
+                    raise self._j.exceptions.Input(
                         "When type is dropdown in ask, then dropdownvals needs to be specified as well.")
                 choicearray = [item.strip()
                                for item in dropdownvals.split(",")]
-                result = self.j.tools.console.askChoice(
+                result = self._j.tools.console.askChoice(
                     choicearray, descr=descr, sort=True)
             elif ttype == 'dict':
-                rawresult = self.j.tools.console.askMultiline(question=descr)
+                rawresult = self._j.tools.console.askMultiline(question=descr)
                 result = "\n"
                 for line in rawresult.splitlines():
                     result += "    %s,\n" % line.strip().strip(',')
 
             else:
-                raise self.j.exceptions.Input(
+                raise self._j.exceptions.Input(
                     "Input type:%s is invalid (only: bool,int,str,string,dropdown,list,dict,float)" % ttype)
 
             out += "%s%s\n" % (prefix, result)
@@ -606,7 +606,7 @@ class Text(object):
         or convert 1 string to python objects
         """
 
-        if self.j.data.types.list.check(string):
+        if self._j.data.types.list.check(string):
             ttypes = []
             for item in string:
                 ttype, val = self._str2var(item)
@@ -622,7 +622,7 @@ class Text(object):
                 result = [self.getBool(item) for item in string]
             else:
                 result = [str(self.machinetext2val(item)) for item in string]
-        elif self.j.data.types.dict.check(string):
+        elif self._j.data.types.dict.check(string):
             ttypes = []
             result = {}
             for key, item in list(string.items()):
@@ -645,15 +645,15 @@ class Text(object):
                 for key, item in list(string.items()):
                     result[key] = str(self.machinetext2val(item))
         elif isinstance(string, str) or isinstance(string, float) or isinstance(string, int):
-            ttype, result = self._str2var(self.j.data.text.toStr(string))
+            ttype, result = self._str2var(self._j.data.text.toStr(string))
         else:
-            raise self.j.exceptions.Input(
+            raise self._j.exceptions.Input(
                 "Could not convert '%s' to basetype, input was %s. Expected string, dict or list." %
                 (string, type(string)), "self.str2var")
         return result
 
         try:
-            if self.j.data.types.list.check(string):
+            if self._j.data.types.list.check(string):
                 ttypes = []
                 for item in string:
                     ttype, val = self._str2var(item)
@@ -671,7 +671,7 @@ class Text(object):
                 else:
                     result = [str(self.machinetext2val(item))
                               for item in string]
-            elif self.j.data.types.dict.check(string):
+            elif self._j.data.types.dict.check(string):
                 ttypes = []
                 result = {}
                 for key, item in list(string.items()):
@@ -694,14 +694,14 @@ class Text(object):
                     for key, item in list(string.items()):
                         result[key] = str(self.machinetext2val(item))
             elif isinstance(string, str) or isinstance(string, float) or isinstance(string, int):
-                ttype, result = self._str2var(self.j.data.text.toStr(string))
+                ttype, result = self._str2var(self._j.data.text.toStr(string))
             else:
-                raise self.j.exceptions.Input(
+                raise self._j.exceptions.Input(
                     "Could not convert '%s' to basetype, input was %s. Expected string, dict or list." %
                     (string, type(string)), "self.str2var")
             return result
         except Exception as e:
-            raise self.j.exceptions.Input(
+            raise self._j.exceptions.Input(
                 "Could not convert '%s' to basetype, error was %s" % (string, e), "self.str2var")
 
     def eval(self, code):
@@ -715,8 +715,8 @@ class Text(object):
             try:
                 result = eval(item)
             except Exception as e:
-                raise self.j.exceptions.RuntimeError(
-                    "Could not execute code in self.j.data.text,%s\n%s. Error was:%s" % (item, code, e))
+                raise self._j.exceptions.RuntimeError(
+                    "Could not execute code in self._j.data.text,%s\n%s. Error was:%s" % (item, code, e))
             result = self.pythonObjToStr(result, multiline=False).strip()
             code = code.replace(item, result)
         return code
@@ -733,13 +733,13 @@ class Text(object):
         elif isinstance(obj, bytes):
             obj = obj.decode("utf8")
             return obj
-        elif self.j.data.types.bool.check(obj):
+        elif self._j.data.types.bool.check(obj):
             if obj:
                 obj = "True"
             else:
                 obj = "False"
             return obj
-        elif self.j.data.types.string.check(obj):
+        elif self._j.data.types.string.check(obj):
             isdict = canBeDict and obj.find(":") != -1
             if obj.strip() == "":
                 return ""
@@ -751,9 +751,9 @@ class Text(object):
                 else:
                     obj = "%s" % obj.strip("'")
             return obj
-        elif self.j.data.types.int.check(obj) or self.j.data.types.float.check(obj):
+        elif self._j.data.types.int.check(obj) or self._j.data.types.float.check(obj):
             return str(obj)
-        elif self.j.data.types.list.check(obj):
+        elif self._j.data.types.list.check(obj):
             obj.sort()
             tmp = []
             for item in obj:
@@ -765,7 +765,7 @@ class Text(object):
                 tmp.append(item)
             obj = tmp
             # if not canBeDict:
-            #     raise self.j.exceptions.RuntimeError("subitem cannot be list or dict for:%s"%obj)
+            #     raise self._j.exceptions.RuntimeError("subitem cannot be list or dict for:%s"%obj)
             if multiline:
                 resout = "\n"
                 for item in obj:
@@ -779,9 +779,9 @@ class Text(object):
 
             return resout
 
-        elif self.j.data.types.dict.check(obj):
+        elif self._j.data.types.dict.check(obj):
             if not canBeDict:
-                raise self.j.exceptions.RuntimeError(
+                raise self._j.exceptions.RuntimeError(
                     "subitem cannot be list or dict for:%s" % obj)
             if multiline:
                 resout = "\n"
@@ -804,7 +804,7 @@ class Text(object):
             return resout
 
         else:
-            raise self.j.exceptions.RuntimeError(
+            raise self._j.exceptions.RuntimeError(
                 "Could not convert %s to string" % obj)
 
     def hrd2machinetext(self, value, onlyone=False):
@@ -899,7 +899,7 @@ class Text(object):
         return value
 
     def getInt(self, text):
-        if self.j.data.types.string.check(text):
+        if self._j.data.types.string.check(text):
             text = self.strip(text)
             if text.lower() == "none":
                 return 0
@@ -914,7 +914,7 @@ class Text(object):
         return text
 
     def getFloat(self, text):
-        if self.j.data.types.string.check(text):
+        if self._j.data.types.string.check(text):
             text = text.strip()
             if text.lower() == "none":
                 return 0.0
@@ -943,14 +943,14 @@ class Text(object):
         return text.isdigit()
 
     def getBool(self, text):
-        if self.j.data.types.bool.check(text):
+        if self._j.data.types.bool.check(text):
             return text
-        elif self.j.data.types.int.check(text):
+        elif self._j.data.types.int.check(text):
             if text == 1:
                 return True
             else:
                 return False
-        elif self.j.data.types.string.check(text):
+        elif self._j.data.types.string.check(text):
             text = text.strip()
             if text.lower() == "none":
                 return False
@@ -965,7 +965,7 @@ class Text(object):
             else:
                 return False
         else:
-            raise self.j.exceptions.RuntimeError(
+            raise self._j.exceptions.RuntimeError(
                 "input needs to be None, string, bool or int")
 
     def _dealWithQuote(self, text):
@@ -992,10 +992,10 @@ class Text(object):
         """
 
         # if already list just return
-        if self.j.data.types.list.check(text):
+        if self._j.data.types.list.check(text):
             return text
 
-        if not self.j.data.types.string.check(text):
+        if not self._j.data.types.string.check(text):
             raise RuntimeError("need to be string:%s" % text)
 
         text = text.strip(" [")
@@ -1017,9 +1017,9 @@ class Text(object):
             text = [text]
 
         if ttype is not None:
-            ttype = self.j.data.types.get(ttype)
+            ttype = self._j.data.types.get(ttype)
         else:
-            ttype = self.j.data.types.string
+            ttype = self._j.data.types.string
 
         res = []
         for item in text:
@@ -1042,7 +1042,7 @@ class Text(object):
         for item in self.split(","):
             if item.strip() != "":
                 if item.find(":") == -1:
-                    raise self.j.exceptions.RuntimeError(
+                    raise self._j.exceptions.RuntimeError(
                         "Could not find : in %s, cannot get dict out of it." % text)
 
                 key, val = item.split(":", 1)

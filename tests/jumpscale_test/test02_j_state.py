@@ -30,7 +30,7 @@ class TestJSTATE(TestcasesBase):
 
     def setUp(self):
         super().setUp()
-        self.client = self.j.core.state
+        self.client = self._j.core.state
         self.state_path = self.client.configStatePath
         self.state_file_content = self.get_state()
 
@@ -64,7 +64,7 @@ class TestJSTATE(TestcasesBase):
         self.assertEqual(value, 'value_1')
 
         self.lg.info('Get the value of a non-existing key')
-        with self.assertRaises(self.j.exceptions.Input) as e:
+        with self.assertRaises(self._j.exceptions.Input) as e:
             self.client.stateGet('new_key')
 
         self.lg.info(
@@ -72,7 +72,7 @@ class TestJSTATE(TestcasesBase):
         value = self.client.stateGet('new_key', defval='new_value')
         self.assertEqual(value, 'new_value')
 
-        with self.assertRaises(self.j.exceptions.Input) as e:
+        with self.assertRaises(self._j.exceptions.Input) as e:
             self.client.stateGet('new_value')
 
         self.lg.info(

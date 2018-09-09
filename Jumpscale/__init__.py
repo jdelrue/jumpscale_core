@@ -117,8 +117,8 @@ class Jumpscale(JSBase): # deliberately deriving from JSBase
         self.__jsmodulepath__ = 'Jumpscale'
         self.__jsmodbase__ = {}
         self.__jsmodlookup__ = {}
-        self.j = self  # sets up the global singleton
-        self.j.__dynamic_ready__ = False  # set global dynamic loading OFF
+        self._j = self  # sets up the global singleton
+        self._j.__dynamic_ready__ = False  # set global dynamic loading OFF
 
         DLoggerFactory = self._jsbase(
             ('LoggerFactory', 'Jumpscale.logging.LoggerFactory'),

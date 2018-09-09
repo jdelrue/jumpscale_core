@@ -114,7 +114,7 @@ class Types(object):
         try:
             res = getattr(self, self._ttypes[ttype])
         except KeyError:
-            raise self.j.exceptions.RuntimeError(
+            raise self._j.exceptions.RuntimeError(
                 "did not find type:'%s'" % ttype)
 
         # returns either instance or class

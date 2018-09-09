@@ -16,11 +16,11 @@ class ExecutorLocal(ExecutorBase):
         self.type = "local"
         self._id = 'localhost'
 
-        # self.cache = self.j.data.cache.get(id="executor:%s" %
+        # self.cache = self._j.data.cache.get(id="executor:%s" %
         #               self.id,expiration=3600)
 
     def exists(self, path):
-        return self.j.sal.fs.exists(path)
+        return self._j.sal.fs.exists(path)
 
     @property
     def stateOnSystem(self):
@@ -65,7 +65,7 @@ class ExecutorLocal(ExecutorBase):
             def load(name):
                 path = "%s/%s.toml" % (cfgdir, name)
                 try:
-                    return pytoml.loads(self.j.sal.fs.fileGetContents(path))
+                    return pytoml.loads(self._j.sal.fs.fileGetContents(path))
                 except ValueError:
                     return {}
 
@@ -94,7 +94,7 @@ class ExecutorLocal(ExecutorBase):
 
             path = "%s/.profile_js" % (homedir)
             if os.path.exists(path):
-                res["bashprofile"] = self.j.sal.fs.fileGetContents(path)
+                res["bashprofile"] = self._j.sal.fs.fileGetContents(path)
             else:
                 res["bashprofile"] = ""
 
@@ -138,7 +138,7 @@ class ExecutorLocal(ExecutorBase):
         cmds2 = self.commands_transform(
             cmds, die=die, checkok=checkok, env=env, sudo=sudo)
 
-        rc, out, err = self.j.sal.process.execute(
+        rc, out, err = self._j.sal.process.execute(
             cmds2, die=die, showout=showout, timeout=timeout)
 
         if checkok:
@@ -148,13 +148,13 @@ class ExecutorLocal(ExecutorBase):
 
     def executeInteractive(self, cmds, die=True, checkok=None):
         cmds = self.commands_transform(cmds, die, checkok=checkok)
-        return self.j.sal.process.executeWithoutPipe(cmds)
+        return self._j.sal.process.executeWithoutPipe(cmds)
 
     def upload(self, source, dest, dest_prefix="", recursive=True):
         if dest_prefix != "":
-            dest = self.j.sal.fs.joinPaths(dest_prefix, dest)
-        if self.j.sal.fs.isDir(source):
-            self.j.sal.fs.copyDirTree(
+            dest = self._j.sal.fs.joinPaths(dest_prefix, dest)
+        if self._j.sal.fs.isDir(source):
+            self._j.sal.fs.copyDirTree(
                 source,
                 dest,
                 keepsymlinks=True,
@@ -168,17 +168,17 @@ class ExecutorLocal(ExecutorBase):
                 ssh=False,
                 recursive=recursive)
         else:
-            self.j.sal.fs.copyFile(source, dest, overwriteFile=True)
+            self._j.sal.fs.copyFile(source, dest, overwriteFile=True)
         self.cache.reset()
 
     def download(self, source, dest, source_prefix=""):
         if source_prefix != "":
-            source = self.j.sal.fs.joinPaths(source_prefix, source)
+            source = self._j.sal.fs.joinPaths(source_prefix, source)
 
-        if self.j.sal.fs.isFile(source):
-            self.j.sal.fs.copyFile(source, dest)
+        if self._j.sal.fs.isFile(source):
+            self._j.sal.fs.copyFile(source, dest)
         else:
-            self.j.sal.fs.copyDirTree(
+            self._j.sal.fs.copyDirTree(
                 source,
                 dest,
                 keepsymlinks=True,
@@ -192,13 +192,13 @@ class ExecutorLocal(ExecutorBase):
                 ssh=False)
 
     def file_read(self, path):
-        return self.j.sal.fs.readFile(path)
+        return self._j.sal.fs.readFile(path)
 
     def file_write(self, path, content, mode=None, owner=None,
                    group=None, append=False, sudo=False,showout=True):
-        self.j.sal.fs.createDir(self.j.sal.fs.getDirName(path))
-        self.j.sal.fs.writeFile(path, content, append=append)
+        self._j.sal.fs.createDir(self._j.sal.fs.getDirName(path))
+        self._j.sal.fs.writeFile(path, content, append=append)
         if owner is not None or group is not None:
-            self.j.sal.fs.chown(path, owner, group)
+            self._j.sal.fs.chown(path, owner, group)
         if mode is not None:
-            self.j.sal.fs.chmod(path, mode)
+            self._j.sal.fs.chmod(path, mode)

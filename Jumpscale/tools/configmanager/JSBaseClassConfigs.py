@@ -61,7 +61,7 @@ class _JSBaseClassConfigs:
         return self.get(instance=instance, data=data, create=True)
 
     def reset(self):
-        self.j.tools.configmanager.delete(location=self.__jslocation__,
+        self._j.tools.configmanager.delete(location=self.__jslocation__,
                                           instance="*")
         self.getall()
 
@@ -70,7 +70,7 @@ class _JSBaseClassConfigs:
             for item in self.list(prefix=prefix):
                 self.delete(instance=item)
             return
-        self.j.tools.configmanager.delete(location=self.__jslocation__,
+        self._j.tools.configmanager.delete(location=self.__jslocation__,
                                      instance=instance)
 
     def count(self):
@@ -78,7 +78,7 @@ class _JSBaseClassConfigs:
 
     def list(self, prefix=""):
         res = []
-        items = self.j.tools.configmanager.list(location=self.__jslocation__)
+        items = self._j.tools.configmanager.list(location=self.__jslocation__)
         for item in items:
             if prefix != "":
                 if item.startswith(prefix):
@@ -89,7 +89,7 @@ class _JSBaseClassConfigs:
 
     def getall(self):
         res = []
-        items = self.j.tools.configmanager.list(location=self.__jslocation__)
+        items = self._j.tools.configmanager.list(location=self.__jslocation__)
         for name in items:
             res.append(self.get(name, create=False))
         return res

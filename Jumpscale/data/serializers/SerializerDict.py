@@ -5,7 +5,7 @@ class SerializerDict:
     def _unique_list(self, items, sort=False, strip=False):
         res = []
         for item in items:
-            if strip and self.j.data.types.string.check(item):
+            if strip and self._j.data.types.string.check(item):
                 item = item.strip()
             if item not in res:
                 res.append(item)
@@ -40,21 +40,21 @@ class SerializerDict:
                 return dictsource, errors
             else:
                 if die:
-                    raise self.j.exceptions.Input(
+                    raise self._j.exceptions.Input(
                         "dictsource does not have key:%s, can insert value" % key)
                 else:
                     errors.append((key, val))
                     return dictsource, errors
 
-        if self.j.data.types.list.check(dictsource[key]):
+        if self._j.data.types.list.check(dictsource[key]):
             # check is list & set the types accordingly
-            if self.j.data.types.string.check(val):
+            if self._j.data.types.string.check(val):
                 if "," in val:
                     val = [item.replace("'", "").strip()
                            for item in val.split(",")]
                 else:
                     val = [val]
-            elif self.j.data.types.int.check(val) or self.j.data.types.float.check(val):
+            elif self._j.data.types.int.check(val) or self._j.data.types.float.check(val):
                 val = [val]
 
             if listunique:
@@ -63,33 +63,33 @@ class SerializerDict:
             else:
                 dictsource[key] = val
 
-        elif self.j.data.types.bool.check(dictsource[key]):
+        elif self._j.data.types.bool.check(dictsource[key]):
             if str(val).lower() in ['true', "1", "y", "yes"]:
                 val = True
             else:
                 val = False
             dictsource[key] = val
-        elif self.j.data.types.int.check(dictsource[key]):
-            if self.j.data.types.string.check(val) and val.strip() == "":
+        elif self._j.data.types.int.check(dictsource[key]):
+            if self._j.data.types.string.check(val) and val.strip() == "":
                 val = 0
             try:
                 dictsource[key] = int(val)
             except ValueError:
                 raise ValueError(
                     "Expected value of \"{}\" should be of type int or a string of int.".format(key))
-        elif self.j.data.types.float.check(dictsource[key]):
+        elif self._j.data.types.float.check(dictsource[key]):
             try:
                 dictsource[key] = float(val)
             except ValueError:
                 raise ValueError(
                     "Expected value of \"{}\" should be of type float or a string of float.".format(key))
-        elif self.j.data.types.string.check(dictsource[key]):
-            if not self.j.data.types.string.check(val):
+        elif self._j.data.types.string.check(dictsource[key]):
+            if not self._j.data.types.string.check(val):
                 raise ValueError(
                     "Expected value of \"{}\" should be "
                     "of type string, is of type "
                     "{}".format(key, repr(type(val))))
-            dictsource[key] = self.j.data.text.strip(str(val))
+            dictsource[key] = self._j.data.text.strip(str(val))
         else:
             raise ValueError("could not find type of:%s" % dictsource[key])
 
@@ -117,9 +117,9 @@ class SerializerDict:
         @return dictsource,errors
 
         """
-        if not self.j.data.types.dict.check(
-                dictsource) or not self.j.data.types.dict.check(dictupdate):
-            raise self.j.exceptions.Input(
+        if not self._j.data.types.dict.check(
+                dictsource) or not self._j.data.types.dict.check(dictupdate):
+            raise self._j.exceptions.Input(
                 "dictsource and dictupdate need to be dicts")
 
         keys = sorted([item for item in dictupdate.keys()])

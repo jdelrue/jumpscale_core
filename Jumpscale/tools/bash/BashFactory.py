@@ -26,7 +26,7 @@ class Profile(object):
     @property
     def pathProfile(self):
         if not self._pathProfile:
-            self._pathProfile = self.j.sal.fs.joinPaths(
+            self._pathProfile = self._j.sal.fs.joinPaths(
                 self.home, ".profile_js")
         return self._pathProfile
 
@@ -211,7 +211,7 @@ class Profile(object):
         '''
         return true of locale is properly set
         '''
-        if self.j.core.platformtype.myplatform.isMac:
+        if self._j.core.platformtype.myplatform.isMac:
             a = self.bash.env.get('LC_ALL') == 'en_US.UTF-8'
             b = self.bash.env.get('LANG') == 'en_US.UTF-8'
         else:
@@ -235,7 +235,7 @@ class Profile(object):
             self.envSet("LC_ALL", "C.UTF-8")
             self.envSet("LANG", "C.UTF-8")
             return
-        raise self.j.exceptions.Input(
+        raise self._j.exceptions.Input(
             "Cannot find C.UTF-8, cannot fix locale's")
 
 
@@ -270,7 +270,7 @@ class Bash(object):
     @property
     def executor(self):
         if self._executor is None:
-            self.executor = self.j.tools.executorLocal
+            self.executor = self._j.tools.executorLocal
         return self._executor
 
     @executor.setter
@@ -301,7 +301,7 @@ class Bash(object):
             "source ~/.profile_js;which %s" % cmd, die=False, showout=False)
         if rc > 0:
             if die:
-                raise self.j.exceptions.RuntimeError(
+                raise self._j.exceptions.RuntimeError(
                     "Did not find command: %s" % cmd)
             else:
                 return False

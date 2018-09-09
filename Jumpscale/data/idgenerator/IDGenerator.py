@@ -34,8 +34,8 @@ class IDGenerator:
         """
         key = "incrementor_%s" % incrTypeId
         if reset:
-            self.j.core.db.delete(key)
-        return self.j.core.db.incr(key)
+            self._j.core.db.delete(key)
+        return self._j.core.db.incr(key)
 
     def getID(self, incrTypeId, objectUniqueSeedInfo, reset=False):
         """
@@ -43,12 +43,12 @@ class IDGenerator:
         remembers previously given id's
         """
         key = "idint_%s_%s" % (incrTypeId, objectUniqueSeedInfo)
-        if self.j.core.db.exists(key) and reset is False:
-            id = int(self.j.core.db.get(key))
+        if self._j.core.db.exists(key) and reset is False:
+            id = int(self._j.core.db.get(key))
             return id
         else:
             id = self.generateIncrID(incrTypeId)
-            self.j.core.db.set(key, str(id))
+            self._j.core.db.set(key, str(id))
             return id
 
     def generateGUID(self):

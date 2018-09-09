@@ -10,6 +10,8 @@ import trace # needed for camelcase
 
 def jwalk(instance, name, start=None, end=None, stealth=False):
     for fromname in name.split('.')[start:end]:
+        if fromname == 'j': # hack to substitute name-change self.j to self._j
+            fromname = "_j"
         #print ("patchfrom", walkfrom, fromname)
         if stealth: # use BaseGetter __getattribute__
             d = object.__getattribute__(instance, '__subgetters__')
@@ -343,12 +345,12 @@ class BaseGetter(object):
             does a best guess based on the plugin match.
             search here.
         """
-        if modulepath in self.j.__jsmodlookup__:
-            return self.j.__jsmodlookup__[modulepath]
+        if modulepath in self._j.__jsmodlookup__:
+            return self._j.__jsmodlookup__[modulepath]
         # ok, not in the json file, so make a best guess.
         mpath = modulepath.split('.')
         plugin = mpath[0]
-        plugins = self.j.tools.jsloader.plugins
+        plugins = self._j.tools.jsloader.plugins
         assert plugin in plugins
         pluginpath = plugins[plugin]
         modname = [pluginpath] + mpath_to_pyfile(mpath[1:])
@@ -385,7 +387,7 @@ class BaseGetter(object):
             note the inclusion of the automatic "JSBased" prefix on the
             original class named "Application".
         """
-        basej = basej or self.j
+        basej = basej or self._j
         #print ("instorkls", self, subname, modulepath, objectname, basej, ask)
 
         if fullpath is None:
@@ -429,7 +431,7 @@ class BaseGetter(object):
         except AttributeError:
             jbk = None
         if jbk is not None:
-            global_ready = object.__getattribute__(self.j, '__dynamic_ready__')
+            global_ready = object.__getattribute__(self._j, '__dynamic_ready__')
             dynamic_ready = object.__getattribute__(self, '__dynamic_ready__')
             if dynamic_ready and global_ready:
                 keys = self._check_child_mod_cache(keys)
@@ -452,7 +454,7 @@ class BaseGetter(object):
         d = object.__getattribute__(self, '__subgetters__')
         if name in d:
             instance = d[name].getter()
-            instance.j = self.j
+            instance._j = self._j
             object.__setattr__(self, name, instance)
             d.pop(name)  # take the subgetter out now that it's been done
             return instance
@@ -465,7 +467,7 @@ class BaseGetter(object):
         except AttributeError:
             jbk = None
         if jbk:
-            global_ready = object.__getattribute__(self.j, '__dynamic_ready__')
+            global_ready = object.__getattribute__(self._j, '__dynamic_ready__')
             dynamic_ready = object.__getattribute__(self, '__dynamic_ready__')
             if dynamic_ready and global_ready:
                 d = object.__getattribute__(self, '__subgetters__')
@@ -481,7 +483,7 @@ class BaseGetter(object):
         if name not in d:
             return None
         instance = d[name].getter()
-        instance.j = self.j
+        instance._j = self._j
         object.__setattr__(self, name, instance)
         #del d[name]
         return instance
@@ -672,13 +674,13 @@ class JSBase(BaseGetter):
         #print ("__jslocation__", startchildj)
         # really awkward but absolutely must avoid BaseGetter recursion
         try:
-            loader = self.j.tools.jsloader
+            loader = self._j.tools.jsloader
         except AttributeError:
             #print ("not found loader")
             return keys  # too early: skip it
 
         if False:
-            loader = self.j
+            loader = self._j
             for attr in ['tools', 'loader']:
                 try:
                     #print ("searching", loader, attr)
@@ -701,7 +703,7 @@ class JSBase(BaseGetter):
                     if childk in keys:
                         continue
                     keys.add(childk)
-                    loader.add_submodules(self.j, fullchildj, cmods[childk])
+                    loader.add_submodules(self._j, fullchildj, cmods[childk])
             return keys
 
         # global variant (no "toadd") - equivalent to dir-walking
@@ -721,7 +723,7 @@ class JSBase(BaseGetter):
                 continue
             keys.add(childk)
             fullchildj = "%s.%s" % (startchildj, childk)
-            loader.add_submodules(self.j, fullchildj, cmods[childk])
+            loader.add_submodules(self._j, fullchildj, cmods[childk])
 
         self._child_mod_cache_checked = True
         return keys
@@ -731,7 +733,7 @@ class JSBase(BaseGetter):
             after the constructor has been initialised.
             gets rid of potential side-effects.
 
-            basically, if an __init__ is referencing j (or, now, self.j)
+            basically, if an __init__ is referencing j (or, now, self._j)
             then it should NOT be doing so (without a very good reason),
             as that creates a critical dependency.  use add_late_init
             instead.
@@ -753,11 +755,11 @@ class JSBase(BaseGetter):
         return jwalk(self, attrname, start, end, stealth)
 
     @property
-    def j(self):
+    def _j(self):
         return global_j
 
-    @j.setter
-    def j(self, j_global_override):
+    @_j.setter
+    def _j(self, j_global_override):
         assert j_global_override is not None
         global global_j
         global_j = j_global_override
@@ -775,7 +777,7 @@ class JSBase(BaseGetter):
             else:
                 name = self.__name__
             #print ("jsbase.logger get", type(self))
-            self._logger = self.j.logging.get(name, force=self._logger_force)
+            self._logger = self._j.logging.get(name, force=self._logger_force)
             self._logger._parent = self
         return self._logger
 
@@ -802,7 +804,7 @@ class JSBase(BaseGetter):
                 if item in self.__dict__ and self.__dict__[item]:
                     id += "_" + str(self.__dict__[item])
                     break
-            self._cache = self.j.data.datacache.get(
+            self._cache = self._j.data.datacache.get(
                 id, expiration=self._cache_expiration)
         return self._cache
 
@@ -824,7 +826,7 @@ class JSBase(BaseGetter):
             to over-ride this, set dynamicname.
         """
         if basej is None:
-            basej = self.j
+            basej = self._j
         #print ("_jsbase", basej, jname, derived_classes)
         if derived_classes is None:
             derived_classes = []
@@ -900,7 +902,7 @@ class JSBase(BaseGetter):
         return instance
 
 
-# don't touch this directly - go through any instance of JSBase, assign self.j
+# don't touch this directly - go through any instance of JSBase, assign self._j
 # and it will get globally set.  generally not too good an idea to do that,
 # though, as pretty much everything could break.
 global_j = None

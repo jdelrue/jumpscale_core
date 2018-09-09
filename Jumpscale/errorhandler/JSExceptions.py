@@ -54,7 +54,7 @@ class BaseJSException(Exception):
             self.logger.error("Exception called with new API arguments. "
                               "Please update code to new exception API")
 
-        if not self.j.data.types.int.check(level):
+        if not self._j.data.types.int.check(level):
             level=1
         super().__init__(message)
         self.message = message
@@ -72,7 +72,7 @@ class BaseJSException(Exception):
 
     @property
     def type(self):
-        return self.j.data.text.strip_to_ascii_dense(str(self.__class__))
+        return self._j.data.text.strip_to_ascii_dense(str(self.__class__))
 
 
     @property
@@ -97,7 +97,7 @@ class BaseJSException(Exception):
         else:
             out = "ERROR: %s\n" % (self.message)
         if self._trace is not "":
-            self.j.errorhandler._trace_print(self._trace)
+            self._j.errorhandler._trace_print(self._trace)
             return ""
         else:
             return out
@@ -107,7 +107,7 @@ class BaseJSException(Exception):
 
 
     def trace_print(self):
-        self.j.core.errorhandler._trace_print(self._trace)
+        self._j.core.errorhandler._trace_print(self._trace)
 
 
 

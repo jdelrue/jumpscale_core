@@ -70,7 +70,7 @@ class State(object):
     def versions(self):
         versions = {}
         for name, path in self.configGet('plugins', {}).items():
-            repo = self.j.clients.git.get(path)
+            repo = self._j.clients.git.get(path)
             _, versions[name] = repo.getBranchOrTag()
         return versions
 
@@ -177,7 +177,7 @@ class State(object):
                     self._set(key, defval, config=config, path=path)
                 return defval
             else:
-                raise self.j.exceptions.Input(
+                raise self._j.exceptions.Input(
                     message="could not find config key:%s in executor:%s" % (key, self))
 
     def _set(self, key, val, save=True, config=None, path=""):
@@ -456,7 +456,7 @@ class State(object):
         overwrite -- set to true if you want to overwrite values of old keys
         """
         for key0, val0 in ddict.items():
-            if not self.j.data.types.dict.check(val0):
+            if not self._j.data.types.dict.check(val0):
                 raise RuntimeError(
                     "Value of first level key has to be another dict.")
 
@@ -480,7 +480,7 @@ class State(object):
         if self.executor.state_disabled:
             return
         if self.readonly:
-            raise self.j.exceptions.Input(
+            raise self._j.exceptions.Input(
                 message="cannot write config to '%s', because is readonly" %
                 self)
         if config and path:

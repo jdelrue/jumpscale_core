@@ -26,9 +26,9 @@ class Handlers():
     @property
     def fileRotateHandler(self, name='jumpscale'):
         if self._fileRotateHandler is None:
-            if not self.j.sal.fs.exists("%s/log/" % self.j.dirs.VARDIR):
-                self.j.sal.fs.createDir("%s/log/" % self.j.dirs.VARDIR)
-            filename = "%s/log/%s.log" % (self.j.dirs.VARDIR, name)
+            if not self._j.sal.fs.exists("%s/log/" % self._j.dirs.VARDIR):
+                self._j.sal.fs.createDir("%s/log/" % self._j.dirs.VARDIR)
+            filename = "%s/log/%s.log" % (self._j.dirs.VARDIR, name)
             formatter = logging.Formatter(FILE_FORMAT)
             fh = TimedRotatingFileHandler(
                 filename, when='D', interval=1, backupCount=7, encoding=None, delay=False, utc=False, atTime=None)
@@ -67,7 +67,7 @@ class Handlers():
 
     def redisHandler(self, redis_client=None):
         if redis_client is None:
-            self.redis_client = self.j.core.db
+            self.redis_client = self._j.core.db
         raise RuntimeError("need to implement redishandler")
 
     @property

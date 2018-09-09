@@ -13,13 +13,13 @@ class TestNICS(TestcasesBase):
         """ JS-025
 
         **Test Scenario:**
-        #. Get the nics from self.j.sal.nic[sal_nic].
+        #. Get the nics from self._j.sal.nic[sal_nic].
         #. Get the nics from ifconfig[ifconfig_nic].
         #. Compare between [sal_nic] and [ifconfig_nic],should be same .
 
         """
-        self.lg.info("Get the nics from self.j.sal.nic[sal_nic]")
-        nics = self.j.sal.nic.nics
+        self.lg.info("Get the nics from self._j.sal.nic[sal_nic]")
+        nics = self._j.sal.nic.nics
 
         self.lg.info("Get the nics from ifconfig[ifconfig_nic].")
         nic_orgional = os.popen("ifconfig").read()
@@ -42,9 +42,9 @@ class TestNICS(TestcasesBase):
         """
         self.lg.info(
             "Get Ip and mask [nic_ip_mask] of one device from nic.ipGet.")
-        nics = self.j.sal.nic.nics
+        nics = self._j.sal.nic.nics
         device = random.choice(nics)
-        nic_ip_mask = self.j.sal.nic.ipGet(device)
+        nic_ip_mask = self._j.sal.nic.ipGet(device)
 
         self.lg.info(
             "Get Ip and mask[ifconfig_ip_mask] of one device from ifconfig.")
@@ -72,23 +72,23 @@ class TestNICS(TestcasesBase):
         """
 
         self.lg.info("Set ip for one device with  nic.ipSet.")
-        device = random.choice(self.j.sal.nic.nics)
+        device = random.choice(self._j.sal.nic.nics)
         device_ip = os.popen(
             "ifconfig %s | grep 'inet ' | awk -F'[: ]+' '{ print $4 }'" %
             device).read().strip()
         new_ip = ".".join(device_ip.split(
             '.')[0:-1]) + '.%s' % random.randint(1, 254)
-        self.j.sal.nic.ipSet(
+        self._j.sal.nic.ipSet(
             device,
             ip=None,
             netmask=None,
             gw=None,
             inet='dhcp',
             commit=False)
-        self.j.sal.nic.commit(device)
+        self._j.sal.nic.commit(device)
 
         self.lg.info("Get Ip for this device ,check tha device ip is updated")
-        self.assertEqual(self.j.sal.nic.ipGet(device), new_ip)
+        self.assertEqual(self._j.sal.nic.ipGet(device), new_ip)
 
     def test004_using_nonexist_device(self):
         """ JS-028
@@ -100,8 +100,8 @@ class TestNICS(TestcasesBase):
         self.lg.info("Get ip for nonexist device ,should fail.")
         device = self.random_string()
         with self.assertRaises(NetworkingError):
-            self.j.sal.nic.ipGet(device)
+            self._j.sal.nic.ipGet(device)
 
         self.lg.info("Set ip for nonexist device with nic.ipset,should fail ")
         with self.assertRaises(NetworkingError):
-            self.j.sal.nic.ipSet(device)
+            self._j.sal.nic.ipSet(device)

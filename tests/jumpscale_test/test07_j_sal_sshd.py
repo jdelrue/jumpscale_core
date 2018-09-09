@@ -8,7 +8,7 @@ class TestSALLSSHD(TestcasesBase):
 
     def setUp(self):
         super().setUp()
-        self.sshd = self.j.sal.sshd
+        self.sshd = self._j.sal.sshd
         keyfile = self.sshd.SSH_AUTHORIZED_KEYS
         if keyfile.exists():
             self.authorized_keys = keyfile.text().splitlines()

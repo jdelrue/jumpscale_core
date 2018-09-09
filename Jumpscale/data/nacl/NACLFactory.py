@@ -18,7 +18,7 @@ class NACLFactory:
         if path not specified then is ~/.secrets
         """
         DN = self._jsbase(('NACL', 'Jumpscale.data.nacl.NACL'))
-        return DN(name, secret, sshkeyname=self.j.tools.configmanager.keyname)
+        return DN(name, secret, sshkeyname=self._j.tools.configmanager.keyname)
 
     @property
     def default(self):
@@ -32,7 +32,7 @@ class NACLFactory:
         default words which are securely stored on your filesystem
         js_shell 'print(j.data.nacl.default.words)'
         """
-        return self.j.data.nacl.default.words
+        return self._j.data.nacl.default.words
 
     def remember(self):
         """
@@ -42,15 +42,15 @@ class NACLFactory:
         js_shell 'j.data.nacl.remember()'
 
         """
-        self.j.clients.redis.core_start()
+        self._j.clients.redis.core_start()
 
     def _remember_get(self, secret, words):
 
-        if "fake" not in str(self.j.core.db):
-            if self.j.core.db.exists("nacl.meta"):
-                data = self.j.core.db.get("nacl.meta")
+        if "fake" not in str(self._j.core.db):
+            if self._j.core.db.exists("nacl.meta"):
+                data = self._j.core.db.get("nacl.meta")
                 data2 = self.default.decryptSymmetric(data)
-                data3 = self.j.data.serializers.json.loads(data2)
+                data3 = self._j.data.serializers.json.loads(data2)
 
                 if "secret" in data3 and not secret:
                     secret = data3["secret"]
@@ -61,14 +61,14 @@ class NACLFactory:
         return secret, words
 
     def _remember_set(self, secret, words):
-        if "fake" not in str(self.j.core.db):
+        if "fake" not in str(self._j.core.db):
             data = {}
             data["secret"] = secret
             data["words"] = words
-            data2 = self.j.data.serializers.json.dumps(data)
+            data2 = self._j.data.serializers.json.dumps(data)
             data3 = self.default.encryptSymmetric(data2)
             self.logger.debug("remember secret,words")
-            self.j.core.db.set("nacl.meta", data3, ex=3600)
+            self._j.core.db.set("nacl.meta", data3, ex=3600)
 
     def encrypt(self, secret="", message="", words="", interactive=False):
         """
@@ -97,18 +97,18 @@ class NACLFactory:
             secret, words = self._remember_get(secret, words)
 
             if not secret:
-                secret = self.j.tools.console.askPassword("your secret")
+                secret = self._j.tools.console.askPassword("your secret")
             if not message:
-                message = self.j.tools.console.askMultiline(
+                message = self._j.tools.console.askMultiline(
                     "your message to encrypt")
                 message = message.strip()
             if not words:
-                yn = self.j.tools.console.askYesNo(
+                yn = self._j.tools.console.askYesNo(
                     "do you wan to specify secret key as bip39 words?")
                 if yn:
-                    words = self.j.tools.console.askString("your bip39 words")
+                    words = self._j.tools.console.askString("your bip39 words")
                 else:
-                    words = self.j.data.nacl.default.words
+                    words = self._j.data.nacl.default.words
 
             self._remember_set(secret, words)
 
@@ -117,21 +117,21 @@ class NACLFactory:
                 raise RuntimeError("secret or message needs to be used")
 
         if words == "":
-            words = self.j.data.nacl.default.words
+            words = self._j.data.nacl.default.words
 
         # first encrypt symmetric
-        secret1 = self.j.data.hash.md5_string(secret)
+        secret1 = self._j.data.hash.md5_string(secret)
         secret1 = bytes(secret1, 'utf-8')
         # print("secret1_jumpscale:%s"%secret1)
 
         box = nacl.secret.SecretBox(secret1)
-        if self.j.data.types.str.check(message):
+        if self._j.data.types.str.check(message):
             message = bytes(message, 'utf-8')
         # print("msg_jumpscale:%s"%message)
         res = box.encrypt(message)
 
         # now encrypt asymetric using the words
-        privkeybytes = self.j.data.encryption.mnemonic.to_entropy(words)
+        privkeybytes = self._j.data.encryption.mnemonic.to_entropy(words)
         # print("privkey_js:%s"%privkeybytes)
 
         pk = PrivateKey(privkeybytes)
@@ -152,7 +152,7 @@ class NACLFactory:
             words=words,
             interactive=interactive)
 
-        if self.j.data.types.bytes.check(message):
+        if self._j.data.types.bytes.check(message):
             message = message.decode('utf8')
 
         assert msg.strip() == message.strip()
@@ -176,32 +176,32 @@ class NACLFactory:
             secret, words = self._remember_get(secret, words)
 
             if not secret:
-                secret = self.j.tools.console.askPassword("your secret")
+                secret = self._j.tools.console.askPassword("your secret")
             if not message:
-                message = self.j.tools.console.askMultiline(
+                message = self._j.tools.console.askMultiline(
                     "your message to decrypt")
                 message = message.strip()
             if not words:
-                yn = self.j.tools.console.askYesNo(
+                yn = self._j.tools.console.askYesNo(
                     "do you wan to specify secret key as bip39 words?")
                 if yn:
-                    words = self.j.tools.console.askString("your bip39 words")
+                    words = self._j.tools.console.askString("your bip39 words")
         else:
             if not secret or not message:
                 raise RuntimeError("secret or message needs to be used")
 
-        secret = self.j.data.hash.md5_string(secret)
+        secret = self._j.data.hash.md5_string(secret)
         secret = bytes(secret, 'utf-8')
 
-        if not self.j.data.types.bytes.check(message):
+        if not self._j.data.types.bytes.check(message):
             message = bytes(message, 'utf8')
 
         message = base64.decodestring(message)
 
         if words == "":
-            words = self.j.data.nacl.default.words
+            words = self._j.data.nacl.default.words
 
-        privkeybytes = self.j.data.encryption.mnemonic.to_entropy(words)
+        privkeybytes = self._j.data.encryption.mnemonic.to_entropy(words)
 
         pk = PrivateKey(privkeybytes)
         sb = SealedBox(pk)
@@ -304,35 +304,35 @@ class NACLFactory:
         data = b"something"
 
         nr = 10000
-        self.j.tools.timer.start("signing")
+        self._j.tools.timer.start("signing")
         for i in range(nr):
             p = str(i).encode()
             r = cl.sign(data + p)
-        self.j.tools.timer.stop(i)
+        self._j.tools.timer.stop(i)
 
         nr = 10000
-        self.j.tools.timer.start("encode and verify")
+        self._j.tools.timer.start("encode and verify")
         for i in range(nr):
             p = str(i).encode()
             r = cl.sign(data + p)
             assert cl.verify(data + p, r)
-        self.j.tools.timer.stop(i)
+        self._j.tools.timer.stop(i)
 
         nr = 10000
         data2 = data * 20
-        self.j.tools.timer.start("encryption/decryption assymetric")
+        self._j.tools.timer.start("encryption/decryption assymetric")
         for i in range(nr):
             a = cl.encrypt(data2)
             b = cl.decrypt(a)
             assert data2 == b
-        self.j.tools.timer.stop(i)
+        self._j.tools.timer.stop(i)
 
         nr = 40000
         secret = b"something111"
         data2 = data * 20
-        self.j.tools.timer.start("encryption/decryption symmetric")
+        self._j.tools.timer.start("encryption/decryption symmetric")
         for i in range(nr):
             a = cl.encryptSymmetric(data2, secret=secret)
             b = cl.decryptSymmetric(a, secret=secret)
             assert data2 == b
-        self.j.tools.timer.stop(i)
+        self._j.tools.timer.stop(i)

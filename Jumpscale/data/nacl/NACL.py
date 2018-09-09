@@ -19,12 +19,12 @@ class NACL:
         if sshkeyname:
             self.logger.debug("sshkeyname for nacl:%s" % sshkeyname)
             pass
-        elif self.j.tools.configmanager.keyname:
+        elif self._j.tools.configmanager.keyname:
             self.logger.debug("get config from git repo, keyname='%s'" %
-                                self.j.tools.configmanager.keyname)
-            sshkeyname = self.j.tools.configmanager.keyname
+                                self._j.tools.configmanager.keyname)
+            sshkeyname = self._j.tools.configmanager.keyname
         else:
-            sshkeyname = self.j.core.state.configGetFromDict("myconfig",
+            sshkeyname = self._j.core.state.configGetFromDict("myconfig",
                                                              "sshkeyname")
             self.logger.debug("get config from system, keyname:'%s'" %
                                sshkeyname)
@@ -37,13 +37,13 @@ class NACL:
 
         self.name = name
 
-        self.path = self.j.tools.configmanager.path
+        self.path = self._j.tools.configmanager.path
         self.logger.debug("NACL uses path:'%s'" % self.path)
 
         # get/create the secret seed
         self.path_secretseed = "%s/%s.seed" % (self.path, self.name)
 
-        if self.j.sal.fs.exists(self.path_secretseed):
+        if self._j.sal.fs.exists(self.path_secretseed):
             secretseed = self.file_read_hex(self.path_secretseed)
         else:
             secretseed = self.hash32(nacl.utils.random(
@@ -67,7 +67,7 @@ class NACL:
         secretseed = ""
 
         self.path_privatekey = "%s/%s.priv" % (self.path, self.name)
-        if not self.j.sal.fs.exists(self.path_privatekey):
+        if not self._j.sal.fs.exists(self.path_privatekey):
             self._keys_generate()
         self._privkey = ""
         self._pubkey = ""
@@ -77,31 +77,31 @@ class NACL:
         # self.path_words = "%s/%s.words" % (self.path, self.name)
 
         # self.path_privatekey_sign = "%s/%s_sign.priv" % (self.path, self.name)
-        # if not self.j.sal.fs.exists(self.path_privatekey_sign):
+        # if not self._j.sal.fs.exists(self.path_privatekey_sign):
         #     self._keys_generate_sign()
 
     @property
     def agent(self):
 
         def getagent(name):
-            for item in self.j.clients.sshkey.sshagent.get_keys():
-                if self.j.sal.fs.getBaseName(item.keyname) == name:
+            for item in self._j.clients.sshkey.sshagent.get_keys():
+                if self._j.sal.fs.getBaseName(item.keyname) == name:
                     return item
             raise RuntimeError("Could not find agent for key with name:%s" %
                                 name)
 
         if self._agent is None:
-            if not self.j.clients.sshkey.exists(self.sshkeyname):
-                keypath = "%s/.ssh/%s" % (self.j.dirs.HOMEDIR, self.sshkeyname)
-                if self.j.sal.fs.exists(keypath):
-                    self.j.clients.sshkey.key_load( "%s/.ssh/%s" %
-                        (self.j.dirs.HOMEDIR, self.sshkeyname))
+            if not self._j.clients.sshkey.exists(self.sshkeyname):
+                keypath = "%s/.ssh/%s" % (self._j.dirs.HOMEDIR, self.sshkeyname)
+                if self._j.sal.fs.exists(keypath):
+                    self._j.clients.sshkey.key_load( "%s/.ssh/%s" %
+                        (self._j.dirs.HOMEDIR, self.sshkeyname))
                 else:
                     # if sshkeyname from state is not reachable delete it and
                     # re-init config manager
-                    self.j.core.state.configSetInDict("myconfig",
+                    self._j.core.state.configSetInDict("myconfig",
                                                       "sshkeyname", "")
-                    self.j.tools.configmanager.init()
+                    self._j.tools.configmanager.init()
             self._agent = getagent(self.sshkeyname)
         return self._agent
 
@@ -120,10 +120,10 @@ class NACL:
         js_shell 'print(j.data.nacl.default.words)'
         """
         privkey = self.privkey.encode()
-        return self.j.data.encryption.mnemonic.to_mnemonic(privkey)
-        # if not self.j.sal.fs.exists(self.path_words):
+        return self._j.data.encryption.mnemonic.to_mnemonic(privkey)
+        # if not self._j.sal.fs.exists(self.path_words):
         #     self.logger.info("GENERATED words")
-        #     words = self.j.data.encryption.mnemonic_generate()
+        #     words = self._j.data.encryption.mnemonic_generate()
         #     words = self.encryptSymmetric(words)
         #     self.file_write_hex(self.path_words,words)
         # words = self.file_read_hex(self.path_words)
@@ -156,7 +156,7 @@ class NACL:
         return res
 
     def tobytes(self, data):
-        if not self.j.data.types.bytes.check(data):
+        if not self._j.data.types.bytes.check(data):
             data = data.encode()  # will encode utf8
         return data
 
@@ -179,7 +179,7 @@ class NACL:
         if salt == "":
             salt = nacl.utils.random(nacl.secret.SecretBox.NONCE_SIZE)
         else:
-            salt = self.j.data.hash.md5_string(salt)[0:24].encode()
+            salt = self._j.data.hash.md5_string(salt)[0:24].encode()
         res = box.encrypt(self.tobytes(data), salt)
         box = None
         if hex:
@@ -276,10 +276,10 @@ class NACL:
 
     def file_write_hex(self, path, content):
         content = binascii.hexlify(content)
-        self.j.sal.fs.writeFile(path, content)
+        self._j.sal.fs.writeFile(path, content)
 
     def file_read_hex(self, path):
-        content = self.j.sal.fs.readFile(path)
+        content = self._j.sal.fs.readFile(path)
         content = binascii.unhexlify(content)
         return content
 

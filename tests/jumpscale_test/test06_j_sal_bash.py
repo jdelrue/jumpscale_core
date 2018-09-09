@@ -8,9 +8,9 @@ class TestBASH(TestcasesBase):
 
     def setUp(self):
         super().setUp()
-        self.j.tools.executorLocal.env_check_init()
-        self.j.dirs.reload()
-        self.bash = self.j.tools.bash.get()
+        self._j.tools.executorLocal.env_check_init()
+        self._j.dirs.reload()
+        self.bash = self._j.tools.bash.get()
 
     def test001_env(self):
         """ JS-038
@@ -95,7 +95,7 @@ class TestBASH(TestcasesBase):
 
         # ok now test with a new bash env, to read the environment
         # direct off-disk.  check it REALLY has been deleted
-        b = self.j.tools.bash.get()
+        b = self._j.tools.bash.get()
 
         self.cleanup_key = key
 
@@ -106,9 +106,9 @@ class TestBASH(TestcasesBase):
 class TestPROFILEJS(TestcasesBase):
     def setUp(self):
         super().setUp()
-        self.j.tools.executorLocal.initEnv()
-        self.j.dirs.reload()
-        self.bash = self.j.tools.bash.get()
+        self._j.tools.executorLocal.initEnv()
+        self._j.dirs.reload()
+        self.bash = self._j.tools.bash.get()
         self.profileJS = self.bash.profileJS
 
     def test01_env_set(self):
@@ -236,9 +236,9 @@ class TestPROFILEJS(TestcasesBase):
 class TestPROFILEDEFAULT(TestcasesBase):
     def setUp(self):
         super().setUp()
-        self.j.tools.executorLocal.env_check_init()
-        self.j.dirs.reload()
-        bash = self.j.tools.bash.get()
+        self._j.tools.executorLocal.env_check_init()
+        self._j.dirs.reload()
+        bash = self._j.tools.bash.get()
         self.profileDefault = bash.profileDefault
 
     def test01_env_set(self):

@@ -11,9 +11,9 @@ class TestJDataTypes(TestcasesBase):
         **Test Scenario:**
         create 100 random uuids.  test them
         """
-        y = self.j.data.types.guid
+        y = self._j.data.types.guid
         for i in range(100):
-            u = self.j.data.idgenerator.generateGUID()
+            u = self._j.data.idgenerator.generateGUID()
             self.assertTrue(y.check(u))
 
         # https://gist.github.com/ShawnMilo/7777304)
@@ -26,7 +26,7 @@ class TestJDataTypes(TestcasesBase):
         **Test Scenario:**
         check IPv4 addresses
         """
-        y = self.j.data.types.ipaddr
+        y = self._j.data.types.ipaddr
         self.assertFalse(y.is_valid_ipv4('1.1.1.1000'))
         self.assertFalse(y.is_valid_ipv4('1.1.1.1.1'))
         self.assertFalse(y.is_valid_ipv4('fred'))
@@ -42,7 +42,7 @@ class TestJDataTypes(TestcasesBase):
         check IPv6 addresses.  these look fun!
         https://github.com/gws/ipv6-address-test/blob/master/Tests/Ipv6TestCase.php
         """
-        y = self.j.data.types.ipaddr
+        y = self._j.data.types.ipaddr
 
         ipv6_tests = [ \
             ('', False),

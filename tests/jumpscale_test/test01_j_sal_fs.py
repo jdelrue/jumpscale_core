@@ -24,9 +24,9 @@ class TestJSALFS(TestcasesBase):
         """
         current_dir = os.getcwd()
         if current_dir == "/root":
-            self.assertEqual(self.j.sal.fs.changeDir('/etc'), '/etc')
+            self.assertEqual(self._j.sal.fs.changeDir('/etc'), '/etc')
         else:
-            self.assertEqual(self.j.sal.fs.changeDir('/root'), '/root')
+            self.assertEqual(self._j.sal.fs.changeDir('/root'), '/root')
         os.chdir(current_dir)
 
     def test002_changeDir_longpath(self):
@@ -42,7 +42,7 @@ class TestJSALFS(TestcasesBase):
             long_path += '/test00%d' % i
 
         os.makedirs(long_path)
-        self.assertEqual(self.j.sal.fs.changeDir(long_path), long_path)
+        self.assertEqual(self._j.sal.fs.changeDir(long_path), long_path)
         shutil.rmtree('/root/test')
         os.chdir(current_dir)
 
@@ -59,7 +59,7 @@ class TestJSALFS(TestcasesBase):
         current_dir = os.getcwd() + ' /' + file_name
 
         with self.assertRaises(ValueError):
-            self.j.sal.fs.changeDir(current_dir)
+            self._j.sal.fs.changeDir(current_dir)
 
         os.remove(file_name)
 
@@ -70,7 +70,7 @@ class TestJSALFS(TestcasesBase):
         #. Change the current dir to not existing dir, Should fail.
         """
         with self.assertRaises(ValueError):
-            self.j.sal.fs.changeDir('/tmp/%d' % randint(1, 1000))
+            self._j.sal.fs.changeDir('/tmp/%d' % randint(1, 1000))
 
     def test005_changeFileNames(self):
         """ JS-005
@@ -84,7 +84,7 @@ class TestJSALFS(TestcasesBase):
         new_file_name = self.random_string()
         os.mknod(self.file_name)
         current_dir = os.getcwd()
-        self.j.sal.fs.changeFileNames(self.file_name, new_file_name, current_dir)
+        self._j.sal.fs.changeFileNames(self.file_name, new_file_name, current_dir)
         self.file_name = new_file_name
         self.assertTrue(os.path.isfile(new_file_name))
 
@@ -96,7 +96,7 @@ class TestJSALFS(TestcasesBase):
         """
         current_dir = os.getcwd()
         with self.assertRaises(ValueError):
-            self.j.sal.fs.changeFileNames('', '', current_dir)
+            self._j.sal.fs.changeFileNames('', '', current_dir)
 
     def test007_changeFileNames_sameDirName(self):
         """ JS-007
@@ -109,7 +109,7 @@ class TestJSALFS(TestcasesBase):
         self.file_name = current_dir.split('/')[-1]
         new_file_name = self.random_string()
         os.mknod(self.file_name)
-        self.j.sal.fs.changeFileNames(self.file_name, new_file_name, current_dir)
+        self._j.sal.fs.changeFileNames(self.file_name, new_file_name, current_dir)
         self.file_name = new_file_name
         self.assertTrue(os.path.isfile(new_file_name))
 
@@ -120,7 +120,7 @@ class TestJSALFS(TestcasesBase):
         **Test Scenario:**
         #. checkDirParam with dir_name in [english word, special char, non-english]
         """
-        data = self.j.sal.fs.checkDirParam(dir_name)
+        data = self._j.sal.fs.checkDirParam(dir_name)
         self.assertIn(dir_name, data)
 
     def test009_chmod(self):
@@ -135,7 +135,7 @@ class TestJSALFS(TestcasesBase):
         self.file_name = self.random_string()
         os.mknod(self.file_name)
         current_dir = os.getcwd() + '/' + self.file_name
-        self.j.sal.fs.chmod(current_dir, 0o777)
+        self._j.sal.fs.chmod(current_dir, 0o777)
         st = os.stat(path=current_dir)
         self.assertEqual(oct(st.st_mode)[-3:], '777')
 
@@ -155,7 +155,7 @@ class TestJSALFS(TestcasesBase):
         old_mod = oct(st_old.st_mode)[-3:]
         expected_fail=False
         try:
-            self.j.sal.fs.chmod(current_dir, 0o4444)
+            self._j.sal.fs.chmod(current_dir, 0o4444)
         except ValueError:
             expected_fail=True
         self.assertTrue(expected_fail)

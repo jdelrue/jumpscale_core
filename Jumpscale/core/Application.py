@@ -25,7 +25,7 @@ class Application(object):
     @property
     def logger(self):
         if self._logger is None:
-            self._logger = self.j.logging.get("application")
+            self._logger = self._j.logging.get("application")
         return self._logger
 
     @logger.setter
@@ -59,18 +59,18 @@ class Application(object):
         """
         empties the core.db
         """
-        if self.j.core.db is not None:
-            for key in self.j.core.db.keys():
-                self.j.core.db.delete(key)
+        if self._j.core.db is not None:
+            for key in self._j.core.db.keys():
+                self._j.core.db.delete(key)
         self.reload()
 
     def reload(self):
-        self.j.tools.jsloader.generate()
+        self._j.tools.jsloader.generate()
 
     @property
     def debug(self):
         if self._debug is None:
-            self._debug = self.j.core.state.configGetFromDictBool(
+            self._debug = self._j.core.state.configGetFromDictBool(
                 "system", "debug", False)
         return self._debug
 
@@ -84,7 +84,7 @@ class Application(object):
             from IPython import embed
             embed()
         else:
-            raise self.j.exceptions.RuntimeError(
+            raise self._j.exceptions.RuntimeError(
                 "Can't break into jsshell in production mode.")
 
     def init(self):
@@ -100,7 +100,7 @@ class Application(object):
         '''Start the application
 
         You can only stop the application with return code 0 by calling
-        self.j.application.stop(). Don't call sys.exit yourself, don't try to run
+        self._j.application.stop(). Don't call sys.exit yourself, don't try to run
         to end-of-script, I will find you anyway!
         '''
         if name:
@@ -110,7 +110,7 @@ class Application(object):
             self.appname = os.environ["JSPROCNAME"]
 
         if self.state == "RUNNING":
-            raise self.j.exceptions.RuntimeError(
+            raise self._j.exceptions.RuntimeError(
                 "Application %s already started" % self.appname)
 
         # Register exit handler for sys.exit and for script termination
@@ -158,10 +158,10 @@ class Application(object):
         # Abnormal exit
         # You can only come here if an application has been started, and if
         # an abnormal exit happened, i.e. somebody called sys.exit or the end of script was reached
-        # Both are wrong! One should call self.j.application.stop(<exitcode>)
+        # Both are wrong! One should call self._j.application.stop(<exitcode>)
         # TODO: can we get the line of code which called sys.exit here?
 
-        # self.j.logger.log("UNCLEAN EXIT OF APPLICATION, SHOULD HAVE USED self.j.application.stop()", 4)
+        # self._j.logger.log("UNCLEAN EXIT OF APPLICATION, SHOULD HAVE USED self._j.application.stop()", 4)
         import sys
         if not self._calledexit:
             self.stop(stop=False)
@@ -173,18 +173,18 @@ class Application(object):
     #     """
     #     try:
     #         pid = os.getpid()
-    #         if self.j.core.platformtype.myplatform.isWindows:
+    #         if self._j.core.platformtype.myplatform.isWindows:
     #             return 0
-    #         if self.j.core.platformtype.myplatform.isLinux:
+    #         if self._j.core.platformtype.myplatform.isLinux:
     #             command = "ps -o pcpu %d | grep -E --regex=\"[0.9]\"" % pid
     #             self.logger.debug("getCPUusage on linux with: %s" % command)
-    #             exitcode, output, err = self.j.sal.process.execute(
+    #             exitcode, output, err = self._j.sal.process.execute(
     #                 command, True, False)
     #             return output
-    #         elif self.j.core.platformtype.myplatform.isSolaris():
+    #         elif self._j.core.platformtype.myplatform.isSolaris():
     #             command = 'ps -efo pcpu,pid |grep %d' % pid
     #             self.logger.debug("getCPUusage on linux with: %s" % command)
-    #             exitcode, output, err = self.j.sal.process.execute(
+    #             exitcode, output, err = self._j.sal.process.execute(
     #                 command, True, False)
     #             cpuUsage = output.split(' ')[1]
     #             return cpuUsage
@@ -212,32 +212,32 @@ class Application(object):
 
     # TODO: *2 is this still being used?
     def appGetPids(self, appname):
-        if self.j.core.db is None:
-            raise self.j.exceptions.RuntimeError(
+        if self._j.core.db is None:
+            raise self._j.exceptions.RuntimeError(
                 "Redis was not running when applications started, cannot get pid's")
-        if not self.j.core.db.hexists("application", appname):
+        if not self._j.core.db.hexists("application", appname):
             return list()
         else:
-            pids = self.j.data.serializers.json.loads(
-                self.j.core.db.hget("application", appname))
+            pids = self._j.data.serializers.json.loads(
+                self._j.core.db.hget("application", appname))
             return pids
 
     def appsGetNames(self):
-        if self.j.core.db is None:
-            raise self.j.exceptions.RuntimeError(
+        if self._j.core.db is None:
+            raise self._j.exceptions.RuntimeError(
                 "Make sure redis is running for port 9999")
-        return self.j.core.db.hkeys("application")
+        return self._j.core.db.hkeys("application")
 
     def appsGet(self):
 
-        defunctlist = self.j.sal.process.getDefunctProcesses()
+        defunctlist = self._j.sal.process.getDefunctProcesses()
         result = {}
         for item in self.appsGetNames():
             pids = self.appGetPidsActive(item)
             pids = [pid for pid in pids if pid not in defunctlist]
 
             if not pids:
-                self.j.core.db.hdelete("application", item)
+                self._j.core.db.hdelete("application", item)
             else:
                 result[item] = pids
         return result
@@ -254,15 +254,15 @@ class Application(object):
                     todelete.append(pid)
         for item in todelete:
             pids.remove(item)
-        self.j.core.db.hset(
+        self._j.core.db.hset(
             "application",
             appname,
-            self.j.data.serializers.json.dumps(pids))
+            self._j.data.serializers.json.dumps(pids))
 
         return pids
 
     def _setWriteExitcodeOnExit(self, value):
-        if not self.j.data.types.bool.check(value):
+        if not self._j.data.types.bool.check(value):
             raise TypeError
         self._writeExitcodeOnExit = value
 

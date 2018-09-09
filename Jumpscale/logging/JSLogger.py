@@ -21,7 +21,7 @@ class JSLogger(logging.Logger):
         logger.error("Houston, we have a %s", "major problem", exc_info=1)
 
         """
-        j = self.factory.j
+        j = self.factory._j
         if not self.isEnabledFor(logging.ERROR):
             return
         # issue #83 and #81 - error API has now changed.  TODO: escalate
@@ -42,7 +42,7 @@ class JSLogger(logging.Logger):
 
         logger.critical("Houston, we have a %s", "major disaster", exc_info=1)
         """
-        j = self.factory.j
+        j = self.factory._j
         if not self.isEnabledFor(logging.CRITICAL):
             return
         # issue #83 and #81 - error API has now changed.  TODO: escalate

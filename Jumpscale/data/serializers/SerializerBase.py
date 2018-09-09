@@ -2,17 +2,17 @@ class SerializerBase:
 
     def dump(self, filepath, obj):
         data = self.dumps(obj)
-        self.j.sal.fs.writeFile(filepath, data)
+        self._j.sal.fs.writeFile(filepath, data)
 
     def load(self, path):
-        b = self.j.sal.fs.readFile(path)
+        b = self._j.sal.fs.readFile(path)
         try:
             r = self.loads(b)
         except Exception as e:
             error = "error:%s\n" % e
             error += r"\could not parse:\n%s\n" % b
             error += '\npath:%s\n' % path
-            raise self.j.exceptions.Input(message=error)
+            raise self._j.exceptions.Input(message=error)
         return r
 
     def dumps(self, val):
@@ -20,7 +20,7 @@ class SerializerBase:
             return val
         for key in self.serializationstr:
             # print "dumps:%s"%key
-            val = self.j.data.serializer.serializers.types[key].dumps(val)
+            val = self._j.data.serializer.serializers.types[key].dumps(val)
         return val
 
     def loads(self, data):
@@ -29,7 +29,7 @@ class SerializerBase:
 
         for key in reversed(self.serializationstr):
             # print "loads:%s"%key
-            data = self.j.data.serializer.serializers.types[key].loads(data)
+            data = self._j.data.serializer.serializers.types[key].loads(data)
         return data
 
 

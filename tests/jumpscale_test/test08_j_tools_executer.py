@@ -11,7 +11,7 @@ class EXECUTER(TestcasesBase):
 
     def setUp(self):
         super().setUp()
-        self.executer = self.j.tools.executor.local_get()
+        self.executer = self._j.tools.executor.local_get()
 
     def test01_read_file(self):
         """ JS-061

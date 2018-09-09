@@ -109,7 +109,7 @@ class PlatformType(object):
         self._hostname = None
         self._uname = None
         if executor is None:
-            self.executor = self.j.tools.executorLocal
+            self.executor = self._j.tools.executorLocal
         else:
             self.executor = executor
 
@@ -121,7 +121,7 @@ class PlatformType(object):
     @property
     def platformtypes(self):
         if self._platformtypes is None:
-            platformtypes = self.j.core.platformtype.getParents(self.myplatform)
+            platformtypes = self._j.core.platformtype.getParents(self.myplatform)
             self._platformtypes = [
                 item for item in platformtypes if item != ""]
         return self._platformtypes
@@ -134,7 +134,7 @@ class PlatformType(object):
             unn = os.uname()
             self._hostname = unn.nodename
             distro_info = platform.linux_distribution()
-            os_type = self.j.tools.executorLocal.stateOnSystem['os_type'].lower()
+            os_type = self._j.tools.executorLocal.stateOnSystem['os_type'].lower()
             if 'Ubuntu' in distro_info:
                 self._osversion = distro_info[1]
             elif 'ubuntu' in os_type:
@@ -237,7 +237,7 @@ class PlatformType(object):
 
     def dieIfNotPlatform(self, platform):
         if not self.has_parent(platform):
-            raise self.j.exceptions.RuntimeError(
+            raise self._j.exceptions.RuntimeError(
                 "Can not continue, supported platform is %s, " +
                 "this platform is %s" % (platform, self.myplatform))
 
@@ -271,7 +271,7 @@ class PlatformType(object):
     @property
     def isXen(self):
         '''Checks whether Xen support is enabled'''
-        return self.j.sal.process.checkProcessRunning('xen') == 0
+        return self._j.sal.process.checkProcessRunning('xen') == 0
 
     @property
     def isVirtualBox(self):

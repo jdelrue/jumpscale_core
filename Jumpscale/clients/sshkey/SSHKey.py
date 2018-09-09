@@ -21,8 +21,8 @@ class SSHKey:
             data = {}
         self._connected = None
 
-        keyspath="%s/keys"%(self.j.sal.fs.getcwd())
-        if self.j.sal.fs.exists(keyspath):
+        keyspath="%s/keys"%(self._j.sal.fs.getcwd())
+        if self._j.sal.fs.exists(keyspath):
             # means we are in directory where keys dir is found
             kpath = self.config.data["path"]
             if "/keys/" in kpath:
@@ -37,13 +37,13 @@ class SSHKey:
     def agent(self):
 
         def getagent(name):
-            for item in self.j.clients.sshkey.sshagent.get_keys():
-                if self.j.sal.fs.getBaseName(item.keyname) == name:
+            for item in self._j.clients.sshkey.sshagent.get_keys():
+                if self._j.sal.fs.getBaseName(item.keyname) == name:
                     return item
             raise RuntimeError("Could not find agent for key with name:%s" % name)
 
         if self._agent is None:
-            if not self.j.clients.sshkey.exists(self.instance):
+            if not self._j.clients.sshkey.exists(self.instance):
                 self.load()
             self._agent = getagent(self.instance)
         return self._agent
@@ -63,10 +63,10 @@ class SSHKey:
             self._pubkey = self.config.data['pubkey']
             if not self._pubkey:
                 path = '%s.pub' % (self.path)
-                if not self.j.sal.fs.exists(path):
+                if not self._j.sal.fs.exists(path):
                     cmd = 'ssh-keygen -f {} -y > {}'.format(self.path, path)
-                    self.j.sal.process.execute(cmd)
-                self._pubkey = self.j.sal.fs.fileGetContents(path)
+                    self._j.sal.process.execute(cmd)
+                self._pubkey = self._j.sal.fs.fileGetContents(path)
                 self.config.data = {"pubkey": self._pubkey}
                 self.config.save()
         return self._pubkey
@@ -81,7 +81,7 @@ class SSHKey:
     def privkey(self):
         _privkey = self.config.data['privkey_']
         if not _privkey:
-            _privkey = self.j.sal.fs.fileGetContents(self.path)
+            _privkey = self._j.sal.fs.fileGetContents(self.path)
             self.config.data = {"privkey_": _privkey}
             self.config.save()
         return _privkey
@@ -115,7 +115,7 @@ class SSHKey:
         if self.config._data['path']:
             return self.config.data['path']
         else:
-            path = self.j.sal.fs.joinPaths(self.j.dirs.HOMEDIR, ".ssh", self.instance)
+            path = self._j.sal.fs.joinPaths(self._j.dirs.HOMEDIR, ".ssh", self.instance)
             return path
 
     def delete(self):
@@ -127,26 +127,26 @@ class SSHKey:
         self.delete_from_sshdir()
 
     def delete_from_sshdir(self):
-        self.j.sal.fs.remove("%s.pub" % self.path)
-        self.j.sal.fs.remove("%s" % self.path)
+        self._j.sal.fs.remove("%s.pub" % self.path)
+        self._j.sal.fs.remove("%s" % self.path)
 
     def write_to_sshdir(self):
-        self.j.sal.fs.writeFile(self.path, self.privkey)
-        self.j.sal.fs.writeFile(self.path + ".pub", self.pubkey)
+        self._j.sal.fs.writeFile(self.path, self.privkey)
+        self._j.sal.fs.writeFile(self.path + ".pub", self.pubkey)
 
     def generate(self, reset=False):
         self.logger.debug("generate ssh key")
         if reset:
             self.delete_from_sshdir()
         else:
-            if not self.j.sal.fs.exists(self.path):
+            if not self._j.sal.fs.exists(self.path):
                 if self.config._data["privkey_"] != "":
                     if not self.config._data['pubkey']:
                         self.write_to_sshdir()
 
-        if not self.j.sal.fs.exists(self.path) or reset:
+        if not self._j.sal.fs.exists(self.path) or reset:
             cmd = 'ssh-keygen -t rsa -f %s -q -P "%s"' % (self.path, self.passphrase)
-            self.j.sal.process.execute(cmd, timeout=10)
+            self._j.sal.process.execute(cmd, timeout=10)
 
         self.privkey = self.privkey  # will save it in config, looks weird but is correct
         self.pubkey = self.pubkey  # will save it in config
@@ -161,17 +161,17 @@ class SSHKey:
         """
         # self.generate()
         self.logger.debug("load sshkey: %s for duration:%s" % (self.instance, duration))
-        self.j.clients.sshkey.key_load(self.path, passphrase=self.passphrase, returnObj=False, duration=duration)
+        self._j.clients.sshkey.key_load(self.path, passphrase=self.passphrase, returnObj=False, duration=duration)
 
     def unload(self):
         cmd = "ssh-add -d %s " % (self.path)
-        self.j.sal.process.executeInteractive(cmd)
+        self._j.sal.process.executeInteractive(cmd)
 
     def is_loaded(self):
         """
         check if key is loaded in the ssh agent
         """
-        if self.instance in self.j.clients.sshkey.listnames():
+        if self.instance in self._j.clients.sshkey.listnames():
             self.logger.debug("ssh key: %s loaded", self.instance)
             return True
 

@@ -43,7 +43,7 @@ class ExecutorBase(object):
     @property
     def logger(self):
         if self._logger is None:
-            self._logger = self.j.logging.get("executor")
+            self._logger = self._j.logging.get("executor")
         return self._logger
 
     @property
@@ -129,14 +129,14 @@ class ExecutorBase(object):
     @property
     def prefab(self):
         if self._prefab is None:
-            if not getattr(self.j.tools, "prefab", None):
+            if not getattr(self._j.tools, "prefab", None):
                 # XXX TEMPORARY INCREDIBLY BAD HACK, see issue #50
                 from JumpscalePrefab.PrefabFactory \
                     import PrefabRootClassFactory \
                     as _PrefabRootClassFactory
-                self.j.tools.prefab = _PrefabRootClassFactory()
+                self._j.tools.prefab = _PrefabRootClassFactory()
 
-            self._prefab = self.j.tools.prefab.get(self)
+            self._prefab = self._j.tools.prefab.get(self)
         return self._prefab
 
     def exists(self, path):
@@ -147,7 +147,7 @@ class ExecutorBase(object):
         Config Save
         """
         if self.type == "local":
-            self.j.core.state = self._state
+            self._j.core.state = self._state
         self.state.configSave()
 
     # interface to implement by child classes
@@ -246,7 +246,7 @@ class ExecutorBase(object):
             export
             echo --TEXT--
             """
-            C = self.j.data.text.strip(C)
+            C = self._j.data.text.strip(C)
             rc, out, err = self.execute(C, showout=False, sudo=False)
             res = {}
             state = ""
@@ -383,7 +383,7 @@ class ExecutorBase(object):
         BINDIR="{{BASEDIR}}/bin"
         '''
 
-        TXT = self.j.data.text.strip(BASE) + "\n" + self.j.data.text.strip(T)
+        TXT = self._j.data.text.strip(BASE) + "\n" + self._j.data.text.strip(T)
 
         return self._replaceInToml(TXT)
 
@@ -447,7 +447,7 @@ class ExecutorBase(object):
 
         '''
 
-        TSYSTEM = self.j.data.text.strip(TSYSTEM)
+        TSYSTEM = self._j.data.text.strip(TSYSTEM)
         TT = pytoml.loads(TSYSTEM)
 
         TT["dirs"] = DIRPATHS
@@ -513,7 +513,7 @@ class ExecutorBase(object):
                         dest = DIRPATHS["BINDIR"]
                     else:
                         dest = "/usr/local/bin"
-                    self.j.sal.fs.symlinkFilesInDir(src, dest,
+                    self._j.sal.fs.symlinkFilesInDir(src, dest,
                                                     delete=True,
                                                     includeDirs=False,
                                                     makeExecutable=True)
@@ -530,7 +530,7 @@ class ExecutorBase(object):
         # which REFERENCES tools.executorLocal.state, which MAY
         # be over-ridden if desired
         #if self.type == "local":
-        #    self.j.core.state = self.state
+        #    self._j.core.state = self.state
 
         self.cache.reset()
         #print (self.state._configJS)
@@ -559,7 +559,7 @@ class ExecutorBase(object):
 
     @property
     def platformtype(self):
-        return self.j.core.platformtype.get(self)
+        return self._j.core.platformtype.get(self)
 
     def file_read(self, path):
         self.logger.debug("file read:%s" % path)
@@ -605,15 +605,15 @@ class ExecutorBase(object):
 
         if len(content) > 100000:
             # when contents are too big, bash will crash
-            temp = self.j.sal.fs.getTempFileName()
-            self.j.sal.fs.writeFile(filename=temp, contents=content,
+            temp = self._j.sal.fs.getTempFileName()
+            self._j.sal.fs.writeFile(filename=temp, contents=content,
                                     append=False)
             self.upload(temp, path,showout=showout)
-            self.j.sal.fs.remove(temp)
+            self._j.sal.fs.remove(temp)
         else:
             content2 = content.encode('utf-8')
             # sig = hashlib.md5(content2).hexdigest()
-            parent = self.j.sal.fs.getParent(path)
+            parent = self._j.sal.fs.getParent(path)
             cmd = "set -e;mkdir -p %s\n" % parent
 
             content_base64 = base64.b64encode(content2).decode()

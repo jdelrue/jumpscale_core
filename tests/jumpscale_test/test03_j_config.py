@@ -29,7 +29,7 @@ class TestJCONFIG(TestcasesBase):
 
     def setUp(self):
         super().setUp()
-        self.client = self.j.core.state
+        self.client = self._j.core.state
         self.config_path = self.client.configJSPath
         self.config_file_content = self.get_config()
         self.lg.info('Add test configration (setUp)')
@@ -62,7 +62,7 @@ class TestJCONFIG(TestcasesBase):
         self.assertEqual(value, 'value_1')
 
         self.lg.info('Get the value of a non-existing key')
-        with self.assertRaises(self.j.exceptions.Input) as e:
+        with self.assertRaises(self._j.exceptions.Input) as e:
             self.client.configGet('new_key')
 
         self.lg.info(
@@ -70,7 +70,7 @@ class TestJCONFIG(TestcasesBase):
         value = self.client.configGet('new_key', defval='new_value')
         self.assertEqual(value, 'new_value')
 
-        with self.assertRaises(self.j.exceptions.Input) as e:
+        with self.assertRaises(self._j.exceptions.Input) as e:
             self.client.configGet('new_value')
 
         self.lg.info(

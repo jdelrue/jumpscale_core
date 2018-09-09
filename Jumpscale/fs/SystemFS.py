@@ -45,7 +45,7 @@ class SystemFS:
             self.createDir(target_folder)
         if self.exists(to):
             if os.path.samefile(fileFrom, to):
-                raise self.j.exceptions.Input('{src} and {dest} are the same file'.format(src=fileFrom, dest=to))
+                raise self._j.exceptions.Input('{src} and {dest} are the same file'.format(src=fileFrom, dest=to))
             if overwriteFile is False:
                 if os.path.samefile(to, target_folder):
                     destfilename = os.path.join(to, os.path.basename(fileFrom))
@@ -127,16 +127,16 @@ class SystemFS:
         if newdir was given as a complete path with the directory name, the new directory will be created in the specified path
         """
         if newdir.find("file://") != -1:
-            raise self.j.exceptions.RuntimeError("Cannot use file notation here")
+            raise self._j.exceptions.RuntimeError("Cannot use file notation here")
         self.logger.debug(
-            'Creating directory if not exists %s' % self.j.data.text.toStr(newdir))
+            'Creating directory if not exists %s' % self._j.data.text.toStr(newdir))
         if self.exists(newdir):
             if self.isLink(newdir) and unlink:
                 self.unlink(newdir)
 
             if self.isDir(newdir):
                 self.logger.debug(
-                    'Directory trying to create: [%s] already exists' % self.j.data.text.toStr(newdir))
+                    'Directory trying to create: [%s] already exists' % self._j.data.text.toStr(newdir))
         else:
             head, tail = os.path.split(newdir)
             if head and (not self.exists(head) or not self.isDir(head)):
@@ -151,7 +151,7 @@ class SystemFS:
                 #         raise
 
             self.logger.debug(
-                'Created the directory [%s]' % self.j.data.text.toStr(newdir))
+                'Created the directory [%s]' % self._j.data.text.toStr(newdir))
 
     def copyDirTree(self, src, dst, keepsymlinks=False, deletefirst=False,
                     overwriteFiles=True, ignoredir=[".egg-info", ".dist-info"], ignorefiles=[".egg-info"], rsync=True,
@@ -174,7 +174,7 @@ class SystemFS:
         """
         if not ssh:
             if src.find("file://") != -1 or dst.find("file://") != -1:
-                raise self.j.exceptions.RuntimeError(
+                raise self._j.exceptions.RuntimeError(
                     "Cannot use file notation here")
 
             self.logger.debug('Copy directory tree from %s to %s' % (src, dst))
@@ -223,10 +223,10 @@ class SystemFS:
                         self.copyFile(
                             srcname, dstname, createDirIfNeeded=False, overwriteFile=overwriteFiles)
             else:
-                raise self.j.exceptions.RuntimeError(
+                raise self._j.exceptions.RuntimeError(
                     'Source path %s in system.fs.copyDirTree is not a directory' % src)
         else:
-            # didnt use self.j.sal.rsync because its not complete and doesnt work
+            # didnt use self._j.sal.rsync because its not complete and doesnt work
             # properly
             excl = ""
             for item in ignoredir:
@@ -256,7 +256,7 @@ class SystemFS:
             cmd += " '%s' '%s'" % (src, dst)
             print(cmd)
 
-            return self.j.tools.executorLocal.execute(cmd)[1]
+            return self._j.tools.executorLocal.execute(cmd)[1]
 
     @path_check(path={"required", })
     def removeDirTree(self, path, onlyLogWarningOnRemoveError=False):
@@ -328,7 +328,7 @@ class SystemFS:
         @rtype: Concatenation of path1, and optionally path2, etc...,
         with exactly one directory separator (os.sep) inserted between components, unless path2 is empty.
         """
-        args = [self.j.data.text.toStr(x) for x in args]
+        args = [self._j.data.text.toStr(x) for x in args]
         self.logger.debug('Join paths %s' % (str(args)))
         if args is None:
             raise TypeError('Not enough parameters %s' % (str(args)))
@@ -366,7 +366,7 @@ class SystemFS:
             if len(parts) - levelsUp > 0:
                 return parts[len(parts) - levelsUp - 1]
             else:
-                raise self.j.exceptions.RuntimeError(
+                raise self._j.exceptions.RuntimeError(
                     "Cannot find part of dir %s levels up, path %s is not long enough" % (levelsUp, path))
         return dname + os.sep if dname else dname
 
@@ -448,7 +448,7 @@ class SystemFS:
         for item in path.split("/"):
             if item == "..":
                 if result == []:
-                    raise self.j.exceptions.RuntimeError(
+                    raise self._j.exceptions.RuntimeError(
                         "Cannot processPathForDoubleDots for paths with only ..")
                 else:
                     result.pop()
@@ -484,15 +484,15 @@ class SystemFS:
 
         """
         if path == "":
-            path = self.j.sal.fs.getcwd()
+            path = self._j.sal.fs.getcwd()
 
         # first check if there is no .jsconfig in parent dirs
         curdir = copy.copy(path)
         while curdir.strip() != "":
-            if self.j.sal.fs.exists("%s/%s" % (curdir, dirname)):
+            if self._j.sal.fs.exists("%s/%s" % (curdir, dirname)):
                 return curdir
             # look for parent
-            curdir = self.j.sal.fs.getParent(curdir)
+            curdir = self._j.sal.fs.getParent(curdir)
         if die:
             raise RuntimeError("Could not find %s dir as parent of:'%s'" % (dirname, path))
         else:
@@ -521,14 +521,14 @@ class SystemFS:
                     os.chown(path, uid, gid)
                 except Exception as e:
                     if str(e).find("No such file or directory") == -1:
-                        raise self.j.exceptions.RuntimeError("%s" % e)
+                        raise self._j.exceptions.RuntimeError("%s" % e)
             for file in files:
                 path = os.path.join(root, file)
                 try:
                     os.chown(path, uid, gid)
                 except Exception as e:
                     if str(e).find("No such file or directory") == -1:
-                        raise self.j.exceptions.RuntimeError("%s" % e)
+                        raise self._j.exceptions.RuntimeError("%s" % e)
 
     @path_check(path={"required", "exists"})
     def chmod(self, path, permissions):
@@ -546,7 +546,7 @@ class SystemFS:
                     os.chmod(path, permissions)
                 except Exception as e:
                     if str(e).find("No such file or directory") == -1:
-                        raise self.j.exceptions.RuntimeError("%s" % e)
+                        raise self._j.exceptions.RuntimeError("%s" % e)
 
             for file in files:
                 path = os.path.join(root, file)
@@ -554,7 +554,7 @@ class SystemFS:
                     os.chmod(path, permissions)
                 except Exception as e:
                     if str(e).find("No such file or directory") == -1:
-                        raise self.j.exceptions.RuntimeError("%s" % e)
+                        raise self._j.exceptions.RuntimeError("%s" % e)
 
     @path_check(path={"required"})
     def pathParse(self, path, baseDir="", existCheck=True, checkIsFile=False):
@@ -566,7 +566,7 @@ class SystemFS:
         if basedir specified that part of path will be removed
 
         example:
-        self.j.sal.fs.pathParse("/opt/qbase3/apps/specs/myspecs/definitions/cloud/datacenter.txt","/opt/qbase3/apps/specs/myspecs/",existCheck=False)
+        self._j.sal.fs.pathParse("/opt/qbase3/apps/specs/myspecs/definitions/cloud/datacenter.txt","/opt/qbase3/apps/specs/myspecs/",existCheck=False)
         @param path is existing path to a file
         @param baseDir, is the absolute part of the path not required
         @return list of dirpath,filename,extension,priority
@@ -574,10 +574,10 @@ class SystemFS:
         """
         # make sure only clean path is left and the filename is out
         if existCheck and not self.exists(path):
-            raise self.j.exceptions.RuntimeError(
+            raise self._j.exceptions.RuntimeError(
                 "Cannot find file %s when importing" % path)
         if checkIsFile and not self.isFile(path):
-            raise self.j.exceptions.RuntimeError(
+            raise self._j.exceptions.RuntimeError(
                 "Path %s should be a file (not e.g. a dir), error when importing" % path)
         extension = ""
         if self.isDir(path):
@@ -590,11 +590,11 @@ class SystemFS:
             path = self.getDirName(path)
             # find extension
             regexToFindExt = "\.\w*$"
-            if self.j.data.regex.match(regexToFindExt, name):
-                extension = self.j.data.regex.findOne(
+            if self._j.data.regex.match(regexToFindExt, name):
+                extension = self._j.data.regex.findOne(
                     regexToFindExt, name).replace(".", "")
                 # remove extension from name
-                name = self.j.data.regex.replace(
+                name = self._j.data.regex.replace(
                     regexToFindExt, regexFindsubsetToReplace=regexToFindExt, replaceWith="", text=name)
 
         if baseDir != "":
@@ -606,12 +606,12 @@ class SystemFS:
             dirOrFilename = name
         # check for priority
         regexToFindPriority = "^\d*_"
-        if self.j.data.regex.match(regexToFindPriority, dirOrFilename):
+        if self._j.data.regex.match(regexToFindPriority, dirOrFilename):
             # found priority in path
-            priority = self.j.data.regex.findOne(
+            priority = self._j.data.regex.findOne(
                 regexToFindPriority, dirOrFilename).replace("_", "")
             # remove priority from path
-            name = self.j.data.regex.replace(
+            name = self._j.data.regex.replace(
                 regexToFindPriority, regexFindsubsetToReplace=regexToFindPriority, replaceWith="", text=name)
         else:
             priority = 0
@@ -634,10 +634,10 @@ class SystemFS:
         while path[-1] == "/" or path[-1] == "\\":
             path = path[:-1]
         self.logger.debug('Read link with path: %s' % path)
-        if self.j.core.platformtype.myplatform.isUnix or self.j.core.platformtype.myplatform.isMac:
+        if self._j.core.platformtype.myplatform.isUnix or self._j.core.platformtype.myplatform.isMac:
             res = os.readlink(path)
-        elif self.j.core.platformtype.myplatform.isWindows:
-            raise self.j.exceptions.RuntimeError('Cannot readLink on windows')
+        elif self._j.core.platformtype.myplatform.isWindows:
+            raise self._j.exceptions.RuntimeError('Cannot readLink on windows')
         else:
             raise RuntimeError("cant read link, dont understand platform")
 
@@ -930,15 +930,15 @@ class SystemFS:
         if not self.exists(dir):
             self.createDir(dir)
 
-        if self.j.core.platformtype.myplatform.isUnix or self.j.core.platformtype.myplatform.isMac:
+        if self._j.core.platformtype.myplatform.isUnix or self._j.core.platformtype.myplatform.isMac:
             self.logger.debug("Creating link from %s to %s" % (path, target))
             os.symlink(path, target)
-        elif self.j.core.platformtype.myplatform.isWindows:
+        elif self._j.core.platformtype.myplatform.isWindows:
             path = path.replace("+", ":")
             cmd = "junction \"%s\" \"%s\"" % (self.pathNormalize(target).replace(
                 "\\", "/"), self.pathNormalize(path).replace("\\", "/"))
             print(cmd)
-            self.j.sal.process.execute(cmd)
+            self._j.sal.process.execute(cmd)
 
     def symlinkFilesInDir(self, src, dest, delete=True, includeDirs=False, makeExecutable=False):
         if includeDirs:
@@ -970,10 +970,10 @@ class SystemFS:
         """
         self.logger.debug(
             'Create a hard link pointing to %s named %s' % (source, destin))
-        if self.j.core.platformtype.myplatform.isUnix or self.j.core.platformtype.myplatform.isMac:
+        if self._j.core.platformtype.myplatform.isUnix or self._j.core.platformtype.myplatform.isMac:
             return os.link(source, destin)
         else:
-            raise self.j.exceptions.RuntimeError(
+            raise self._j.exceptions.RuntimeError(
                 'Cannot create a hard link on windows')
 
     @path_check(path={"required", })
@@ -1043,15 +1043,15 @@ class SystemFS:
         if path[-1] == os.sep:
             path = path[:-1]
 
-        if checkJunction and self.j.core.platformtype.myplatform.isWindows:
+        if checkJunction and self._j.core.platformtype.myplatform.isWindows:
             cmd = "junction %s" % path
             try:
-                result = self.j.sal.process.execute(cmd)
+                result = self._j.sal.process.execute(cmd)
             except Exception as e:
-                raise self.j.exceptions.RuntimeError(
+                raise self._j.exceptions.RuntimeError(
                     "Could not execute junction cmd, is junction installed? Cmd was %s." % cmd)
             if result[0] != 0:
-                raise self.j.exceptions.RuntimeError(
+                raise self._j.exceptions.RuntimeError(
                     "Could not execute junction cmd, is junction installed? Cmd was %s." % cmd)
             if result[1].lower().find("substitute name") != -1:
                 return True
@@ -1114,7 +1114,7 @@ class SystemFS:
         '''
         self.logger.debug('Unlink path: %s' % filename)
 
-        if self.j.core.platformtype.myplatform.isWindows:
+        if self._j.core.platformtype.myplatform.isWindows:
             cmd = "junction -d %s 2>&1 > null" % (path)
             self.logger.info(cmd)
             os.system(cmd)
@@ -1201,7 +1201,7 @@ class SystemFS:
         """
         can be single path or multiple (then list)
         """
-        if self.j.data.types.list.check(paths):
+        if self._j.data.types.list.check(paths):
             for item in paths:
                 self.touch(item, overwrite=overwrite)
         path = paths
@@ -1225,7 +1225,7 @@ class SystemFS:
         else:
             fp = open(filename, "ab")
         self.logger.debug('Writing contents in file %s' % filename)
-        if self.j.data.types.string.check(contents):
+        if self._j.data.types.string.check(contents):
             fp.write(bytes(contents, 'UTF-8'))
         else:
             fp.write(contents)
@@ -1304,10 +1304,10 @@ class SystemFS:
         """
         if name:
             tmpdir = self.joinPaths(
-                self.j.dirs.TMPDIR, name)
+                self._j.dirs.TMPDIR, name)
         else:
             tmpdir = self.joinPaths(
-                self.j.dirs.TMPDIR, self.j.data.idgenerator.generateXCharID(10))
+                self._j.dirs.TMPDIR, self._j.data.idgenerator.generateXCharID(10))
         if create is True:
             self.createDir(tmpdir)
         return tmpdir
@@ -1317,8 +1317,8 @@ class SystemFS:
         Located in temp dir of qbase
         @rtype: string representing the path of the temp file generated
         """
-        tmpdir = self.j.dirs.TMPDIR+"/jumpscale/"
-        self.j.sal.fs.createDir(tmpdir)
+        tmpdir = self._j.dirs.TMPDIR+"/jumpscale/"
+        self._j.sal.fs.createDir(tmpdir)
         fd, path = tempfile.mkstemp(dir=tmpdir)
         try:
             real_fd = os.fdopen(fd)
@@ -1337,10 +1337,10 @@ class SystemFS:
         @rtype: string representing the generated temp file path
         """
         if dir is None:
-            return self.joinPaths(self.j.dirs.TMPDIR, prefix +
-                                  str(self.j.data.idgenerator.generateRandomInt(0, 1000000000000)) + ".tmp")
+            return self.joinPaths(self._j.dirs.TMPDIR, prefix +
+                                  str(self._j.data.idgenerator.generateRandomInt(0, 1000000000000)) + ".tmp")
         else:
-            dir = dir or self.j.dirs.TMPDIR
+            dir = dir or self._j.dirs.TMPDIR
             return tempfile.mktemp('', prefix, dir)
 
     @path_check(filename={"required", "exists", "file"})
@@ -1415,7 +1415,7 @@ class SystemFS:
         @returns: Whether the filename is valid on the given platform
         @rtype: bool
         '''
-        platform = platform or self.j.core.platformtype.myplatform
+        platform = platform or self._j.core.platformtype.myplatform
 
         if not filename:
             return False
@@ -1515,7 +1515,7 @@ class SystemFS:
         for item in array:
             path = path + os.sep + item
         path = path + os.sep
-        if self.j.core.platformtype.myplatform.isUnix or self.j.core.platformtype.myplatform.isMac:
+        if self._j.core.platformtype.myplatform.isUnix or self._j.core.platformtype.myplatform.isMac:
             path = path.replace("//", "/")
             path = path.replace("//", "/")
         return path
@@ -1592,16 +1592,16 @@ class SystemFS:
                     path = self.readLink(path)
                 self.logger.debug("fs.tar: add file %s to tar" % path)
                 # print "fstar: add file %s to tar" % path
-                if not (self.j.core.platformtype.myplatform.isWindows and self.j.sal.windows.checkFileToIgnore(path)):
+                if not (self._j.core.platformtype.myplatform.isWindows and self._j.sal.windows.checkFileToIgnore(path)):
                     if self.isFile(path) or self.isLink(path):
                         tarfile.add(path, destpath)
                     else:
-                        raise self.j.exceptions.RuntimeError(
+                        raise self._j.exceptions.RuntimeError(
                             "Cannot add file %s to destpath" % destpath)
             params = {}
             params["t"] = t
             params["destintar"] = destInTar
-            self.j.sal.fswalker.walk(
+            self._j.sal.fswalker.walk(
                 root=sourcepath,
                 callback=addToTar,
                 arg=params,
@@ -1667,11 +1667,11 @@ class SystemFS:
 
         # The tar of python does not create empty directories.. this causes
         # many problem while installing so we choose to use the linux tar here
-        if self.j.core.platformtype.myplatform.isWindows:
+        if self._j.core.platformtype.myplatform.isWindows:
             tar = tarfile.open(sourceFile)
             tar.extractall(destinationdir)
             tar.close()
             # todo find better alternative for windows
         else:
             cmd = "tar xzf '%s' -C '%s'" % (sourceFile, destinationdir)
-            self.j.sal.process.execute(cmd)
+            self._j.sal.process.execute(cmd)

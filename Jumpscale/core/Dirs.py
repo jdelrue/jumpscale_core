@@ -39,8 +39,8 @@ class Dirs(object):
         # when bootstrapping there *is* no config entry [dirs], consequently
         # an exception is attempted to be raised... but exceptions aren't
         # set up either!  this is called very very early.
-        if self.j.core.state.configExists("dirs"):
-            dirs = self.j.core.state.configGet("dirs")
+        if self._j.core.state.configExists("dirs"):
+            dirs = self._j.core.state.configGet("dirs")
         else:
             dirs = {}
 
@@ -107,10 +107,10 @@ class Dirs(object):
         """
         Returns location of Jumpscale library
         """
-        return self.j.sal.fs.getParent(
-            self.j.sal.fs.getDirName(
-                self.j.sal.fs.getPathOfRunningFunction(
-                    self.j.logger.__init__)))
+        return self._j.sal.fs.getParent(
+            self._j.sal.fs.getDirName(
+                self._j.sal.fs.getPathOfRunningFunction(
+                    self._j.logger.__init__)))
 
     def replace_files_dir_vars(
             self,
@@ -133,16 +133,16 @@ class Dirs(object):
                                     values to be replaced in the path
             @type  additional_args: dict
         """
-        if self.j.sal.fs.isFile(path):
+        if self._j.sal.fs.isFile(path):
             paths = [path]
         else:
-            paths = self.j.sal.fs.listFilesInDir(path, recursive, filter)
+            paths = self._j.sal.fs.listFilesInDir(path, recursive, filter)
 
         for path in paths:
-            content = self.j.sal.fs.fileGetContents(path)
+            content = self._j.sal.fs.fileGetContents(path)
             content2 = self.replace_txt_dir_vars(content, additional_args)
             if content2 != content:
-                self.j.sal.fs.writeFile(filename=path, contents=content2)
+                self._j.sal.fs.writeFile(filename=path, contents=content2)
 
     def __str__(self):
         out = ""
@@ -150,7 +150,7 @@ class Dirs(object):
             if key[0] == "_":
                 continue
             out += "%-20s : %s\n" % (key, value)
-        out = self.j.data.text.sort(out)
+        out = self._j.data.text.sort(out)
         return out
 
     __repr__ = __str__

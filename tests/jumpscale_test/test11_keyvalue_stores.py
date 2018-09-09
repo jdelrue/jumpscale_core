@@ -12,7 +12,7 @@ from parameterized import parameterized
 class TestEtcdNamespace(TestcasesBase):
 
     def test001_etcd_namespaces(self):
-        etcd = self.j.clients.etcd.get()
+        etcd = self._j.clients.etcd.get()
         ns = self.random_string()
 
         # check random namespace, create it, check it, delete and check again
@@ -27,7 +27,7 @@ class TestEtcd(TestcasesBase):
 
     def setUp(self):
         super().setUp()
-        self.etcd = self.j.clients.etcd.get()
+        self.etcd = self._j.clients.etcd.get()
         self.ns = self.random_string()
         self.db = self.etcd.namespace_get(self.ns)
 

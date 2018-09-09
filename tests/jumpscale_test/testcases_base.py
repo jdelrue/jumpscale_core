@@ -60,11 +60,11 @@ class TestcasesBase(TestCase):
 
         j = Jumpscale(config_dir=tempcfg)
 
-        self.j = j
+        self._j = j
         JSBase.global_j = j
 
-        self.j.tools.executorLocal.initEnv()
-        self.j.dirs.reload()
+        self._j.tools.executorLocal.initEnv()
+        self._j.dirs.reload()
 
         self._testID = self._testMethodName
         self._startTime = time.time()
@@ -88,7 +88,7 @@ class TestcasesBase(TestCase):
                 self._testID, self._duration))
 
         # delete the old j, restore the previous global_j
-        del self.j
+        del self._j
         shutil.rmtree(self.tempdirpth)
         JSBase.global_j = self.old_global_j
 
