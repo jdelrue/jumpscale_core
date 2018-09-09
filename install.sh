@@ -400,6 +400,7 @@ sudo rm -rf $TMPDIR/zutils_done > /dev/null 2>&1
 sudo rm -rf /tmp/zutils_done > /dev/null 2>&1
 find /usr/local/lib -iname jumpscale.py -exec rm {} \;
 find /usr/lib -iname jumpscale.py -exec rm {} \;
+find ../ -iname *.plugins.json  -exec rm {} \;
 
 echo "INSTALL Jumpscale on branch $JUMPSCALEBRANCH"
 set -x

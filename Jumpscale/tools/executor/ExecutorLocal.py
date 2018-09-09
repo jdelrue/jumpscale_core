@@ -34,6 +34,16 @@ class ExecutorLocal(ExecutorBase):
                 res[key] = val
             return res
 
+        def cfg_path(homedir):
+            if "HOSTCFGDIR" in os.environ.keys():
+                cfgdir = os.environ['HOSTCFGDIR']
+            else:
+                cfgdir="/DOESNOTEXIST"
+            for path in [cfgdir, "/opt/jumpscale/cfg","%s/opt/jumpscale/cfg" % homedir,"%s/jumpscale/cfg" % homedir]:
+                if os.path.exists(path):
+                    return path
+            raise RuntimeError("could not find cfg path for jumpscale")
+
         def do():
             # print ("INFO: stateonsystem for local")
 
@@ -48,15 +58,7 @@ class ExecutorLocal(ExecutorBase):
                 # else:
                 homedir = os.environ["HOME"]
 
-            # override cfgdir from environment variables so that even
-            # on startup it's possible to set the config directory.
-            # the default (prior) behaviour (which is UNCHANGED) is to
-            # have it as $HOME/jumpscale/cfg.
-            # NOT reading $HOSTCFGDIR right at startup doesn't make sense.
-            if "HOSTCFGDIR" in os.environ.keys():
-                cfgdir = os.environ['HOSTCFGDIR']
-            else:
-                cfgdir = "%s/jumpscale/cfg" % homedir
+            cfgdir = cfg_path(homedir)
 
             res = {}
 

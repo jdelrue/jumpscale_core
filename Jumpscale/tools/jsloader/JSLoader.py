@@ -191,6 +191,7 @@ class JSLoader():
         res = {}
         for name, _path in self.plugins.items():
             res[name] = os.path.join(_path, "%s.plugins.json" % name)
+        # print("jsonfiles",res)
         return res
 
     def gather_modules(self, startpath=None, depth=0, recursive=True,
@@ -255,9 +256,9 @@ class JSLoader():
         for jlocationRoot, jlocationRootDict in moduleList.items():
             # is per item under j e.g. self.j.clients
 
-            #print ("jlocationRoot", jlocationRoot, jlocationRootDict)
-            # if jlocationRoot == 'j':
-            #    print (jlocationRootDict)
+            print ("jlocationRoot", jlocationRoot, jlocationRootDict)
+            if jlocationRoot == 'j':
+               print (jlocationRootDict)
             if not jlocationRoot.startswith("j") and jlocationRoot != 'j':
                 raise RuntimeError(
                     "jlocation should start with j, found: '%s', in %s" %
@@ -268,6 +269,8 @@ class JSLoader():
                 if rc != 0:
                     # remove unneeded items
                     del jlocationRootDict[subname]
+
+        sdfsf
 
         return moduleList, baseList
 
@@ -370,24 +373,29 @@ class JSLoader():
         self.j.__jsmodbase__[plugin] = modbase
         pluginpath = os.path.dirname(self.plugins[plugin]) # strip library name
         pluginpath = os.path.realpath(pluginpath) # resolve to any symlinks
+        print("pluginpath",pluginpath)
         (modlist, baselist) = modbase
         for jlocationRoot, jlocationRootDict in modlist.items():
-            #print ("root", jlocationRoot, jlocationRootDict)
+            # print ("root", jlocationRoot, jlocationRootDict)
             jname = jlocationRoot.split(".")[1].strip()
-            #print ("dynamic generate root", jname, jlocationRoot)
+            print ("dynamic generate root", jname, jlocationRoot)
             for subname, sublist in jlocationRootDict.items():
                 fullchildname = "j.%s.%s" % (jname, subname)
                 modulename, classname, imports = sublist
-                #print ("sublist", subname, sublist)
+                print ("sublist", subname, sublist)
                 if not modulename.startswith("/"): # issue #133, relative
                     ppath = os.path.dirname(pluginpath)
+                    print("ppath", ppath)
                     modulename = os.path.join(ppath, modulename)
-                    #print ("relative path, now %s" % modulename)
+                    print ("full path, now %s" % modulename)
                     sublist = (modulename, classname, imports)
                     jlocationRootDict[subname] = sublist
                 realmodname = os.path.realpath(modulename)
                 plen = len(pluginpath)
-                # print (pluginpath, realmodname, realmodname[:plen])
+
+                print("readlmodname", realmodname, realmodname[:plen])
+                print ("pluginpath",pluginpath)
+
                 assert realmodname[:plen] == pluginpath
                 pmodname = realmodname[plen+1:-3] # strip plugpath and ".py"
                 pmodname = '.'.join(pmodname.split('/'))
@@ -603,8 +611,8 @@ class JSLoader():
     def generate(self, autocompletepath=None):
         """
         """
-
+        self.generate_json()
         print ("GENERATE NOW DEPRECATED. DO NOT USE. IT IS CRITICAL TO")
         print ("DELETE /usr/lib/python3/dist-packages/jumpscale.py")
-        print ("PLEASE USE j.tools.jsloader.generate_json('<LIBNAME>')")
+        # print ("PLEASE USE j.tools.jsloader.generate_json('<LIBNAME>')")
         return
