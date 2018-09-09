@@ -88,3 +88,32 @@ class TestEtcd(TestcasesBase):
 
         print (keys, dkeys)
         self.assertTrue(keys == dkeys)
+
+    @parameterized.expand(['', 'dir'])
+    def test002_etcd_items(self, dirname):
+
+        d = {}
+        if dirname:
+            _dirname = "%s/" % dirname
+        else:
+            _dirname = dirname
+
+        # store in database, take a mirror-copy in dict d...
+        for i in range(10):
+            k = '%skey%d' % (_dirname, i)
+            v = b'value%d' % i
+            self.db.set(k, v)
+            d[k] = v
+
+        items = self.db.items(dirname)
+        items = list(items.items())
+        items.sort()
+        if dirname:
+            l = len(dirname)+1
+        else:
+            l = 0
+        ditems = list(map(lambda x: (x[0][l:], x[1]), d.items()))
+        ditems.sort()
+
+        print (items, ditems)
+        self.assertTrue(items == ditems)
