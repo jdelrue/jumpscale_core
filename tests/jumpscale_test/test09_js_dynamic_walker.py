@@ -52,6 +52,8 @@ def compare(tree, j, obj1, obj2, depth, actionfn=None,
         print ("isin", tree, isin)
 
     for subname in isin:
+        if subname == '_j':
+            continue
         fullname = "%s.%s" % (tree, subname)
         if False:
             with open("/tmp/subnames.txt", "a+") as f:
@@ -145,7 +147,7 @@ def _listtests(tree, j, obj1, obj2, depth):
 
 skipproperties = [
 
-        'j.j', # yaaaa don't walk self._j.j...
+        'j._j', # yaaaa don't walk self._j.j...
 
         # add tests which are to be skipped due to being dangerous
         # (destructive) or are being skipped because they have
