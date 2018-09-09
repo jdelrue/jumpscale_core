@@ -256,9 +256,9 @@ class JSLoader():
         for jlocationRoot, jlocationRootDict in moduleList.items():
             # is per item under j e.g. self.j.clients
 
-            print ("jlocationRoot", jlocationRoot, jlocationRootDict)
-            if jlocationRoot == 'j':
-               print (jlocationRootDict)
+            #print ("jlocationRoot", jlocationRoot, jlocationRootDict)
+            #if jlocationRoot == 'j':
+            #   print (jlocationRootDict)
             if not jlocationRoot.startswith("j") and jlocationRoot != 'j':
                 raise RuntimeError(
                     "jlocation should start with j, found: '%s', in %s" %
@@ -269,8 +269,6 @@ class JSLoader():
                 if rc != 0:
                     # remove unneeded items
                     del jlocationRootDict[subname]
-
-        sdfsf
 
         return moduleList, baseList
 
@@ -373,28 +371,28 @@ class JSLoader():
         self.j.__jsmodbase__[plugin] = modbase
         pluginpath = os.path.dirname(self.plugins[plugin]) # strip library name
         pluginpath = os.path.realpath(pluginpath) # resolve to any symlinks
-        print("pluginpath",pluginpath)
+        #print("pluginpath",pluginpath)
         (modlist, baselist) = modbase
         for jlocationRoot, jlocationRootDict in modlist.items():
             # print ("root", jlocationRoot, jlocationRootDict)
             jname = jlocationRoot.split(".")[1].strip()
-            print ("dynamic generate root", jname, jlocationRoot)
+            #print ("dynamic generate root", jname, jlocationRoot)
             for subname, sublist in jlocationRootDict.items():
                 fullchildname = "j.%s.%s" % (jname, subname)
                 modulename, classname, imports = sublist
-                print ("sublist", subname, sublist)
+                #print ("sublist", subname, sublist)
                 if not modulename.startswith("/"): # issue #133, relative
                     ppath = os.path.dirname(pluginpath)
-                    print("ppath", ppath)
+                    #print("ppath", ppath)
                     modulename = os.path.join(ppath, modulename)
-                    print ("full path, now %s" % modulename)
+                    #print ("full path, now %s" % modulename)
                     sublist = (modulename, classname, imports)
                     jlocationRootDict[subname] = sublist
                 realmodname = os.path.realpath(modulename)
                 plen = len(pluginpath)
 
-                print("readlmodname", realmodname, realmodname[:plen])
-                print ("pluginpath",pluginpath)
+                #print("readlmodname", realmodname, realmodname[:plen])
+                #print ("pluginpath",pluginpath)
 
                 assert realmodname[:plen] == pluginpath
                 pmodname = realmodname[plen+1:-3] # strip plugpath and ".py"
