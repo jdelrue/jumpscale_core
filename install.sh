@@ -240,7 +240,6 @@ ZInstall_jumpscale() {
 
     echo "[+] installing jumpscale lib"
     pushd $CODEDIR/github/threefoldtech/jumpscale_lib
-    # pip3 install docker
     if [ -n "$JSFULL" ] ; then
       pip3 install -e .  > ${LogFile} 2>&1 || die "Coud not install lib of JS" || return 1
     else
@@ -253,7 +252,6 @@ ZInstall_jumpscale() {
     pushd $CODEDIR/github/threefoldtech/jumpscale_prefab
     pip3 install -e .  > ${LogFile} 2>&1 || die "Coud not install prefab" || return 1
     popd
-    # pip3 install -e $CODEDIR/github/threefoldtech/jumpscale_prefab || die "could not install prefab" || return 1
 
     echo "[+] installing jumspcale js_ commands"
     find  $CODEDIR/github/threefoldtech/jumpscale_core/cmds -exec ln -s {} "/usr/local/bin/" \; 2>&1 > /dev/null || die || return 1

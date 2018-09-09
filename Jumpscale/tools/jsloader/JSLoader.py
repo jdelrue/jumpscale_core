@@ -373,7 +373,7 @@ class JSLoader():
                 modulename, classname, imports = sublist
                 realmodname = os.path.realpath(modulename)
                 plen = len(pluginpath)
-                #print (pluginpath, realmodname, realmodname[:plen])
+                # print (pluginpath, realmodname, realmodname[:plen])
                 assert realmodname[:plen] == pluginpath
                 pmodname = realmodname[plen+1:-3] # strip plugpath and ".py"
                 pmodname = '.'.join(pmodname.split('/'))
