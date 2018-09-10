@@ -371,8 +371,6 @@ class JSLoader():
         self._j.__jsmodbase__[plugin] = modbase
         pluginpath = os.path.dirname(self.plugins[plugin]) # strip library name
         pluginpath = os.path.realpath(pluginpath) # resolve to any symlinks
-        if not pluginpath.endswith("/"):
-            pluginpath += "/"
         #print("pluginpath",pluginpath)
         (modlist, baselist) = modbase
         for jlocationRoot, jlocationRootDict in modlist.items():
