@@ -163,15 +163,23 @@ j.core.exceptions = j.exceptions
 #THIS SHOULD BE THE END OF OUR CORE, EVERYTHING AFTER THIS SHOULD BE LOADED DYNAMICALLY
 
 
-if True or not os.path.exists("%s/jumpscale_generated.py"%j.dirs.TMPDIR):
-    from .core.JSGenerator import JSGenerator
-    j.core.jsgenerator = JSGenerator(j)
-    j.core.jsgenerator.generate()
+if "JSRELOAD" in os.environ  and os.path.exists("%s/jumpscale_generated.py"%j.dirs.TMPDIR):
+    print("RELOAD JUMPSCALE LIBS")
+    os.remove("%s/jumpscale_generated.py"%j.dirs.TMPDIR)
 
-if j.dirs.TMPDIR not in sys.path:
-    sys.path.append(j.dirs.TMPDIR)
+if not os.path.exists("%s/jumpscale_generated.py"%j.dirs.TMPDIR):
+    from .core.generator.JSGenerator import JSGenerator
+    j.core.jsgenerator = JSGenerator(j)
+    j.core.jsgenerator.generate(methods_find=True)
+
+ipath = "%s/jumpscale"%(j.dirs.TMPDIR)
+if ipath not in sys.path:
+    sys.path.append(ipath)
 
 import jumpscale_generated
+
+if j.core.jsgenerator.report_errors()>0:
+    print("THERE ARE ERRORS: look in /tmp/jumpscale/ERRORS_report.md")
 
 print ("INIT DONE")
 

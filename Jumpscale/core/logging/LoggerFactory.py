@@ -102,7 +102,7 @@ class LoggerFactory():
             if force or check_(name):
                 # print("JSLOGGER:%s" % name)
                 # logger = logging.getLogger(name)
-                logger = self.JSLogger(name, self)
+                logger = JSLogger(name, self)
                 logger.level = self._j.core.config["logging"]["level"]
 
                 for handler in self.handlers._all:

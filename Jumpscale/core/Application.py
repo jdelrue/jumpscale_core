@@ -47,6 +47,17 @@ class Application(object):
         """
         return JSBase
 
+    @property
+    def JSBaseClass(self):
+        """
+        JSBASE = j.application.JSBase
+        class myclass(JSBASE):
+            def __init__(self):
+                JSBASE.__init__(self)
+
+        """
+        return JSBase
+
     def jsbase_get_class(self):
         """
 

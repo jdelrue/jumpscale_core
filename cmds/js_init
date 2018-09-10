@@ -1,31 +1,43 @@
 #! /usr/bin/env python3
+import os
+import sys
 
+#WILL MAKE SURE THAT THE GENERATED FILE IS REMOVED SO IT CAN GET REGENERATED
+os.environ["JSRELOAD"]="1"
 
-from Jumpscale import j
-j.tools.bash.local.locale_check()
+try:
+    from Jumpscale import j
+except:
+    for item in ["$HOME/code/github/threefoldtech/jumpscale_core/Jumpscale",
+                 "/opt/code/github/threefoldtech/jumpscale_core/Jumpscale"]:
+        item = item.replace("$HOME",os.environ["HOME"])
+        if os.path.exists(item) and item not in sys.path:
+            sys.path.append(item)
+    from Jumpscale import j
+
+# j.tools.bash.local.locale_check()
+
 import click
-
-logger = j.logger.get("js_node", force=True)
 
 
 @click.group()
 def cli():
     pass
 
-
+j.shell()
 
 print(j.core.state.mascot)
 
+sys.exit(0)
 
 #make sure we don't do autopip
 # j.core.state.configSetInDict('system','autopip',False)
 
-j.tools.jsloader.generate()
+from .core.generator.JSGenerator import JSGenerator
 
+j._shell()
 
-#try:
-#print ("WARNING: dockerconfig was not done")
-#from Jumpscale import j as h
-#h.tools.develop.dockerconfig() #make sure required config/sshkeys are made available to docker or installed in docker
-#except:
-#    pass
+j.core.jsgenerator = JSGenerator(j)
+
+j.core.jsgenerator.generate(methods_find=True)
+

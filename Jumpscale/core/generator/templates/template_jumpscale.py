@@ -10,26 +10,32 @@ if "{{syspath}}" not in sys.path:
 {%- endfor %}
 
 
-{% for jclass in md.jclasses %}
-class {{jclass.name}}():
+{% for name, jsgroup in md.jsgroups.items() %}
+class group_{{jsgroup.name}}():
     def __init__(self):
         pass
 
-        {% for module in jclass.jsmodules %}
+        {% for module in jsgroup.jsmodules %}
         self._{{module.jname}} = None
         {%- endfor %}
 
-    {% for module in jclass.jsmodules %}
+    {% for module in jsgroup.jsmodules %}
     @property
     def {{module.jname}}(self):
         if self._{{module.jname}} is None:
             print("LOAD:{{module.name}}")
-            from {{module.importlocation}} import {{module.name}} as  {{module.name}}
+            try:
+                from {{module.importlocation}} import {{module.name}}
+            except Exception as e:
+                print ("COULD NOT IMPORT:{{module.jname}}")
+                msg = "ERROR:%s"%e
+                print(msg)
+                return msg
             print("RUN:{{module.name}}")
             self._{{module.jname}} =  {{module.name}}()
         return self._{{module.jname}}
     {%- endfor %}
 
-{{jclass.jdir}} = {{jclass.name}}()
+{{jsgroup.jdir}} = group_{{jsgroup.name}}()
 {% endfor %}
 
