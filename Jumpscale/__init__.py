@@ -31,7 +31,7 @@ class Core():
             conf = self.db.get("jumpscale.config").decode()
 
         if conf == "":
-            for path in ["/opt/jumpscale.toml","/opt/jumpscale.toml","/opt/jumpscale.toml","%s/opt/cfg/jumpscale.toml"%self.dir_home]:
+            for path in ["/opt/jumpscale.toml","%s/opt/cfg/jumpscale.toml"%self.dir_home]:
                 if os.path.exists(path):
                     with open(path, 'rb') as ff:
                         conf = ff.read().decode()
