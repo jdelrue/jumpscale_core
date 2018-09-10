@@ -180,8 +180,8 @@ import jumpscale_generated
 
 if j.core.jsgenerator.report_errors()>0:
     print("THERE ARE ERRORS: look in /tmp/jumpscale/ERRORS_report.md")
-
-print ("INIT DONE")
+else:
+    print ("INIT DONE")
 
 # profileStop(pr)
 

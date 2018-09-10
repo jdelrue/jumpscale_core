@@ -24,9 +24,8 @@ import click
 def cli():
     pass
 
-j.shell()
 
-print(j.core.state.mascot)
+# print(j.core.state.mascot)
 
 sys.exit(0)
 

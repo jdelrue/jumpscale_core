@@ -1,5 +1,5 @@
 from .JSClass import JSClass
-from .JSGroup import JSGroup
+# from .JSGroup import JSGroup
 import os
 from pathlib import Path
 LOCATIONS_ERROR =["j.errorhandler" ,"j.core" ,"j.application",
