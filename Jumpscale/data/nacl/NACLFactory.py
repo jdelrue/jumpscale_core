@@ -1,4 +1,4 @@
-from jumpscale import j
+from Jumpscale import j
 
 from .NACL import NACL
 import nacl.secret
