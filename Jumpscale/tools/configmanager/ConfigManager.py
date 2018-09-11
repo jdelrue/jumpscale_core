@@ -39,7 +39,7 @@ class ConfigManager(JSBASE):
         self._keyname = ""  # if set will overrule from the main js config file
         self._init = False
 
-        # self.Config = Config()
+        self.Config = Config
 
     @property
     def JSBaseClassConfig(self):

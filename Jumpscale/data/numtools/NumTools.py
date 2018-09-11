@@ -1,13 +1,15 @@
+from Jumpscale import j
 import numpy
 import struct
 import math
+JSBASE = j.application.JSBaseClass
 
-
-class NumTools:
+class NumTools(JSBASE):
 
     __jslocation__ = "j.tools.numtools"
 
     def __init__(self):
+        JSBASE.__init__(self)
         self.__imports__ = "numpy"
         self._currencies = {}
 

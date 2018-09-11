@@ -5,7 +5,7 @@ import socket
 import netaddr
 import re
 import os
-
+from Jumpscale import j
 
 
 JSBASE = j.application.JSBaseClass
