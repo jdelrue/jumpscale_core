@@ -65,11 +65,6 @@ class ReplaceIgnoreCase():
     def replace(self,txt):
         m=self.regex.match(txt)
 
-        #FOR DEBUG, MATCHING DOES NOT HAPPEN, DONT KNOW WHY
-        if txt.find("j.application.jsbase_get_class()") != -1:
-            if str(self.regex).find("jsbase_get_class") != -1:
-                j.shell()
-                w
         if m:
             found = m.string[m.start():m.end()]
             txt2=txt.replace(found,self.to_)
