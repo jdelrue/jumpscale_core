@@ -9,7 +9,6 @@ JSBASE = j.application.JSBaseClass
 class TFBot(JSBASE):
 
     def __init__(self, zoscontainer):
-        self.__jslocation__ = "j.tools.tfbot"
         JSBASE.__init__(self)
         self.zoscontainer = zoscontainer
         self.logger_enable()

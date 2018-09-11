@@ -1,4 +1,5 @@
 from Jumpscale import j
+from Jumpscale.tools.builder.ZOSContainer import ZOSContainer
 import re
 from io import StringIO
 import os
@@ -23,7 +24,8 @@ class TFBotFactory(JSBASE):
             node = j.tools.nodemgr.set(cat="container", name=name, sshclient=name, selected=False)
             if not zosclient:
                 zosclient = self.zos_client_get()
-            self._tfbots[name]=TFBot(zosclient=zosclient,node=node)
+            zos_container = ZOSContainer(zosclient=zosclient, node=node)
+            self._tfbots[name] = TFBot(zoscontainer=zos_container)
         return self._tfbots[name]
 
 
