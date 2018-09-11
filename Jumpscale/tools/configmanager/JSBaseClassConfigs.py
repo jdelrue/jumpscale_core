@@ -7,19 +7,14 @@ class JSBaseClassConfigs(JSBASE):
     """ collection class to deal with multiple instances
     """
 
-    def __init__(self, child_class=None, single_item=False):
+    def __init__(self, child_class, single_item=False):
         """
         @param child_class: The class that this factory will create
         @param single_item: In the case this factory will only
                             ever return the same instance
                             set single_item to True
         """
-        JSBASE.__init__(self)
-        if child_class is not None:
-            self._child_class = child_class
-        #print ("JSBaseClassConfigs", self, self._child_class)
-
-        if not isclass(self._child_class):
+        if not isclass(child_class):
             raise TypeError("child_class need to be a class not %s" %
                             type(self._child_class))
 
@@ -90,7 +85,3 @@ class JSBaseClassConfigs(JSBASE):
             res.append(self.get(name, create=False))
         return res
 
-# class JSBaseClassConfigs(JSBASE, _JSBaseClassConfigs):
-#     def __init__(self, child_class=None, single_item=False):
-#         JSBASE.__init__(self)
-#         _JSBaseClassConfigs.__init__(self, child_class, single_item)

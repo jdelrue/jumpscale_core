@@ -4,6 +4,7 @@ JSBASE = j.application.JSBaseClass
 import os
 import copy
 
+
 from .JSBaseClassConfig import JSBaseClassConfig
 from .JSBaseClassConfigs import JSBaseClassConfigs
 import sys
@@ -26,7 +27,7 @@ js_config init
 """
 
 
-class ConfigFactory(JSBASE):
+class ConfigManager(JSBASE):
 
     __jslocation__ = "j.tools.configmanager"
 
@@ -38,13 +39,17 @@ class ConfigFactory(JSBASE):
         self._keyname = ""  # if set will overrule from the main js config file
         self._init = False
 
-        self.Config = Config()
-        # these can be put in here later, can't use them until all
-        # code is converted to j-less
-        #self.JSBaseClassConfigs = self._jsbase(('_JSBaseClassConfigs',
-        #                  'Jumpscale.tools.configmanager.JSBaseClassConfigs'))
-        #self.JSBaseClassConfig = self._jsbase(('_JSBaseClassConfig',
-        #                  'Jumpscale.tools.configmanager.JSBaseClassConfig'))
+        # self.Config = Config()
+
+    @property
+    def JSBaseClassConfig(self):
+        return JSBaseClassConfig
+
+    @property
+    def JSBaseClassConfigs(self):
+        return JSBaseClassConfigs
+
+
 
     def reset(self, location=None, instance=None, force=False):
         """
@@ -219,21 +224,7 @@ class ConfigFactory(JSBASE):
         return cpath, g.remoteUrl
 
 
-    # @property
-    # def _base_class_config(self):
-    #     return _JSBaseClassConfig
-    #
-    # @property
-    # def _base_class_configs(self):
-    #     return _JSBaseClassConfigs
 
-    @property
-    def base_class_config(self):
-        return JSBaseClassConfig
-
-    @property
-    def base_class_configs(self):
-        return JSBaseClassConfigs
 
     def configure(
             self,

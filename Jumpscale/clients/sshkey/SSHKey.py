@@ -1,3 +1,5 @@
+from Jumpscale import j
+
 TEMPLATE = """
 pubkey = ""
 allow_agent = true

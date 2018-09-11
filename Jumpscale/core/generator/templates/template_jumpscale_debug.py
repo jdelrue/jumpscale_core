@@ -30,7 +30,7 @@ class group_{{jsgroup.name}}():
                 from {{module.importlocation}} import {{module.name}}
             except Exception as e:
                 msg = j.core.jsgenerator.error("import", "{{module.importlocation}}", e)
-                return msg
+                return None
             print("RUN:{{module.name}}")
             try:
                 self._{{module.jname}} =  {{module.name}}()
@@ -38,8 +38,8 @@ class group_{{jsgroup.name}}():
                 msg = j.core.jsgenerator.error("execute","{{module.importlocation}}",e)
                 return None
             print("OK")
-
         return self._{{module.jname}}
+
     {%- endfor %}
 
 {{jsgroup.jdir}} = group_{{jsgroup.name}}()

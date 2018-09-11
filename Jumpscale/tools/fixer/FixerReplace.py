@@ -14,6 +14,7 @@ RI| from Jumpscale import j | from Jumpscale import j
 RI| j.application.jsbase_get_class() | j.application.JSBaseClass
 RI| .base_class_config | .JSBaseClassConfig
 RI| .base_class_configs | .JSBaseClassConfigs
+RI| j.logging. | j.logger.
 # RI| j.data.text. | j.core.text.
 """
 
