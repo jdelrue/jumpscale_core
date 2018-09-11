@@ -13,7 +13,7 @@ class IDGenerator(JSBASE):
     """
 
     def __init__(self):
-        self._location = "j.data.idgenerator"
+        self.__jslocation__ = "j.data.idgenerator"
         JSBASE.__init__(self)
         self._cryptogen = ""
 

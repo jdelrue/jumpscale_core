@@ -13,6 +13,8 @@ import sys
 class ExecutorLocal(ExecutorBase):
 
     def __init__(self, debug=False, checkok=False):
+
+        self.__jslocation__ = "j.tools.executorLocal"
         self._cache_expiration = 3600
         ExecutorBase.__init__(self, debug=debug, checkok=debug)
         self.type = "local"

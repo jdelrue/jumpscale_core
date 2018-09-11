@@ -70,7 +70,7 @@ class PlatformTypes(object):
     @property
     def myplatform(self):
         if self._myplatform is None:
-            self._myplatform = PlatformType()
+            self._myplatform = PlatformType(self._j)
         return self._myplatform
 
     def getParents(self, name):
@@ -93,14 +93,15 @@ class PlatformTypes(object):
         """
         key = executor.id
         if key not in self._cache:
-            self._cache[key] = PlatformType(executor=executor)
+            self._cache[key] = PlatformType(j=self._j, executor=executor)
         return self._cache[key]
 
 
 class PlatformType(object):
 
-    def __init__(self, name="", executor=None):
+    def __init__(self, j,name="", executor=None):
         # print("INIT PLATFORMTYPE:%s" % executor)
+        self._j = j
         self.myplatform = name
         self._platformtypes = None
         self._is64bit = None
@@ -130,16 +131,16 @@ class PlatformType(object):
             unn = os.uname()
             self._hostname = unn.nodename
             distro_info = platform.linux_distribution()
-            os_type = self._j.tools.executorLocal.stateOnSystem['os_type'].lower()
+
             if 'Ubuntu' in distro_info:
                 self._osversion = distro_info[1]
-            elif 'ubuntu' in os_type:
-                # version = self.executor.execute('lsb_release -r')[1]
-                print("TODO:*1 needs to use direct execution using python only")
-                self._j.shell()
-                w
-                # version should be something like: 'Release:\t16.04\n
-                self._osversion = version.split(':')[-1].strip()
+            # elif 'ubuntu' in os_type:
+            #     # version = self.executor.execute('lsb_release -r')[1]
+            #     print("TODO:*1 needs to use direct execution using python only")
+            #     self._j.shell()
+            #     w
+            #     # version should be something like: 'Release:\t16.04\n
+            #     self._osversion = version.split(':')[-1].strip()
             else:
                 self._osversion = unn.release
             self._cpu = unn.machine
@@ -204,9 +205,14 @@ class PlatformType(object):
 
     @property
     def osname(self):
-        if "os_type" not in self.executor.stateOnSystem:
-            return "unknown"
-        return self.executor.stateOnSystem["os_type"]
+        if "darwin" in sys.platform.lower():
+            os_type = "darwin"
+        elif "linux" in sys.platform.lower():
+            os_type = "ubuntu"  # dirty hack, will need to do something better, but keep fast
+        else:
+            print("need to fix for other types (check executorlocal")
+            sys.exit(1)
+        return os_type
 
     def checkMatch(self, match):
         """

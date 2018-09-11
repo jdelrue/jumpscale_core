@@ -15,6 +15,7 @@ RI| j.application.jsbase_get_class() | j.application.JSBaseClass
 RI| .base_class_config | .JSBaseClassConfig
 RI| .base_class_configs | .JSBaseClassConfigs
 RI| j.logging. | j.logger.
+RI| self._location | self.__jslocation__
 # RI| j.data.text. | j.core.text.
 """
 

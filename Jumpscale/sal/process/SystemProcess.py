@@ -25,7 +25,7 @@ JSBASE = j.application.JSBaseClass
 class SystemProcess(JSBASE):
 
     def __init__(self):
-        self._location = "j.sal.process"
+        self.__jslocation__ = "j.sal.process"
         JSBASE.__init__(self)
         self._isunix=None
 

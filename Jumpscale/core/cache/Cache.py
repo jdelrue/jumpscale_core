@@ -18,7 +18,7 @@ class Cache(object):
         db = when none then will be in memory
         """
         if id not in self._cache:
-            self._cache[id] = CacheCategory( id=id, expiration=expiration, reset=reset)
+            self._cache[id] = CacheCategory(j=self._j, id=id, expiration=expiration, reset=reset)
         return self._cache[id]
 
     def resetAll(self):
@@ -121,7 +121,8 @@ class Cache(object):
 
 class CacheCategory(object):
 
-    def __init__(self, id, expiration=10, reset=False):
+    def __init__(self, j, id, expiration=10, reset=False):
+        self._j = j
         self.id = id
         self.db = self._j.core.db
         self.hkey = "cache:%s" % self.id
