@@ -27,15 +27,21 @@ class group_{{jsgroup.name}}():
             try:
                 from {{module.importlocation}} import {{module.name}}
             except Exception as e:
-                print ("COULD NOT IMPORT:{{module.jname}}")
-                msg = "ERROR:%s"%e
-                print(msg)
+                msg = j.core.jsgenerator.error("import", "{{module.importlocation}}", e)
                 return msg
             print("RUN:{{module.name}}")
-            self._{{module.jname}} =  {{module.name}}()
+            try:
+                self._{{module.jname}} =  {{module.name}}()
+            except Exception as e:
+                msg = j.core.jsgenerator.error("execute","{{module.importlocation}}",e)
+                return None
+            print("OK")
+
         return self._{{module.jname}}
     {%- endfor %}
 
 {{jsgroup.jdir}} = group_{{jsgroup.name}}()
+
 {% endfor %}
+
 

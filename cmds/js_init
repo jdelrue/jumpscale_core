@@ -4,6 +4,7 @@ import sys
 
 #WILL MAKE SURE THAT THE GENERATED FILE IS REMOVED SO IT CAN GET REGENERATED
 os.environ["JSRELOAD"]="1"
+os.environ["JSGENERATE_DEBUG"]="1"
 
 try:
     from Jumpscale import j

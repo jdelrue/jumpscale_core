@@ -32,7 +32,7 @@ class JSGenerator():
                 return False
         return True
 
-    def generate(self,reset=False,methods_find=False):
+    def generate(self,methods_find=False, action_method=None, action_args={}):
         """
         walk over all found jumpscale libraries
         look for the classes where there is a __jslocation__ inside these are classes which need to be loaded
@@ -77,12 +77,15 @@ class JSGenerator():
                             # self._log("process_ok")
                             jsmodule = self.md.jsmodule_get(path=path,jumpscale_repo_name=jumpscale_repo_name,
                                                                                     js_lib_path=js_lib_path)
-                            jsmodule.process(methods_find=methods_find)
+                            action_args = jsmodule.process(methods_find=methods_find,
+                                                    action_method=action_method, action_args=action_args)
 
         self.md.groups_load() #make sure we find all groups
 
         self._render()
         self.report()
+
+        return action_args
 
 
 
@@ -102,7 +105,11 @@ class JSGenerator():
         file.write("")
         file.close()
 
-        template_path = os.path.join(os.path.dirname(__file__),"templates","template_jumpscale_debug.py")
+        if "JSGENERATE_DEBUG" in os.environ:
+            template_name = "template_jumpscale_debug.py"
+        else:
+            template_name = "template_jumpscale.py"
+        template_path = os.path.join(os.path.dirname(__file__),"templates",template_name)
         template = Path(template_path).read_text()
         t=Template(template)
         C = t.render(md=self.md)
