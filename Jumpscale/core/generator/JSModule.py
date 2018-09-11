@@ -23,6 +23,26 @@ def _check_jlocation(location,classname=""):
         return False
     return True
 
+class LineChange():
+
+    def __init__(self,jsmodule, line_nr, line_old, line_new):
+        self.jsmodule = jsmodule
+        self._j = self.jsmodule._j
+        self.line_old = line_old
+        self.line_new = line_new
+        self.line_nr = line_nr
+
+
+    def __repr__(self):
+        out = "##### line change [%s]\n\n"%self.line_nr
+        out += "- %s\n"%self.jsmodule.path
+        out += "- line old : '%s'\n" % (self.line_old)
+        out += "- line new : '%s'\n" % (self.line_new)
+        return out
+
+    __str__ = __repr__
+
+
 
 class JSModule():
 
@@ -49,8 +69,22 @@ class JSModule():
             self.classes[name]=JSClass(self,name)
         return self.classes[name]
 
-    def line_change_add(self,nr,line):
-        self.lines_changed[nr]=line
+    def line_change_add(self,nr,line_old,line_new):
+        self.lines_changed[nr]=LineChange(self,nr,line_old,line_new)  #MEANS WE CANNOT DO CHANGE OVER LINE MORE THAN ONCE, but is ok !
+
+    def write_changes(self):
+        """
+        write the changed lines back to the file
+        :return:
+        """
+        if self.lines_changed != {}:
+            lines = self.code.split("\n")
+            for nr,lc in self.lines_changed.items():
+                lines[nr]=lc.line_new
+            code_out = "\n".join(lines)
+            file = open(self.path, "w")
+            file.write(code_out)
+            file.close()
 
 
     @property

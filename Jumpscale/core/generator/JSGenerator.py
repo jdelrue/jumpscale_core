@@ -161,6 +161,7 @@ class JSGenerator():
             file.write(jsgroup.markdown)
             file.close()
         self.report_errors()
+        self.report_line_changes()
 
     def report_errors(self):
         out=""
@@ -169,6 +170,16 @@ class JSGenerator():
             out+="%s\n\n"%error
             out += "%s\n\n" % trace
         path = "%s/jumpscale/ERRORS_report.md" % (self._j.dirs.TMPDIR)
+        file = open(path, "w")
+        file.write(out)
+        file.close()
+        return len(self.errors)
+
+    def report_line_changes(self):
+        out=""
+        for item in self.md.line_changes:
+            out+=str(item)
+        path = "%s/jumpscale/LINECHANGES_report.md" % (self._j.dirs.TMPDIR)
         file = open(path, "w")
         file.write(out)
         file.close()

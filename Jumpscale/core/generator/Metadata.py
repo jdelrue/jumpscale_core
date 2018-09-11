@@ -25,6 +25,15 @@ class Metadata():
     def jsmodules_list(self):
         return [item[1] for item in self.jsmodules.items()]
 
+    @property
+    def line_changes(self):
+        res = []
+        for module in self.jsmodules.values():
+            if module.lines_changed != {}:
+                for lc in module.lines_changed.values():
+                    res.append(lc)
+        return res
+
 
     @property
     def syspaths(self):
