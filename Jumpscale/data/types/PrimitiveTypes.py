@@ -1,5 +1,6 @@
 """ Definition of several primitive type properties (integer, string,...)
 """
+from Jumpscale import j
 
 
 class String():

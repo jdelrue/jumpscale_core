@@ -10,6 +10,7 @@ import time
 from uuid import UUID
 from ipaddress import IPv4Address, IPv6Address
 from ipaddress import AddressValueError, NetmaskValueError
+from Jumpscale import j
 
 
 class Guid(String):

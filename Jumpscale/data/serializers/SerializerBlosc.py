@@ -1,6 +1,6 @@
 import blosc
-from .SerializerBase import SerializerBase
-
+from .SerializerBase import *
+from Jumpscale import j
 
 class SerializerBlosc(SerializerBase):
 

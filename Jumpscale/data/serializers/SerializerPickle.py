@@ -1,6 +1,9 @@
+
 import pickle
 
 from .SerializerBase import SerializerBase
+from Jumpscale import j
+
 
 class SerializerPickle(SerializerBase):
 

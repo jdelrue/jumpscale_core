@@ -1,41 +1,83 @@
-import os
+from Jumpscale import j
 
-class SerializersFactory:
 
-    __jslocation__ = "j.data.serializers"
+from Jumpscale.data.serializers.SerializerBase import SerializerBase
+from Jumpscale.data.serializers.SerializerBase import SerializerHalt
+from Jumpscale.data.serializers.SerializerInt import SerializerInt
+from Jumpscale.data.serializers.SerializerTime import SerializerTime
+from Jumpscale.data.serializers.SerializerBase64 import SerializerBase64
+from Jumpscale.data.serializers.SerializerDict import SerializerDict
+# from Jumpscale.data.serializers.SerializerPickle import SerializerPickle
 
-    serialisers = [
-        ['int', 'SerializerInt', None],
-        ['time', 'SerializerTime', None],
-        ['base64', 'SerializerBase64', '6'],
-        ['dict', 'SerializerDict', 'd'],
-        ['blowfish', 'SerializerBlowfish', 'b'],
-        ['json', 'SerializerUJson', 'j'],
-        ['yaml' , 'SerializerYAML', 'y'],
-        ['blosc', 'SerializerBlosc', 'c'],
-        ['crc', 'SerializerCRC', None],
-        ['lzma', 'SerializerLZMA', 'l'],
-        ['msgpack', 'SerializerMSGPack', 'm'],
-        ['pickle', 'SerializerPickle', 'p'],
-        ['snappy', 'SerializerSnappy', 's'],
-        ['toml', 'SerializerTOML', 't'],
-    ]
+
+try:
+    from Jumpscale.data.serializers.SerializerBlowfish import SerializerBlowfish
+except Exception as e:
+    # print("could not load serializer: SerializerBlowfish")
+    SerializerBlowfish = SerializerHalt
+
+try:
+    from Jumpscale.data.serializers.SerializerUJson import SerializerUJson
+except Exception as e:
+    # print("could not load serializer: SerializerUJson")
+    SerializerUJson = SerializerHalt
+
+from Jumpscale.data.serializers.SerializerYAML import SerializerYAML
+
+try:
+    from Jumpscale.data.serializers.SerializerBlosc import SerializerBlosc
+except Exception as e:
+    # print("could not load serializer: SerializerBlosc")
+    SerializerBlosc = SerializerHalt
+
+try:
+    from Jumpscale.data.serializers.SerializerCRC import SerializerCRC
+except Exception as e:
+    # print("could not load serializer: SerializerCRC")
+    SerializerCRC = SerializerHalt
+
+try:
+    from Jumpscale.data.serializers.SerializerLZMA import SerializerLZMA
+except Exception as e:
+    # print("could not load serializer: SerializerLZMA")
+    SerializerLZMA = SerializerHalt
+
+try:
+    from Jumpscale.data.serializers.SerializerMSGPack import SerializerMSGPack
+except Exception as e:
+    # print("could not load serializer: SerializerMSGPack")
+    SerializerMSGPack = SerializerHalt
+
+try:
+    from Jumpscale.data.serializers.SerializerSnappy import SerializerSnappy
+except Exception as e:
+    # print("could not load serializer: SerializerSnappy")
+    SerializerSnappy = SerializerHalt
+
+from Jumpscale.data.serializers.SerializerTOML import SerializerTOML
+
+JSBASE = j.application.JSBaseClass
+
+class SerializersFactory(JSBASE):
 
     def __init__(self):
+        self.__jslocation__ = "j.data.serializers"
+        JSBASE.__init__(self)
         self.types = {}
-        self.packtypes = {}
         self._cache = {}
-
-        for s in self.serialisers:
-            [attr, kls, packtype] = s
-            module = 'Jumpscale.data.serializers.%s' % kls # same name
-            mod = self._add_instance(attr, module, kls)
-            if packtype:
-                self.packtypes[packtype] = attr # replaced in getSerializerType
-                self.types[attr] = attr # replaced in getSerializerType
-
-        #for s in self.serialisers:
-        #    print ("serializers", s)
+        self.int = SerializerInt()
+        self.time = SerializerTime()
+        self.base64 = SerializerBase64()
+        self.dict = SerializerDict()
+        self.blowfish = SerializerBlowfish()
+        self.json = SerializerUJson()
+        self.yaml = SerializerYAML()
+        self.toml = SerializerTOML()
+        self.blosc = SerializerBlosc()
+        self.crc = SerializerCRC()
+        self.lzma = SerializerLZMA()
+        self.msgpack = SerializerMSGPack()
+        self.snappy = SerializerSnappy()
 
     def get(self, serializationstr, key=""):
         """
@@ -45,23 +87,17 @@ class SerializersFactory:
             b=blowfish
             s=snappy
             j=json
-            6=base64
+            b=base64
             l=lzma
             p=pickle
-            r=bin (means is not object (r=raw)) # NOT LISTEED
-            l=log # XXX CANNOT BE - CLASHES WITH LZMA
-            d=dict (check if there is a dict to object,
-                   if yes use that dict, removes the private
-                   properties (starting with _))
+            r=bin (means is not object (r=raw))
+            l=log
+            d=dict (check if there is a dict to object, if yes use that dict, removes the private properties (starting with _))
 
-             example serializationstr "mcb" would mean first use
-             messagepack serialization then compress using blosc then
-             encrypt (key will be used)
+         example serializationstr "mcb" would mean first use messagepack serialization then compress using blosc then encrypt (key will be used)
 
-            this method returns
+        this method returns
         """
-        raise Exception('Issue #98 This function has not been completed? ' \
-                        'The Serializer class is commented out?')
         k = "%s_%s" % (serializationstr, key)
         if k not in self._cache:
             if len(list(self._cache.keys())) > 100:
@@ -69,7 +105,7 @@ class SerializersFactory:
             self._cache[k] = Serializer(serializationstr, key)
         return self._cache[k]
 
-    def getSerializerType(self, typ, key=""):
+    def getSerializerType(self, type, key=""):
         """
         serializationstr FORMATS SUPPORTED FOR NOW
             m=MESSAGEPACK
@@ -80,38 +116,70 @@ class SerializersFactory:
             6=base64
             l=lzma
             p=pickle
-            r=bin (means is not object (r=raw)) # XXX NOT LISTED
-            l=log # XXX CANNOT BE - CLASHES WITH LZMA
+            r=bin (means is not object (r=raw))
+            l=log
         """
-        attrname = self.packtypes.get(typ, None)
-        if attrname is None:
-            raise KeyError('getSerializerType %s not found' % typ)
-        attr = self.types.get(attrname, None)
-        if attr is None:
-            raise KeyError('getSerializerType %s not found' % attrname)
-        if isinstance(attr, str):
-            attr = self.types[attr] = getattr(self, attr)
-        return attr
+        if type not in self.types:
+            if type == "m":
+                from Jumpscale.data.serializers.SerializerMSGPack import SerializerMSGPack
+                j.data.serializers.msgpack = SerializerMSGPack()
+                self.types[type] = j.data.serializers.msgpack
+            elif type == "c":
+                from Jumpscale.data.serializers.SerializerBlosc import SerializerBlosc
+                j.data.serializers.blosc = SerializerBlosc()
+                self.types[type] = j.data.serializers.blosc
 
-    def fixType(self, val, default):
+            elif type == "b":
+                from SerializerBlowfish import SerializerBlowfish
+                self.types[type] = SerializerBlowfish(key)
+
+            elif type == "s":
+                from Jumpscale.data.serializers.SerializerSnappy import SerializerSnappy
+                j.data.serializers.snappy = SerializerSnappy()
+                self.types[type] = j.data.serializers.snappy
+
+            elif type == "j":
+                self.json = SerializerUJson()
+                self.types[type] = self.json
+
+            elif type == "d":
+                j.data.serializers.dict = SerializerDict()
+                self.types[type] = j.data.serializers.dict
+
+            elif type == "l":
+                from Jumpscale.data.serializers.SerializerLZMA import SerializerLZMA
+                j.data.serializers.lzma = SerializerLZMA()
+                self.types[type] = j.data.serializers.lzma
+
+            elif type == "p":
+                from Jumpscale.data.serializers.SerializerPickle import SerializerPickle
+                j.data.serializers.pickle = SerializerPickle()
+                self.types[type] = j.data.serializers.pickle
+
+            elif type == "6":
+                self.types[type] = j.data.serializers.base64
+
+        return self.types[type]
+
+    def fixType(self,val,default):
         """
         will convert val to type of default
 
         , separated string goes to [] if default = []
         """
-        if val is None or val == "" or val == []:
+        if val is None or val == "" or val==[]:
             return default
 
         if j.data.types.list.check(default):
-            res = []
+            res=[]
             if j.data.types.list.check(val):
                 for val0 in val:
                     if val0 not in res:
                         res.append(val0)
             else:
-                val = str(val).replace("'", "")
+                val=str(val).replace("'","")
                 if "," in val:
-                    val = [item.strip() for item in val.split(",")]
+                    val=[item.strip() for item in val.split(",")]
                     for val0 in val:
                         if val0 not in res:
                             res.append(val0)
@@ -119,16 +187,16 @@ class SerializersFactory:
                     if val not in res:
                         res.append(val)
         elif j.data.types.bool.check(default):
-            if str(val).lower() in ['true', "1", "y", "yes"]:
-                res = True
+            if str(val).lower() in ['true',"1","y","yes"]:
+                res=True
             else:
-                res = False
+                res=False
         elif j.data.types.int.check(default):
-            res = int(val)
+            res=int(val)
         elif j.data.types.float.check(default):
-            res = int(val)
+            res=int(val)
         else:
-            res = str(val)
+            res=str(val)
         return res
 
 
@@ -139,14 +207,14 @@ class SerializersFactory:
 #         self.serializationstr = serializationstr
 #         self.key = key
 #         for k in self.serializationstr:
-#             j.data.serializer.getSerializerType(k, self.key)
+#             j.data.serializers.getSerializerType(k, self.key)
 
 #     def dumps(self, val):
 #         if self.serializationstr == "":
 #             return val
 #         for key in self.serializationstr:
 #             # print "dumps:%s"%key
-#             val = j.data.serializer.types[key].dumps(val)
+#             val = j.data.serializers.types[key].dumps(val)
 #         return val
 
 #     def loads(self, data):
@@ -155,5 +223,5 @@ class SerializersFactory:
 
 #         for key in reversed(self.serializationstr):
 #             # print "loads:%s"%key
-#             data = j.data.serializer.types[key].loads(data)
+#             data = j.data.serializers.types[key].loads(data)
 #         return data

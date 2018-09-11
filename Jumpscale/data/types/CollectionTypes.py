@@ -1,5 +1,8 @@
 '''Definition of several collection types (list, dict, set,...)'''
 
+from Jumpscale import j
+
+
 from Jumpscale.data.types.PrimitiveTypes import (String, StringMultiLine, Bytes,
                              Boolean, Integer,
                              Float, Percent, Object, JSObject)

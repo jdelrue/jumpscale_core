@@ -5,15 +5,16 @@
 from .CustomTypes import *
 from .CollectionTypes import *
 from .PrimitiveTypes import *
+from Jumpscale import j
 
-# JSBASE = j.application.JSBaseClass
+JSBASE = j.application.JSBaseClass
 
 
-class Types():
+class Types(JSBASE):
 
     def __init__(self):
         self.__jslocation__ = "j.data.types"
-        # JSBASE.__init__(self)
+        JSBASE.__init__(self)
         self.dict = Dictionary()
         self.list = List()
         self.guid = Guid()

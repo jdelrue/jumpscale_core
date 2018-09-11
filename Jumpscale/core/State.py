@@ -195,7 +195,7 @@ class State(object):
                     self._set(key, defval)
                 return defval
             else:
-                raise self.j.exceptions.Input(
+                raise self._j.exceptions.Input(
                     message="could not find config key:%s in executor:%s" % (key, self))
 
     def _set(self, key, val, save=True):
@@ -422,7 +422,7 @@ class State(object):
         overwrite -- set to true if you want to overwrite values of old keys
         """
         for key0, val0 in ddict.items():
-            if not self.j.data.types.dict.check(val0):
+            if not self._j.data.types.dict.check(val0):
                 raise RuntimeError(
                     "Value of first level key has to be another dict.")
 
@@ -444,7 +444,7 @@ class State(object):
         Writes config to specified path
         """
         if self.readonly:
-            raise self.j.exceptions.Input(
+            raise self._j.exceptions.Input(
                 message="cannot write config to '%s', because is readonly" %
                 self)
 

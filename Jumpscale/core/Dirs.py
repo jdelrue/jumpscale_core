@@ -94,16 +94,16 @@ class Dirs(object):
                                     values to be replaced in the path
             @type  additional_args: dict
         """
-        if self.j.sal.fs.isFile(path):
+        if self._j.sal.fs.isFile(path):
             paths = [path]
         else:
-            paths = self.j.sal.fs.listFilesInDir(path, recursive, filter)
+            paths = self._j.sal.fs.listFilesInDir(path, recursive, filter)
 
         for path in paths:
-            content = self.j.sal.fs.fileGetContents(path)
+            content = self._j.sal.fs.fileGetContents(path)
             content2 = self.replace_txt_dir_vars(content, additional_args)
             if content2 != content:
-                self.j.sal.fs.writeFile(filename=path, contents=content2)
+                self._j.sal.fs.writeFile(filename=path, contents=content2)
 
     def __str__(self):
         out = ""

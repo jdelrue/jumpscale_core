@@ -23,7 +23,7 @@
 #
 #     def set(self, key, value):
 #         # print "set:%s"%key
-#         val = j.data.serializer.serializers.getSerializerType('j').dumps(value)
+#         val = j.data.serializers.serializers.getSerializerType('j').dumps(value)
 #         self.setb(key, val)
 #
 #     def getb(self, key):
@@ -36,7 +36,7 @@
 #         value = self.getb(key)
 #         if value is None:
 #             raise j.exceptions.RuntimeError("Cannot find object in db with key:%s" % key)
-#         val = j.data.serializer.serializers.getSerializerType('j').loads(value)
+#         val = j.data.serializers.serializers.getSerializerType('j').loads(value)
 #         return val
 #
 #     def exists(self, key):

@@ -1,8 +1,11 @@
+from Jumpscale import j
 import base64
 from .SerializerBase import SerializerBase
 
-
 class SerializerBase64(SerializerBase):
+
+    def __init__(self):
+        SerializerBase.__init__(self)
 
     def dumps(self, s):
         if j.data.types.string.check(s):

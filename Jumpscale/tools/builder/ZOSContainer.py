@@ -40,7 +40,7 @@ class ZOSContainer(JSBASE):
             self.model_save()
         else:
             json = self._zos_redis.get(self._redis_key).decode()
-            self.model = self._schema.get(data=j.data.serializer.json.loads(json))
+            self.model = self._schema.get(data=j.data.serializers.json.loads(json))
 
         self.logger_enable()
 

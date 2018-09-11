@@ -49,7 +49,7 @@ class JSModule():
     def __init__(self,md, path,jumpscale_repo_name,js_lib_path):
         name = os.path.basename(path)
         name = name[:-3]
-        self._jsgroup = None
+        self.jsgroup = None
         self._j = md._j
         self.md = md
         self.path = path

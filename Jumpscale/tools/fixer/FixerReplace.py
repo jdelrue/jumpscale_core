@@ -16,6 +16,7 @@ RI| .base_class_config | .JSBaseClassConfig
 RI| .base_class_configs | .JSBaseClassConfigs
 RI| j.logger. | j.logger.
 RI| self._location | self.__jslocation__
+RI| j.data.serializer. | j.data.serializers.
 # RI| j.data.text. | j.core.text.
 """
 

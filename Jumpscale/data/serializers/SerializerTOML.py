@@ -1,3 +1,4 @@
+from Jumpscale import j
 import pytoml
 # import toml
 
@@ -54,6 +55,8 @@ list5 = "d,a,a,b,c"
 
 
 class SerializerTOML(SerializerBase):
+    def __init__(self):
+        SerializerBase.__init__(self)
 
     def fancydumps(self, obj, secure=False):
         """
@@ -63,7 +66,8 @@ class SerializerTOML(SerializerBase):
         if not j.data.types.dict.check(obj):
             raise j.exceptions.Input("need to be dict")
 
-        keys = sorted([item for item in obj.keys()])
+        keys = [item for item in obj.keys()]
+        keys.sort()
 
         out = ""
         prefix = ""
@@ -110,9 +114,8 @@ class SerializerTOML(SerializerBase):
         try:
             val = pytoml.loads(s)
         except Exception as e:
-            raise RuntimeError(
-                "Toml deserialization failed for:\n%s.\nMsg:%s" %
-                (j.core.text.indent(s), str(e)))
+            raise RuntimeError("Toml deserialization failed for:\n%s.\nMsg:%s" % (
+                j.core.text.indent(s), str(e)))
         if secure and j.data.types.dict.check(val):
             res = {}
             for key, item in val.items():
@@ -122,17 +125,7 @@ class SerializerTOML(SerializerBase):
             val = res
         return val
 
-    def merge(
-            self,
-            tomlsource,
-            tomlupdate,
-            keys_replace={},
-            add_non_exist=False,
-            die=True,
-            errors=[],
-            listunique=False,
-            listsort=True,
-            liststrip=True):
+    def merge(self, tomlsource, tomlupdate, keys_replace={}, add_non_exist=False, die=True, errors=[], listunique=False, listsort=True, liststrip=True):
         """
         the values of the tomlupdate will be applied on tomlsource (are strings or dicts)
 
@@ -162,10 +155,8 @@ class SerializerTOML(SerializerBase):
         else:
             dictupdate = tomlupdate
 
-        return j.data.serializers.dict.merge(
-            dictsource, dictupdate, keys_replace=keys_replace,
-            add_non_exist=add_non_exist, die=die, errors=errors,
-            listunique=listunique, listsort=listsort, liststrip=liststrip)
+        return j.data.serializers.dict.merge(dictsource, dictupdate, keys_replace=keys_replace, add_non_exist=add_non_exist, die=die,
+                                            errors=errors, listunique=listunique, listsort=listsort, liststrip=liststrip)
 
     def test(self):
         """
@@ -177,22 +168,8 @@ class SerializerTOML(SerializerBase):
 
         ddictout, errors = self.merge(template, ddict, listunique=True)
 
-        ddicttest = {
-            'name': 'something',
-            'multiline': 'these are multiple lines\nnext line\n',
-            'nr': 87,
-            'nr2': 0,
-            'nr3': 1,
-            'nr4': 34.4,
-            'nr5': 34.4,
-            'bbool': True,
-            'bbool2': True,
-            'bbool3': False,
-            'list1': [ '1', '2', '3', '4'],
-            'list2': [ 1, 2, 3],
-            'list3': [ 'a', 'b', 'c'],
-            'list4': ['ab'],
-            'list5': [ 'a', 'b', 'c', 'd']}
+        ddicttest = {'name': 'something', 'multiline': 'these are multiple lines\nnext line\n', 'nr': 87, 'nr2': 0, 'nr3': 1, 'nr4': 34.4, 'nr5': 34.4, 'bbool': True,
+                     'bbool2': True, 'bbool3': False, 'list1': ['1', '2', '3', '4'], 'list2': [1, 2, 3], 'list3': ['a', 'b', 'c'], 'list4': ['ab'], 'list5': ['a', 'b', 'c', 'd']}
 
         self.logger.debug(ddictout)
 
@@ -203,22 +180,8 @@ class SerializerTOML(SerializerBase):
         # start from previous one, update
         ddictout, errors = self.merge(ddicttest, ddictmerge, listunique=True)
 
-        ddicttest = {
-            'name': 'something',
-            'multiline': 'these are multiple lines\nnext line\n',
-            'nr': 88,
-            'nr2': 0,
-            'nr3': 1,
-            'nr4': 34.4,
-            'nr5': 34.4,
-            'bbool': True,
-            'bbool2': True,
-            'bbool3': False,
-            'list1': [ '1', '2', '3', '4'],
-            'list2': [ 1, 2, 3],
-            'list3': [ 'a', 'b', 'c'],
-            'list4': ['ab'],
-            'list5': [ 'a', 'b', 'c', 'd']}
+        ddicttest = {'name': 'something', 'multiline': 'these are multiple lines\nnext line\n', 'nr': 88, 'nr2': 0, 'nr3': 1, 'nr4': 34.4, 'nr5': 34.4, 'bbool': True,
+                     'bbool2': True, 'bbool3': False, 'list1': ['1', '2', '3', '4'], 'list2': [1, 2, 3], 'list3': ['a', 'b', 'c'], 'list4': ['ab'], 'list5': ['a', 'b', 'c', 'd']}
 
         assert ddictout == ddicttest
 
@@ -229,7 +192,7 @@ class SerializerTOML(SerializerBase):
             error = 0
             ddictout, errors = self.merge(
                 ddicttest, ddictmerge, listunique=True)
-        except BaseException:
+        except:
             error = 1
         assert 1
 
@@ -279,73 +242,33 @@ class SerializerTOML(SerializerBase):
 
         res = self.loads(yyaml)
 
-        # XXX issue #97, needs investigating
-        rkeys = list(res.keys())
-        rkeys.sort()
-        compkeys = list(compare.keys())
-        compkeys.sort()
-        assert rkeys == compkeys # check dictionary key numbers first
+        assert res == compare
 
-        # now check each value (we know all keys match)
-        for k in res:
-            if k == 'list2':
-                self.logger.error('YAML TEST failing, issue #97')
-                continue
-            assert res[k] == compare[k], "res[%s] %s != \ncompare %s" % \
-                        (repr(k), repr(res[k]), repr(compare[k]))
-
-        template = {
-            'login': '',
-            'first_name': '',
-            'last_name': '',
-            'locations': [],
-            'companies': [],
-            'departments': [],
-            'languageCode': 'en-us',
-            'title': [],
-            'description_internal': '',
-            'description_public_friendly': '',
-            'description_public_formal': '',
-            'experience': '',
-            'hobbies': '',
-            'pub_ssh_key': '',
-            'skype': '',
-            'telegram': '',
-            'itsyou_online': '',
-            'reports_into': '',
-            'mobile': [],
-            'email': [],
-            'github': '',
-            'linkedin': '',
-            'links': []}
-        toupdate = {
-            'companies': ['threefold'],
-            'company_id': [2],
-            'departments': [
-                'threefold:engineering',
-                'threefold:varia'],
-            'description_internal': 'Researcher who develops new ideas for Threefold and creates concise explanations of difficult concepts',
-            'description_public_formal': 'Develops new ideas for Threefold and creates concise explanations of difficult concepts.',
-            'description_public_friendly': 'Virgil is a researcher and innovator who is always looking to improve the world around him both on a macro and micro scale.\n\nFor the past 11 years he has been working with new technologies, helping organizations integrate them into their existing services and create their new products.  \nHe holds a PhD in autonomous robotics, artificial intelligence and reliability.\n\nVirgil also lectures at a technical university and an academy.\n\n',
-            'email': [
-                'ilian.virgil@gmail.com',
-                'ilian@threefold.tech'],
-            'name': 'virgil',
-            'github': 'Virgil3',
-            'hobbies': 'generative coding, movies, diving, languages',
-            'itsyou_online': 'ilian@threefold.tech',
-            'languageCode': 'en-us',
-            'last_name': 'ilian',
-            'linkedin': 'https://www.linkedin.com/in/ilian-virgil-342b8471',
-            'links': [],
-            'locations': ['bucharest'],
-            'login': '',
-            'mobile': ['+40721543908'],
-            'pub_ssh_key': '',
-            'reports_into': 'Kristof',
-            'skype': 'ilian.virgil',
-            'telegram': '@virgil_ilian',
-            'title': ['Researcher']}
+        template = {'login': '', 'first_name': '', 'last_name': '', 'locations': [], 'companies': [], 'departments': [], 'languageCode': 'en-us', 'title': [], 'description_internal': '', 'description_public_friendly': '',
+                    'description_public_formal': '', 'experience': '', 'hobbies': '', 'pub_ssh_key': '', 'skype': '', 'telegram': '', 'itsyou_online': '', 'reports_into': '', 'mobile': [], 'email': [], 'github': '', 'linkedin': '', 'links': []}
+        toupdate = {'companies': ['threefold'],
+                    'company_id': [2],
+                    'departments': ['threefold:engineering', 'threefold:varia'],
+                    'description_internal': 'Researcher who develops new ideas for Threefold and creates concise explanations of difficult concepts',
+                    'description_public_formal': 'Develops new ideas for Threefold and creates concise explanations of difficult concepts.',
+                    'description_public_friendly': 'Virgil is a researcher and innovator who is always looking to improve the world around him both on a macro and micro scale.\n\nFor the past 11 years he has been working with new technologies, helping organizations integrate them into their existing services and create their new products.  \nHe holds a PhD in autonomous robotics, artificial intelligence and reliability.\n\nVirgil also lectures at a technical university and an academy.\n\n',
+                    'email': ['ilian.virgil@gmail.com', 'ilian@threefold.tech'],
+                    'name': 'virgil',
+                    'github': 'Virgil3',
+                    'hobbies': 'generative coding, movies, diving, languages',
+                    'itsyou_online': 'ilian@threefold.tech',
+                    'languageCode': 'en-us',
+                    'last_name': 'ilian',
+                    'linkedin': 'https://www.linkedin.com/in/ilian-virgil-342b8471',
+                    'links': [],
+                    'locations': ['bucharest'],
+                    'login': '',
+                    'mobile': ['+40721543908'],
+                    'pub_ssh_key': '',
+                    'reports_into': 'Kristof',
+                    'skype': 'ilian.virgil',
+                    'telegram': '@virgil_ilian',
+                    'title': ['Researcher']}
 
         result, errors = self.merge(template, toupdate, keys_replace={
             'name': 'first_name'}, add_non_exist=False, die=False, errors=[])

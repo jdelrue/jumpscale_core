@@ -1,5 +1,6 @@
 import yaml
 from collections import OrderedDict
+from Jumpscale import j
 from .SerializerBase import SerializerBase
 
 testtoml = """
@@ -50,8 +51,7 @@ class SerializerYAML(SerializerBase):
             error += "\nyaml could not parse:\n%s\n" % s
             raise j.exceptions.Input(message=error)
 
-    def ordered_load(self, stream, Loader=yaml.Loader,
-                     object_pairs_hook=OrderedDict):
+    def ordered_load(self, stream, Loader=yaml.Loader, object_pairs_hook=OrderedDict):
         """
         load a yaml stream and keep the order
         """
@@ -82,10 +82,10 @@ class SerializerYAML(SerializerBase):
         return yaml.dump(data, stream, OrderedDumper, **kwds)
 
     def test(self):
-        ddict = j.data.serializer.toml.loads(testtoml)
+        ddict = j.data.serializers.toml.loads(testtoml)
         # TODO:*3 write some test
 
-# from Jumpscale import j # J due to recursive import issue
+# from Jumpscale import j
 
 # from yaml import load, dump
 # try:

@@ -28,10 +28,10 @@ class Core(object):
     @property
     def db(self):
         if not self._db:
-            if hasattr(self.j.clients, "redis") and \
+            if hasattr(self._j.clients, "redis") and \
                 tcpPortConnectionTest("localhost", 6379):
                 # print("CORE_REDIS")
-                self._db = self.j.clients.redis.core_get()
+                self._db = self._j.clients.redis.core_get()
             else:
                 # print("CORE_MEMREDIS")
                 import fakeredis
@@ -44,13 +44,13 @@ class Core(object):
         slf._db = newdb
 
     def db_reset(self):
-        self.j.data.datacache._cache = {}
+        self._j.data.datacache._cache = {}
         self._db = None
 
     @property
     def state(self):
         if self._state is None:
-            return self.j.tools.executorLocal.state
+            return self._j.tools.executorLocal.state
         return self._state
 
     @state.setter

@@ -459,7 +459,7 @@ class StoreFactory(JSBASE):
     #     '''
     #
     #     if serializers == []:
-    #         serializers = [j.data.serializer.serializers.getMessagePack()]
+    #         serializers = [j.data.serializers.serializers.getMessagePack()]
     #
     #     if name not in self._cache:
     #         self._cache[name] = FileSystemKeyValueStore(

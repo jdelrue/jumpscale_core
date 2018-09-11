@@ -1,4 +1,12 @@
-class SerializerBase:
+from Jumpscale import j
+
+JSBASE = j.application.JSBaseClass
+
+
+class SerializerBase(JSBASE):
+
+    def __init__(self):
+        JSBASE.__init__(self)
 
     def dump(self, filepath, obj):
         data = self.dumps(obj)
@@ -10,7 +18,7 @@ class SerializerBase:
             r = self.loads(b)
         except Exception as e:
             error = "error:%s\n" % e
-            error += r"\could not parse:\n%s\n" % b
+            error += "\could not parse:\n%s\n" % b
             error += '\npath:%s\n' % path
             raise j.exceptions.Input(message=error)
         return r
@@ -20,7 +28,7 @@ class SerializerBase:
             return val
         for key in self.serializationstr:
             # print "dumps:%s"%key
-            val = j.data.serializer.serializers.types[key].dumps(val)
+            val = j.data.serializers.serializers.types[key].dumps(val)
         return val
 
     def loads(self, data):
@@ -29,11 +37,14 @@ class SerializerBase:
 
         for key in reversed(self.serializationstr):
             # print "loads:%s"%key
-            data = j.data.serializer.serializers.types[key].loads(data)
+            data = j.data.serializers.serializers.types[key].loads(data)
         return data
 
 
-class SerializerHalt:
+class SerializerHalt(JSBASE):
+
+    def __init__(self):
+        JSBASE.__init__(self)
 
     def dump(self, filepath, obj):
         raise RuntimeError("should not come here")
