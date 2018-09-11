@@ -142,6 +142,7 @@ class JSModule():
                         if classobj.location != "":
                             raise RuntimeError("there cannot be 2 jlocations:'%s' in class:%s"%(location,self))
                         classobj.location = location
+                        self.name = classname
 
             if line.find("__imports__") != -1:
                 if classobj is None:
