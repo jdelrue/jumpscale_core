@@ -4,8 +4,8 @@ JSBASE = j.application.jsbase_get_class()
 import os
 import copy
 
-from .JSBaseClassConfig import JSBaseClassConfig, _JSBaseClassConfig
-from .JSBaseClassConfigs import JSBaseClassConfigs, _JSBaseClassConfigs
+from .JSBaseClassConfig import JSBaseClassConfig
+from .JSBaseClassConfigs import JSBaseClassConfigs
 import sys
 from .Config import Config
 

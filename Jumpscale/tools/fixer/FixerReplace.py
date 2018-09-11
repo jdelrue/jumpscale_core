@@ -3,17 +3,17 @@ from Jumpscale import j
 import re
 
 #ACTIONS
-## R = Replace
-## RI = Replace case insensitive
+## R = Regex Replace
+## RI = Regex Replace case insensitive
 
 DO= """
-RI | j.application.JSBase$ | j.application.JSBaseClass
+RI| j.application.JSBase$ | j.application.JSBaseClass
 RI| j.data.cache. | j.core.cache.
 RI| j.data.text. | j.core.text.
 RI| from Jumpscale import j | from Jumpscale import j 
 RI| j.application.jsbase_get_class() | j.application.JSBaseClass
-RI | .base_class_config | .JSBaseClassConfig
-RI | .base_class_configs | .JSBaseClassConfigs
+RI| .base_class_config | .JSBaseClassConfig
+RI| .base_class_configs | .JSBaseClassConfigs
 # RI| j.data.text. | j.core.text.
 """
 
@@ -60,10 +60,16 @@ class ReplaceIgnoreCase():
     def __init__(self,from_,to_,prepend="",append=""):
         self.from_=from_.strip()
         self.to_=to_.strip()
-        self.regex = re.compile(re.escape(prepend+self.from_+append), re.IGNORECASE)
+        self.regex = re.compile(re.escape(prepend+self.from_+append), re.IGNORECASE| re.VERBOSE)
 
     def replace(self,txt):
         m=self.regex.match(txt)
+
+        #FOR DEBUG, MATCHING DOES NOT HAPPEN, DONT KNOW WHY
+        if txt.find("j.application.jsbase_get_class()") != -1:
+            if str(self.regex).find("jsbase_get_class") != -1:
+                j.shell()
+                w
         if m:
             found = m.string[m.start():m.end()]
             txt2=txt.replace(found,self.to_)
@@ -75,7 +81,7 @@ class ReplaceIgnoreCase():
 class ReplaceNormal(ReplaceIgnoreCase):
 
     def __init__(self,from_,to_,prepend="",append=""):
-        ReplaceIgnoreCase.__init__(self,from_,to_)
+        ReplaceIgnoreCase.__init__(self,from_,to_,re.VERBOSE)
         self.regex = re.compile(re.escape(prepend+self.from_+append))
 
 
