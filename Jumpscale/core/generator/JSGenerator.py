@@ -2,6 +2,7 @@ import os
 import fnmatch
 from pathlib import Path
 from jinja2 import Template
+import traceback
 
 from .Metadata import Metadata
 
@@ -16,10 +17,32 @@ class JSGenerator():
         self._generated = False
         self.errors = []
 
+    def _trace_get(self, ttype, err, tb=None):
+
+        tblist = traceback.format_exception(ttype, err, tb)
+
+        ignore = ["click/core.py", "ipython", "bpython", "loghandler", "errorhandler", "importlib._bootstrap"]
+
+        # if self._limit and len(tblist) > self._limit:
+        #     tblist = tblist[-self._limit:]
+        tb_text = ""
+        for item in tblist:
+            for ignoreitem in ignore:
+                if item.find(ignoreitem) != -1:
+                    item = ""
+            if item != "":
+                tb_text += "%s" % item
+        return tb_text
+
     def error(self,cat,obj,error):
         print("ERROR: %s:%s"%(cat,obj))
         print (error)
-        self.errors.append((cat,obj,error))
+        trace = self._trace_get(ttype=None, err=error)
+        self.errors.append((cat,obj,error,trace))
+        if not "JSGENERATE_DEBUG" in os.environ:
+            msg = "%s:%s:%s"%(cat,obj,error)
+            self.report_errors()
+            raise RuntimeError(msg)
         return "%s:%s:%s"%(cat,obj,error)
 
     def _check_process_file(self,path):
@@ -90,7 +113,8 @@ class JSGenerator():
 
 
     def _log(self,cat,msg=""):
-        print("- %-15s %s"%(cat,msg))
+        # print("- %-15s %s"%(cat,msg))
+        pass
 
     def _render(self):
 
@@ -136,12 +160,14 @@ class JSGenerator():
             file = open(path, "w")
             file.write(jsgroup.markdown)
             file.close()
+        self.report_errors()
 
     def report_errors(self):
         out=""
-        for cat,obj,error in self.errors:
+        for cat,obj,error,trace in self.errors:
             out+="## %s:%s\n\n"%(cat,obj)
             out+="%s\n\n"%error
+            out += "%s\n\n" % trace
         path = "%s/jumpscale/ERRORS_report.md" % (self._j.dirs.TMPDIR)
         file = open(path, "w")
         file.write(out)

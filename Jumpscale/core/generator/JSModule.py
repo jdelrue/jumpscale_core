@@ -123,7 +123,7 @@ class JSModule():
                         classobj.method_add(nr,method_name)
 
             if action_method is not None:
-                action_args = action_method(jsmodule=self,classobj=classobj,line=line,args=action_args)
+                action_args = action_method(jsmodule=self,classobj=classobj,nr=nr, line=line,args=action_args)
 
         return action_args
 
@@ -132,7 +132,8 @@ class JSModule():
         """
         :return: e.g. clients.tarantool.TarantoolFactory
         """
-        c = self.path.replace(self.js_lib_path,"").lstrip("/")
+        js_lib_path = os.path.dirname(self.js_lib_path.rstrip("/"))  # get parent
+        c = self.path.replace(js_lib_path,"").lstrip("/")
         #c is e.g. clients/tarantool/TarantoolFactory.py
         c=c[:-3] #remove the py part
         c=c.replace("/",".")

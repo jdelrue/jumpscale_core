@@ -4,6 +4,8 @@ import os
 import sys
 from Jumpscale import j
 
+print ("##DEBUG CODE GENERATION TEMPLATE##")
+
 {% for syspath in md.syspaths %}
 if "{{syspath}}" not in sys.path:
     sys.path.append("{{syspath}}")

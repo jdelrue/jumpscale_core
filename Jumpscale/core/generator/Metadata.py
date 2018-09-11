@@ -1,6 +1,6 @@
 from .JSGroup import JSGroup
 from .JSModule import JSModule
-
+import os
 class Metadata():
 
     def __init__(self,j):
@@ -34,9 +34,10 @@ class Metadata():
         """
         res=[]
         for path,jsmodule in self.jsmodules.items():
-            # self._j.shell()
-            if not jsmodule.js_lib_path in res and jsmodule.js_lib_path != "":
-                res.append(jsmodule.js_lib_path)
+            if jsmodule.js_lib_path != "":
+                js_lib_path = os.path.dirname(jsmodule.js_lib_path.rstrip("/"))  # get parent
+                if not js_lib_path in res:
+                    res.append(js_lib_path)
         return res
 
     def jsgroup_get(self,name):

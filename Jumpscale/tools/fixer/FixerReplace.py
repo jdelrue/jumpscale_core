@@ -44,6 +44,9 @@ class FixerReplacer(JSBASE):
 
     def line_process(self,line):
         changed = False
+        if "\t" in line:
+            line = line.replace("\t","    ")
+            changed = True
         for rule in self.rules:
             line1 = rule.replace(line)
             if line1 != line:
