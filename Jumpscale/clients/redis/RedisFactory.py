@@ -1,4 +1,3 @@
-redisFound = False
 from Jumpscale import j
 JSBASE = j.application.JSBaseClass
 
@@ -67,9 +66,6 @@ class RedisFactory(JSBASE):
 
         """
         
-
-        if redisFound == False:
-            raise RuntimeError("redis libraries are not installed, please pip3 install them.")
         if unixsocket is None:
             key = "%s_%s" % (ipaddr, port)
         else:

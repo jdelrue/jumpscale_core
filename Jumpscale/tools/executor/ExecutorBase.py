@@ -1,16 +1,13 @@
 from Jumpscale import j
-JSBASE = j.application.JSBaseClass
-
+import pytoml
+import pystache
+import base64
+import os
 try:
     import ujson as json
 except ImportError:
     import json
 
-import pytoml
-import pystache
-import hashlib
-import base64
-import os
 
 JSBASE = j.application.JSBaseClass
 
@@ -41,8 +38,7 @@ class ExecutorBase(JSBASE):
     def state(self):
         if self._state is None:
             from Jumpscale.core.State import State
-            self._state = State(executor=self)
-            self._state.load()
+            self._state = State(j, executor=self)
         return self._state
 
     @property
@@ -550,7 +546,7 @@ class ExecutorBase(JSBASE):
         #print ("env_check_init", self._dirpaths_init)
         if self._dirpaths_init:
             return
-        if not self.exists(self.state.configJSPath) or \
+        if not self.exists(j.core.jsconfig_path) or \
            not self.state.configExists('dirs') or \
            self.state.configGet('dirs', {}) == {}:
             self.initEnv()

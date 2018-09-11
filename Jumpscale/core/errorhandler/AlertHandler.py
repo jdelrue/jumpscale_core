@@ -84,7 +84,7 @@ class AlertHandler(JSBASE):
         # now we have unique key only using part of message, cat & level
         else:
             if res[0] == 123:  # means is 99999/100000 json, hope goes well (-:
-                res2 = j.data.serializer.json.loads(res)
+                res2 = j.data.serializers.json.loads(res)
                 e = self.schema_alert.get(data=res2)
             else:
                 e = self.schema_alert.get(capnpbin=res)
@@ -197,7 +197,7 @@ class AlertHandler(JSBASE):
     #         data = eco.json
     #         res = self._escalateToRedisFunction(
     #             keys=["queues:eco", "eco:incr", "eco:occurrences", "eco:objects", "eco:last"], args=[eco.key, data])
-    #         res = j.data.serializer.json.loads(res)
+    #         res = j.data.serializers.json.loads(res)
     #         return res
     #     else:
     #         return None
