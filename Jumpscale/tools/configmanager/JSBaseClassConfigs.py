@@ -14,6 +14,7 @@ class JSBaseClassConfigs(JSBASE):
                             ever return the same instance
                             set single_item to True
         """
+        JSBASE.__init__(self)
         if not isclass(child_class):
             raise TypeError("child_class need to be a class not %s" %
                             type(self._child_class))
