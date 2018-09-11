@@ -39,7 +39,7 @@ class ExecutorDocker(ExecutorBase):
     @property
     def logger(self):
         if self._logger is None:
-            l = j.logging.get("executordocker%s" % self.container.id)
+            l = j.logger.get("executordocker%s" % self.container.id)
             self._logger = l
         return self._logger
 

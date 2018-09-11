@@ -58,7 +58,7 @@ class SSHClientParamiko(SSHClientBase):
             self.key_filename = key_filename
             self.passphrase = self.passwd
 
-        # self.logger = j.logging.get(
+        # self.logger = j.logger.get(
         #     "ssh client: %s(%s):" % (self.addr, self.port))
 
         self._transport = None

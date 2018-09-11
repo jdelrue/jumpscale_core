@@ -46,7 +46,7 @@ class ExecutorBase(JSBASE):
     @property
     def logger(self):
         if self._logger is None:
-            self._logger = j.logging.get("executor")
+            self._logger = j.logger.get("executor")
         return self._logger
 
     @property
