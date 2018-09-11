@@ -1,7 +1,7 @@
 
 from Jumpscale import j
 
-JSBASE = j.application.jsbase_get_class()
+JSBASE = j.application.JSBaseClass
 class ZeroDomains(JSBASE):
 
     def init(self, name, giturl):

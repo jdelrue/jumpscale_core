@@ -13,7 +13,7 @@ import yaml
 if sys.version_info.major > 2:
     unicode = str
 
-JSBASE = j.application.jsbase_get_class()
+JSBASE = j.application.JSBaseClass
 
 
 class PrettyYAMLDumper(yaml.dumper.SafeDumper, JSBASE):

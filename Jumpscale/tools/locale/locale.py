@@ -5,7 +5,7 @@ KEYP = re.compile(r"(\w+(\.\w+)*)\s*=\s*(.*)", re.DOTALL)
 
 DEFAULTLOCALE = 'en'
 
-JSBASE = j.application.jsbase_get_class()
+JSBASE = j.application.JSBaseClass
 
 
 class Domain(JSBASE):

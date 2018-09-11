@@ -9,7 +9,7 @@ CONFIG_FILE = '/etc/rsyncd.conf'
 # EXPORT_OPT_REGEXT = re.compile('^(?:([\w/]+)|"([\w\s/]+)")\s+(.+)$')
 # CLIENT_OPT_REGEXT = re.compile('\s*([^\(]+)\(([^\)]+)\)')
 
-JSBASE = j.application.jsbase_get_class()
+JSBASE = j.application.JSBaseClass
 class RsyncError(Exception, JSBASE):
 
     def __init__(self):

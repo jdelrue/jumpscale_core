@@ -4,7 +4,7 @@ import tarantool
 import pystache
 import os
 
-JSBASE = j.application.jsbase_get_class()
+JSBASE = j.application.JSBaseClass
 
 class TarantoolDB(JSBASE):
 

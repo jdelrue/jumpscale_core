@@ -4,7 +4,7 @@ from io import StringIO
 import os
 import locale
 
-JSBASE = j.application.jsbase_get_class()
+JSBASE = j.application.JSBaseClass
 
 from .ZOSContainer import ZOSContainer
 

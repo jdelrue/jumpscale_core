@@ -16,7 +16,7 @@ zosclient = ""
 
 FormBuilderBaseClass = j.tools.formbuilder.baseclass_get()
 
-JSBASE = j.application.jsbase_get_class()
+JSBASE = j.application.JSBaseClass
 
 
 class MyConfigUI(FormBuilderBaseClass):
@@ -34,7 +34,7 @@ class MyConfigUI(FormBuilderBaseClass):
                                     "ovh", "packetnet", "ovc", "physical", "docker", "container"])
 
 
-JSConfigBase = j.tools.configmanager.base_class_config
+JSConfigBase = j.tools.configmanager.JSBaseClassConfig
 
 
 class Node(JSConfigBase):

@@ -1,7 +1,7 @@
 import base64
 
 from Jumpscale import j
-JSBASE = j.application.jsbase_get_class()
+JSBASE = j.application.JSBaseClass
 
 class KVSTarantool(JSBASE):
     """

@@ -7,7 +7,7 @@ from Jumpscale import j
 from .SSHClient import SSHClient
 from .SSHClientParamiko import SSHClientParamiko
 
-JSConfigBase = j.tools.configmanager.base_class_configs
+JSConfigBase = j.tools.configmanager.JSBaseClassConfigs
 
 
 class SSHClientFactory(JSConfigBase):

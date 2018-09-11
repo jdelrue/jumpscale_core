@@ -3,7 +3,7 @@ from Jumpscale import j
 import os
 import re
 import sys
-JSBASE = j.application.jsbase_get_class()
+JSBASE = j.application.JSBaseClass
 
 
 class GitFactory(JSBASE):

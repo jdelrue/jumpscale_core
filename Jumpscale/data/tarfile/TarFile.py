@@ -6,7 +6,7 @@ import tarfile
 # NOTE: When implementing, see documentation on the 'errorlevel' attribute of
 # the Python TarFile object
 
-JSBASE = j.application.jsbase_get_class()
+JSBASE = j.application.JSBaseClass
 
 
 class TarFileFactory(JSBASE):

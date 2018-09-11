@@ -8,7 +8,7 @@ import os
 
 
 
-JSBASE = j.application.jsbase_get_class()
+JSBASE = j.application.JSBaseClass
 class NetTools(JSBASE):
 
     def __init__(self):

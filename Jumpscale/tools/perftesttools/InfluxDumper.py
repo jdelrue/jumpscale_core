@@ -6,7 +6,7 @@ import time
 # import os
 import psutil
 
-JSBASE = j.application.jsbase_get_class()
+JSBASE = j.application.JSBaseClass
 
 
 class InfluxDumper(JSBASE):

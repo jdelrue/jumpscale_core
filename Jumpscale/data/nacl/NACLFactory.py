@@ -7,7 +7,7 @@ import base64
 
 from nacl.public import PrivateKey, SealedBox
 
-JSBASE = j.application.jsbase_get_class()
+JSBASE = j.application.JSBaseClass
 
 class NACLFactory(JSBASE):
 

@@ -6,7 +6,7 @@ import inspect
 
 # TemplateCollectionClass= j.tools.zerorobot.models.TemplateCollection
 # TemplateModelClass= j.tools.zerorobot.models.TemplateModel
-JSBASE = j.application.jsbase_get_class()
+JSBASE = j.application.JSBaseClass
 class ZeroTemplate(JSBASE):
     def __init__(self):
         JSBASE.__init__(self)

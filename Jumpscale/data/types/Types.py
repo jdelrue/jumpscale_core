@@ -6,7 +6,7 @@ from .CustomTypes import *
 from .CollectionTypes import *
 from .PrimitiveTypes import *
 
-# JSBASE = j.application.jsbase_get_class()
+# JSBASE = j.application.JSBaseClass
 
 
 class Types():

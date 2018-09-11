@@ -10,7 +10,7 @@ from .FixerReplace import FixerReplacer
 ## R = Replace
 ## RI = Replace case insensitive
 
-JSBASE = j.application.jsbase_get_class()
+JSBASE = j.application.JSBaseClass
 class Fixer(JSBASE):
 
     __jslocation__ = "j.tools.fixer"

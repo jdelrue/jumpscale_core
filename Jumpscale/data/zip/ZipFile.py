@@ -8,7 +8,7 @@ import zipfile
 
 from Jumpscale import j
 
-JSBASE = j.application.jsbase_get_class()
+JSBASE = j.application.JSBaseClass
 class ZipFileFactory(JSBASE):
     READ = 'r'
     WRITE = 'w'

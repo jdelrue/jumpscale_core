@@ -5,7 +5,7 @@ import os.path
 from Jumpscale import j
 import fnmatch
 
-JSBASE = j.application.jsbase_get_class()
+JSBASE = j.application.JSBaseClass
 
 
 class SystemFSWalker(JSBASE):

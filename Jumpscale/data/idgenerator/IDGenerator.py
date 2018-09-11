@@ -4,7 +4,7 @@ import random
 # import sys
 import string
 
-JSBASE = j.application.jsbase_get_class()
+JSBASE = j.application.JSBaseClass
 
 class IDGenerator(JSBASE):
     """

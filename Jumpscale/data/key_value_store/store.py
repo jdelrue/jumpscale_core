@@ -8,7 +8,7 @@ import collections
 import msgpack
 
 import re
-JSBASE = j.application.jsbase_get_class()
+JSBASE = j.application.JSBaseClass
 class KeyValueStoreBase(JSBASE):  # , metaclass=ABCMeta):
     '''KeyValueStoreBase defines a store interface.'''
 

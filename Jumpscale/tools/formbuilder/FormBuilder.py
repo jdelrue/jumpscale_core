@@ -2,7 +2,7 @@ from Jumpscale import j
 
 import npyscreen
 
-JSBASE = j.application.jsbase_get_class()
+JSBASE = j.application.JSBaseClass
 
 
 class FormBuilderBaseClass(npyscreen.NPSAppManaged, JSBASE):

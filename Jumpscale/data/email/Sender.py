@@ -5,7 +5,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.image import MIMEImage
 from Jumpscale import j
 
-JSBASE = j.application.jsbase_get_class()
+JSBASE = j.application.JSBaseClass
 
 class Sender(JSBASE):
 

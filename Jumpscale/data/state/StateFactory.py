@@ -3,7 +3,7 @@ from Jumpscale import j
 
 from Jumpscale.core.State import State
 
-JSBASE = j.application.jsbase_get_class()
+JSBASE = j.application.JSBaseClass
 
 from Jumpscale.core.State import State
 

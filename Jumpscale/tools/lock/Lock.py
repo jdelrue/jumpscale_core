@@ -7,7 +7,7 @@ from Jumpscale import j
 
 _LOCKDICTIONARY = dict()
 
-JSBASE = j.application.jsbase_get_class()
+JSBASE = j.application.JSBaseClass
 class LockException(Exception, JSBASE):
 
     def __init__(self, message='Failed to get lock', innerException=None):

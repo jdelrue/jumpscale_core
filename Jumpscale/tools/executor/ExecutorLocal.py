@@ -1,5 +1,5 @@
 from Jumpscale import j
-JSBASE = j.application.jsbase_get_class()
+JSBASE = j.application.JSBaseClass
 
 from Jumpscale.tools.executor.ExecutorBase import ExecutorBase
 
@@ -18,7 +18,7 @@ class ExecutorLocal(ExecutorBase):
         self.type = "local"
         self._id = 'localhost'
 
-        self.cache = j.data.cache.get(id="executor:%s" %self.id,expiration=3600)
+        self.cache = j.core.cache.get(id="executor:%s" %self.id,expiration=3600)
 
     def exists(self, path):
         return j.sal.fs.exists(path)

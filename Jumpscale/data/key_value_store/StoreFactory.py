@@ -1,7 +1,7 @@
 from Jumpscale import j
 import time
 
-JSBASE = j.application.jsbase_get_class()
+JSBASE = j.application.JSBaseClass
 
 
 class StoreFactory(JSBASE):

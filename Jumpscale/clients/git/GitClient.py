@@ -2,7 +2,7 @@ from Jumpscale import j
 import git
 import copy
 
-JSBASE = j.application.jsbase_get_class()
+JSBASE = j.application.JSBaseClass
 
 
 class GitClient(JSBASE):

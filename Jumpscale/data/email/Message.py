@@ -1,7 +1,7 @@
 from Jumpscale import j
 from .utils import get_msg_path
 
-JSBASE = j.application.jsbase_get_class()
+JSBASE = j.application.JSBaseClass
 
 class attrdict(dict):
 

@@ -13,7 +13,7 @@ import urllib.parse
 import urllib.request
 import urllib.error
 from Jumpscale import j
-JSBASE = j.application.jsbase_get_class()
+JSBASE = j.application.JSBaseClass
 
 
 HTTP_CREATED = 201  # from practical examples, authorization created returns 201

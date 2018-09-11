@@ -6,7 +6,7 @@ ModelBaseCollection = j.data.capnp.getModelBaseClassCollection()
 ModelBase = j.data.capnp.getModelBaseClass()
 from Jumpscale.clients.tarantool.KVSInterface import KVSTarantool
 
-JSBASE = j.application.jsbase_get_class()
+JSBASE = j.application.JSBaseClass
 
 
 class ServiceModel(ModelBase):

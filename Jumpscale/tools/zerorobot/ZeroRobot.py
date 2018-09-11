@@ -6,7 +6,7 @@ from .ZeroTemplates import *
 from .ZeroRepos import *
 # from .ZeroServices import *
 
-JSBASE = j.application.jsbase_get_class()
+JSBASE = j.application.JSBaseClass
 class ZeroRobot(JSBASE):
 
     def __init__(self):

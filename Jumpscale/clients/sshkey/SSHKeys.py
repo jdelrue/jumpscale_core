@@ -3,7 +3,7 @@ from Jumpscale import j
 from .SSHKey import SSHKey
 
 import os
-JSConfigBase = j.tools.configmanager.base_class_configs
+JSConfigBase = j.tools.configmanager.JSBaseClassConfigs
 from .AgentSSHKeys import *
 
 

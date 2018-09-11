@@ -4,7 +4,7 @@ import time
 import libtmux as tmuxp
 import os
 
-JSBASE = j.application.jsbase_get_class()
+JSBASE = j.application.JSBaseClass
 
 # from .Pane import Pane
 from .Session import Session

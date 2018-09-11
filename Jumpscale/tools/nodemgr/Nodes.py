@@ -3,7 +3,7 @@ from Jumpscale import j
 from .Node import Node
 
 
-JSConfigBase = j.tools.configmanager.base_class_configs
+JSConfigBase = j.tools.configmanager.JSBaseClassConfigs
 
 
 class Nodes(JSConfigBase):

@@ -3,7 +3,7 @@ from Jumpscale import j
 import sys
 import inspect
 
-JSBASE = j.application.jsbase_get_class()
+JSBASE = j.application.JSBaseClass
 class ZeroRepo(JSBASE):
 
     def __init__(self,path,gitrepo):

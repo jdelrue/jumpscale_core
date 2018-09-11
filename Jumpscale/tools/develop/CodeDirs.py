@@ -1,5 +1,5 @@
 from Jumpscale import j
-JSBASE = j.application.jsbase_get_class()
+JSBASE = j.application.JSBaseClass
 
 class CodeDirs(JSBASE):
     def __init__(self):

@@ -1,5 +1,5 @@
 from Jumpscale import j
-JSBASE = j.application.jsbase_get_class() = j.application.jsbase_get_class()
+JSBASE = j.application.JSBaseClass = j.application.JSBaseClass
 import tarantool
 import os
 from Jumpscale import j

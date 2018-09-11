@@ -7,7 +7,7 @@ from Jumpscale import j
 from .SSHClientBase import SSHClientBase
 
 
-JSBASE = j.application.jsbase_get_class()
+JSBASE = j.application.JSBaseClass
 
 
 class SSHClientSession(asyncssh.SSHClientSession, JSBASE):

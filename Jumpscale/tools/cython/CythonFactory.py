@@ -1,5 +1,5 @@
 from Jumpscale import j
-JSBASE = j.application.jsbase_get_class()
+JSBASE = j.application.JSBaseClass
 
 import time
 import inspect
@@ -7,7 +7,7 @@ import sys
 
 import pyximport
 
-JSBASE = j.application.jsbase_get_class()
+JSBASE = j.application.JSBaseClass
 class CythonFactory(JSBASE):
     """
     example:

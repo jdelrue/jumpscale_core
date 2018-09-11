@@ -7,7 +7,7 @@ duration = 86400
 path = ""
 """
 
-JSConfigBase = j.tools.configmanager.base_class_config
+JSConfigBase = j.tools.configmanager.JSBaseClassConfig
 
 
 class SSHKey(JSConfigBase):

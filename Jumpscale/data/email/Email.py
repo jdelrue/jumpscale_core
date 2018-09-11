@@ -4,7 +4,7 @@ from .Message import Message
 from .Sender import Sender
 from .utils import get_msg_path, get_json_msg
 
-JSBASE = j.application.jsbase_get_class()
+JSBASE = j.application.JSBaseClass
 class EmailTool(JSBASE):
 
     def __init__(self):

@@ -10,7 +10,7 @@ from .TarantoolDB import TarantoolDB
 
 import tarantool
 
-JSBASE = j.application.jsbase_get_class()
+JSBASE = j.application.JSBaseClass
 
 class TarantoolQueue(JSBASE):
 

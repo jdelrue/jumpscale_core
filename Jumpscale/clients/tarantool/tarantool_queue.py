@@ -6,7 +6,7 @@ from threading import Lock
 
 import tarantool
 from Jumpscale import j
-JSBASE = j.application.jsbase_get_class()
+JSBASE = j.application.JSBaseClass
 
 
 def unpack_long_long(value):
