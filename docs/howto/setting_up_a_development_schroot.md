@@ -64,11 +64,6 @@ as it allows convenient transfer from inside the chroot to outside (by
 copying files to and from /tmp), and the fifth entry must match the
 subdirectory created in the chroot (threefoldtech).
 
-It is **not recommended** to try to have multiple development branches inside
-one single chroot: instead, create separate chroots, one per development
-branch.  It is perfectly fine to cp -aux one entire chroot (snapshot it)
-to make life easier.
-
 Run the following commands to get the mount binds to activate (don't reboot,
 it is totally unnecessary):
 
@@ -87,4 +82,14 @@ entirely up to you.
 
 With this technique of using mount --bind, development (editing etc.)
 can take place **outside** of the chroot,
+
+Note: It is **not recommended** to try to have multiple development branches
+inside one single chroot: instead, create separate chroots, one per development
+branch.  It is perfectly fine to cp -aux one entire chroot (snapshot it)
+to make life easier when a new development branch needs to be set up.
+A little thought and care is needed as to whether to save time by snapshotting
+a chroot *before* Jumpscale has been installed, or whether to have a vanilla
+(clean) chroot in order to perform testing of the actual install.  One saves
+time, the other saves errors made by config assumptions.  Both are equally
+valid to do... so why not do both!
 
