@@ -1,18 +1,20 @@
 # Setting up an schroot with external mount --bind
 
 Why set up a chroot?  Answer: to be able to have simultaneous development
-branches checked out **without** any of them doing damage to each other
-or interfering in any way.  Also, running the Jumpscale unit tests,
-which need to be carried out as root, may actually damage a system,
-by destroying /etc/passwd, /etc/group, /root/.ssh/authorized\_keys,
-/root/.profile and other critical files.
+branches checked out and to be able to immediately and safely flip
+between them **without** any of them doing damage to each other
+or interfering in any way, or requiring "cleanup" of one branch
+**or losing critical config information that was specific to one branch**.
+
+Also, running the Jumpscale unit tests, which need to be carried out as root,
+may actually damage a system, by destroying /etc/passwd, /etc/group,
+/root/.ssh/authorized\_keys, /root/.profile and other critical files.
 
 **Without running the unit tests it is impossible to verify the code**
 
-Therefore it is pretty much absolutely essential to run in a chroot.
+Therefore, logically, it is pretty much absolutely essential to run in a chroot.
 Chroot itself however is quite inconvenient, so using schroot is much
 better.  As root (sudo bash), run the following:
-
 
     # apt-get install schroot debootstrap
     # mkdir -p /opt/chroot/stretch
