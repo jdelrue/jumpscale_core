@@ -31,10 +31,10 @@ class Core():
             conf = self.db.get("jumpscale.config").decode()
 
         if conf == "":
-            for path in ["/opt/jumpscale.toml","%s/opt/cfg/jumpscale.toml"%self.dir_home]:
-                if os.path.exists(path):
-                    with open(path, 'rb') as ff:
-                        conf = ff.read().decode()
+            path = self.jsconfig_path
+            if os.path.exists(path):
+                with open(path, 'rb') as ff:
+                    conf = ff.read().decode()
         if conf == "":
             with open(os.path.join(self.dir_jumpscale_core,"Jumpscale","core","jumpscale.toml"), 'rb') as ff:
                 conf = ff.read().decode()
@@ -76,6 +76,17 @@ class Core():
         if self._dir_jumpscale_core is None:
             self._dir_jumpscale_core = os.path.dirname(os.path.dirname(__file__))
         return self._dir_jumpscale_core
+
+    @property
+    def jsconfig_path(self):
+        options = ["%s/opt/cfg/jumpscale.toml" % self.dir_home,
+                     "/opt/jumpscale.toml",
+                     "%s/jumpscale/jumpscale.toml" % self.dir_home]
+        for path in options:
+            if os.path.exists(path):
+                return path
+        return options[0]
+
 
 
 class Jumpscale():

@@ -109,7 +109,7 @@ class JSLoaderDONTUSE():
     @property
     def logger(self):
         if self._logger is None:
-            self._logger = j.logging.get("jsloader")
+            self._logger = j.logger.get("jsloader")
         return self._logger
 
     @property

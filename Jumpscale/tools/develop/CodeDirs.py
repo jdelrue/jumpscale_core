@@ -58,7 +58,7 @@ class CodeDirs(JSBASE):
 
     def codeDirGet(self, reponame, account=None, die=True):
         res = []
-        for item in self.self.tree.find("", getItems=True):
+        for item in self.tree.find("", getItems=True):
             if account is None or item.account == account:
                 if item.name == reponame:
                     for codedirget in develtools:

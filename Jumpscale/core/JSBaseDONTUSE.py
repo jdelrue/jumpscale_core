@@ -775,7 +775,7 @@ class JSBase(BaseGetter):
             else:
                 name = self.__name__
             #print ("jsbase.logger get", type(self))
-            self._logger = self.j.logging.get(name, force=self._logger_force)
+            self._logger = self.j.logger.get(name, force=self._logger_force)
             self._logger._parent = self
         return self._logger
 

@@ -30,7 +30,6 @@ class FormBuilderBaseClass(npyscreen.NPSAppManaged, JSBASE):
         # npyscreen.Form.DEFAULT_LINES=200
         self.form = npyscreen.Form(name="Configuration Manager:%s" % self.name,)
         self.form.DEFAULT_LINES = 100
-        # from IPython import embed;embed(colors='Linux')
 
         self.config, errors = j.data.serializers.toml.merge(
             self.template, self.config, listunique=True)

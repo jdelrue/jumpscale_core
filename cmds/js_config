@@ -2,7 +2,7 @@
 from Jumpscale import j
 j.tools.bash.local.locale_check()
 import click
-j.logging.disable()
+j.logger.disable()
 
 @click.group()
 def cli():

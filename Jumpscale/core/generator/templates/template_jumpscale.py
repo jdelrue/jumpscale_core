@@ -24,12 +24,11 @@ class group_{{jsgroup.name}}():
     def {{module.jname}}(self):
         if self._{{module.jname}} is None:
             print("LOAD:{{module.name}}")
-            from {{module.importlocation}} import {{module.name}}
             try:
                 from {{module.importlocation}} import {{module.name}}
             except Exception as e:
                 msg = j.core.jsgenerator.error("import", "{{module.importlocation}}", e)
-                return None
+                raise e
             print("RUN:{{module.name}}")
             try:
                 self._{{module.jname}} =  {{module.name}}()

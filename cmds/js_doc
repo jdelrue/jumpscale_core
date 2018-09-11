@@ -6,7 +6,7 @@ import sys
 # from pprint import pprint as print
 
 
-logger = j.logging.get("js_doc", force=True)
+logger = j.logger.get("js_doc", force=True)
 
 def path_name_get():
     path=j.sal.fs.getcwd()

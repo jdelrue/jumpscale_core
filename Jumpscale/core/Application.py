@@ -29,7 +29,7 @@ class Application(object):
     @property
     def logger(self):
         if self._logger is None:
-            self._logger = self._j.logging.get("application")
+            self._logger = self._j.logger.get("application")
         return self._logger
 
     @logger.setter

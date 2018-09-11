@@ -322,7 +322,7 @@ class LoggerFactory():
 
     def test(self):
         """
-        js_shell 'j.logging.test()'
+        js_shell 'j.logger.test()'
         """
 
 

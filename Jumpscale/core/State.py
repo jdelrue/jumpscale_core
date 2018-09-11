@@ -1,5 +1,5 @@
 import pytoml
-
+import os
 mascot = '''
                                                         .,,'
                                                    'c.cool,..',,,,,,,.
@@ -49,12 +49,18 @@ class State(object):
         self._j = j
         self.readonly = readonly
         if executor is not None:
-            #need to load the toml file from the executor, will always put on home !
+            #need to load the toml file from the executor, will always put on home or can put in local redis!
             self._j.shell()
             self.executor = executor
         else:
             self.executor = None
             self._config = self._j.core.config
+
+
+
+    @property
+    def config(self):
+        return self._config
 
     @property
     def cfgPath(self):
@@ -437,20 +443,25 @@ class State(object):
         """
         Writes config to specified path
         """
-        self._j.shell()
         if self.readonly:
             raise self.j.exceptions.Input(
                 message="cannot write config to '%s', because is readonly" %
                 self)
-        if self.config and path:
+
+        if self.executor==None:
+            path = self._j.core.jsconfig_path
+            dpath = os.path.dirname(path)
+            if not os.path.exists(dpath):
+                os.makedirs(dpath)
+            file = open(path, "w")
             data = pytoml.dumps(self.config)
-            self.executor.file_write(path, data)
-            return
-        data = pytoml.dumps(self.config)
-        self.executor.file_write(self.self.configJSPath, data, sudo=True)
-        data = pytoml.dumps(self._self.configState)
-        self.executor.file_write(self.self.configStatePath, data, sudo=True)
-        self.executor.reset()  # make sure all caching is reset
+            file.write(data)
+            file.close()
+        else:
+            path = "/tmp/jumpscale.toml"
+            data = pytoml.dumps(self.config)
+            self.executor.file_write(path, data, sudo=False)
+            self.executor.reset()  # make sure all caching is reset
 
     @property
     def config_js(self):

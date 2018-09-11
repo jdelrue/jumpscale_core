@@ -29,8 +29,8 @@ HOMEDIR = "{{HOME}}"
 BASEDIR = "{{HOME}}/opt/"
 CODEDIR = "{{HOME}}/code"
 HOSTDIR = "{{HOME}}/opt/"
-HOSTCFGDIR = "{{HOME}}/opt/jumpscale/cfg/"
-CFGDIR = "{{HOME}}/opt/jumpscale/cfg/"
+HOSTCFGDIR = "{{HOME}}/opt/cfg/"
+CFGDIR = "{{HOME}}/opt/cfg/"
 VARDIR = "{{HOME}}/opt/var"
 
 
