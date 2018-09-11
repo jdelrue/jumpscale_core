@@ -18,6 +18,7 @@ class NACL(JSBASE):
         """
         is secret == "" then will use the ssh-agent to generate a secret
         """
+        JSBASE.__init__(self)
         if sshkeyname:
             self.logger.debug("sshkeyname for nacl:%s" % sshkeyname)
             pass

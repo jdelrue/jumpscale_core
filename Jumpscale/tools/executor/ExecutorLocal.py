@@ -20,7 +20,7 @@ class ExecutorLocal(ExecutorBase):
         self.type = "local"
         self._id = 'localhost'
 
-        self.cache = j.core.cache.get(id="executor:%s" %self.id,expiration=3600)
+        self._cache = j.core.cache.get(id="executor:%s" % self.id, expiration=3600)
 
     def exists(self, path):
         return j.sal.fs.exists(path)
@@ -66,11 +66,11 @@ class ExecutorLocal(ExecutorBase):
             res["cfg_me"] = load("me")
             res["env"] = getenv()
 
-            # res["uname"] = subprocess.Popen("uname -mnprs", stdout=subprocess.PIPE,
-            #                                 shell=True).stdout.read().decode().strip()
+            res["uname"] = subprocess.Popen("uname -mnprs", stdout=subprocess.PIPE,
+                                            shell=True).stdout.read().decode().strip()
             # res["hostname"] = subprocess.Popen("hostname", stdout=subprocess.PIPE,
             #                                    shell=True).stdout.read().decode().strip()
-            res["uname"] = None
+            # res["uname"] = None
             res["hostname"] = socket.gethostname()
 
             if "darwin" in sys.platform.lower():

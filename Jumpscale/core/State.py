@@ -48,15 +48,12 @@ class State(object):
     def __init__(self, j, executor=None,readonly=False):
         self._j = j
         self.readonly = readonly
+        self.executor = executor
         if executor is not None:
-            #need to load the toml file from the executor, will always put on home or can put in local redis!
-            self._j.shell()
-            self.executor = executor
-        else:
-            self.executor = None
+            # TODO need to load the toml file from the executor, will always put on home or can put in local redis!
             self._config = self._j.core.config
-
-
+        else:
+            self._config = self._j.core.config
 
     @property
     def config(self):
@@ -76,7 +73,7 @@ class State(object):
 
     def stateKey(self,key):
         #if executor known need to use other key per executor
-        if executor is not None:
+        if self.executor is not None:
             self._j.shell()
         return key
 

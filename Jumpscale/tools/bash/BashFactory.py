@@ -2,6 +2,7 @@ import re
 from io import StringIO
 import os
 import locale
+from Jumpscale import j
 
 JSBASE = j.application.JSBaseClass
 
@@ -19,6 +20,7 @@ class Profile(JSBASE):
         export X
         export Y
         """
+        JSBASE.__init__(self)
         self.bash = bash
         self.executor = bash.executor
         self._pathProfile = profilePath or ""
@@ -266,7 +268,7 @@ class Bash(object):
     def __init__(self, executor=None):
         self._executor = executor
         self._profile = None
-        # self.reset()
+        self.reset()
 
     @property
     def executor(self):
