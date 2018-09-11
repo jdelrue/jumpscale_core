@@ -49,7 +49,7 @@ class JSGenerator():
         bname=os.path.basename(path)
         if bname.startswith("_"):
             return False
-        IGNORE = ["/template","JSLoader.py","SystemFSDecorators.py","FixerReplacer"]
+        IGNORE = ["/template","JSLoader.py","SystemFSDecorators.py","FixerReplace"]
         for item in IGNORE:
             if path.find(item) != -1:
                 return False

@@ -15,15 +15,9 @@ class SSHKeys(JSConfigBase):
         self._sshagent = None
 
     @property
-    def _child_class(self):
-        return self._jsbase(('SSHKey', 'Jumpscale.clients.sshkey.SSHKey'))
-
-    @property
     def sshagent(self):
         # AgentWithName
-        DAC = self._jsbase(('AgentWithName',
-                            'Jumpscale.clients.sshkey.AgentSSHKeys'))
-        self._sshagent = DAC()
+        self._sshagent = AgentWithName()
         return self._sshagent
 
     def key_get(self, path, load=True):

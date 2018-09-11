@@ -22,8 +22,7 @@ class NACLFactory(JSBASE):
         if more than 1 will match ourid (generated from sshagent)
         if path not specified then is ~/.secrets
         """
-        DN = self._jsbase(('NACL', 'Jumpscale.data.nacl.NACL'))
-        return DN(name, secret, sshkeyname=j.tools.configmanager.keyname)
+        return NACL(name, secret, sshkeyname=j.tools.configmanager.keyname)
 
     @property
     def default(self):

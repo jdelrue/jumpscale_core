@@ -12,6 +12,8 @@ import hashlib
 import base64
 import os
 
+JSBASE = j.application.JSBaseClass
+
 
 class ExecutorBase(JSBASE):
 

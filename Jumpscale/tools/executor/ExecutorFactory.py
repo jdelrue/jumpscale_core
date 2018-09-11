@@ -1,7 +1,13 @@
 from Jumpscale import j
 JSBASE = j.application.JSBaseClass
 
-# import threading
+from .ExecutorSSH import *
+from .ExecutorLocal import *
+from .ExecutorAsyncSSH import ExecutorAsyncSSH
+from .ExecutorSerial import ExecutorSerial
+import threading
+
+JSBASE = j.application.JSBaseClass
 
 
 class ExecutorFactory(JSBASE):
@@ -9,7 +15,10 @@ class ExecutorFactory(JSBASE):
 
     _executors = {}
     _executors_async = {}
-    __jslocation__ = "j.tools.executor"
+
+    def __init__(self):
+        self.__jslocation__ = "j.tools.executor"
+        JSBASE.__init__(self)
 
     def local_get(self):
         """
@@ -20,32 +29,21 @@ class ExecutorFactory(JSBASE):
 
         """
         if 'localhost' not in self._executors:
-            DL = self._jsbase(("ExecutorLocal",
-                    'Jumpscale.tools.executor.ExecutorLocal'))
-            self._executors['localhost'] = DL()
+            self._executors['localhost'] = ExecutorLocal()
         return self._executors['localhost']
 
     def ssh_get(self, sshclient):
         with self._lock:
             if j.data.types.string.check(sshclient):
                 sshclient = j.clients.ssh.get(instance=sshclient)
-            key = '%s:%s:%s' % (
-                sshclient.config.data['addr'],
-                sshclient.config.data['port'],
-                sshclient.config.data['login'])
-            if key not in self._executors or \
-                    self._executors[key].sshclient is None:
-                DS = self._jsbase(("ExecutorSSH",
-                    'Jumpscale.tools.executor.ExecutorSSH'))
-                self._executors[key] = DS(sshclient=sshclient)
+            key = '%s:%s:%s' % (sshclient.config.data['addr'],
+                                sshclient.config.data['port'], sshclient.config.data['login'])
+            if key not in self._executors or self._executors[key].sshclient is None:
+                self._executors[key] = ExecutorSSH(sshclient=sshclient)
             return self._executors[key]
 
-    def serial_get(self, device, baudrate=9600, type="serial", parity="N",
-                    stopbits=1, bytesize=8, timeout=1):
-        DS = self._jsbase(("ExecutorSerial",
-            'Jumpscale.tools.executor.ExecutorSerial'))
-        return DS(device, baudrate=baudrate, type=type, parity=parity,
-                   stopbits=stopbits, bytesize=bytesize, timeout=timeout)
+    def serial_get(self, device, baudrate=9600, type="serial", parity="N", stopbits=1, bytesize=8, timeout=1):
+        return ExecutorSerial(device, baudrate=baudrate, type=type, parity=parity, stopbits=stopbits, bytesize=bytesize, timeout=timeout)
 
     def asyncssh_get(self, sshclient):
         """
@@ -64,20 +62,22 @@ class ExecutorFactory(JSBASE):
         with self._lock:
             key = '%s:%s:%s' % (addr, port, login)
             if key not in self._executors_async or usecache is False:
-                D = self._jsbase(("ExecutorAsyncSSH",
-                        'Jumpscale.tools.executor.ExecutorAsyncSSH'))
-                self._executors_async[key] = D(
-                    addr=addr, port=port, login=login, passwd=passwd,
-                    debug=debug, allow_agent=allow_agent,
-                    look_for_keys=look_for_keys, timeout=timeout,
-                    key_filename=key_filename, passphrase=passphrase)
+                self._executors_async[key] = ExecutorAsyncSSH(addr=addr,
+                                                              port=port,
+                                                              login=login,
+                                                              passwd=passwd,
+                                                              debug=debug,
+                                                              allow_agent=allow_agent,
+                                                              look_for_keys=look_for_keys,
+                                                              timeout=timeout,
+                                                              key_filename=key_filename,
+                                                              passphrase=passphrase)
 
             return self._executors_async[key]
 
     def getLocalDocker(self, container_id_or_name):
-        D = self._jsbase(("ExecutorDocker", 
-                'Jumpscale.tools.executor.ExecutorDocker'))
-        return D.from_local_container(container_id_or_name)
+        from .ExecutorDocker import ExecutorDocker
+        return ExecutorDocker.from_local_container(container_id_or_name)
 
     def reset(self, executor=None):
         """

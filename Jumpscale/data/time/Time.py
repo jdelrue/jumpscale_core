@@ -1,6 +1,6 @@
 import datetime
 import time
-
+from .TimeInterval import TimeInterval
 import struct
 
 TIMES = {'s': 1,
@@ -20,8 +20,7 @@ class Time_(object):
     __jslocation__ = "j.data.time"
 
     def __init__(self):
-        self.timeinterval = self._jsbase(('TimeInterval',
-                    'Jumpscale.data.time.TimeInterval'))
+        self.timeinterval = TimeInterval()
 
     @property
     def epoch(self):

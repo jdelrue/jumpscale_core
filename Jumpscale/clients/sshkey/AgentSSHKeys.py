@@ -1,8 +1,9 @@
-from paramiko.agent import (AgentSSH, cSSH2_AGENTC_REQUEST_IDENTITIES,
-                            SSH2_AGENT_IDENTITIES_ANSWER, SSHException, 
-                            AgentKey, Agent)
+from paramiko.agent import AgentSSH, cSSH2_AGENTC_REQUEST_IDENTITIES, SSH2_AGENT_IDENTITIES_ANSWER, SSHException, AgentKey, Agent
+from Jumpscale import j
+JSBASE = j.application.JSBaseClass
 
-class AgentSSHKeys(AgentSSH):
+
+class AgentSSHKeys(AgentSSH, JSBASE):
     """
     overrides key with no keyname
     """
@@ -13,12 +14,7 @@ class AgentSSHKeys(AgentSSH):
         self._conn = None
         self._keys = ()
         super().__init__()
-
-    def __del__(self):
-        if self._conn is None:
-            return
-        self._conn.close()
-        self._conn = None
+        JSBASE.__init__(self)
 
     def get_keys(self):
         """
@@ -38,10 +34,8 @@ class AgentSSHKeys(AgentSSH):
         if ptype != SSH2_AGENT_IDENTITIES_ANSWER:
             raise SSHException('could not get keys from ssh-agent')
         keys = []
-        DAK = self._jsbase(('AgentKeyWithName',
-                            'Jumpscale.clients.sshkey.AgentSSHKeys'))
         for i in range(result.get_int()):
-            keys.append(DAK(self, result.get_binary(), result.get_string()))
+            keys.append(AgentKeyWithName(self, result.get_binary(), result.get_string()))
         self._keys = tuple(keys)
 
 
@@ -51,7 +45,7 @@ class AgentWithName(AgentSSHKeys, Agent):
         super().__init__()
 
 
-class AgentKeyWithName(AgentKey):
+class AgentKeyWithName(AgentKey, JSBASE):
     """
     Private key held in a local SSH agent.  This type of key can be used for
     authenticating to a remote server (signing).  Most other key operations
@@ -61,3 +55,4 @@ class AgentKeyWithName(AgentKey):
     def __init__(self, agent, blob, keyname):
         self.keyname = keyname.decode()
         super().__init__(agent, blob)
+        JSBASE.__init__(self)

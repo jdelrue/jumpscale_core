@@ -2,9 +2,11 @@ import re
 from io import StringIO
 import os
 import locale
-from Jumpscale import j
 
-class Profile(object):
+JSBASE = j.application.JSBaseClass
+
+
+class Profile(JSBASE):
     env_pattern = re.compile(r'^([^=\n]+)="([^"\n]+)"$', re.MULTILINE)
     include_pattern = re.compile(r'^source (.*)$', re.MULTILINE)
 
@@ -241,8 +243,9 @@ class Profile(object):
 
 class BashFactory(object):
 
-    __jslocation__ = "j.tools.bash"
     def __init__(self):
+        self.__jslocation__ = "j.tools.bash"
+        JSBASE.__init__(self)
         self._local = None
 
     @property
@@ -314,8 +317,7 @@ class Bash(object):
         path = path.replace("~", self.home)
         if not self.executor.exists(path):
             self.executor.file_write(path, "")
-        DProfile = self._jsbase(('Profile', 'Jumpscale.tools.bash.BashFactory'))
-        return DProfile(self, path)
+        return Profile(self, path)
 
     @property
     def profileJS(self):

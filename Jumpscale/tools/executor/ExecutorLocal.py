@@ -23,6 +23,82 @@ class ExecutorLocal(ExecutorBase):
     def exists(self, path):
         return j.sal.fs.exists(path)
 
+    @property
+    def stateOnSystem(self):
+        """
+        is dict of all relevant param's on system
+        """
+
+        def getenv():
+            res = {}
+            for key, val in os.environ.items():
+                res[key] = val
+            return res
+
+        def do():
+            # print ("INFO: stateonsystem for local")
+
+            if self.isBuildEnv:
+                homedir = os.environ["PBASE"]
+                cfgdir = "%s/cfg" % homedir
+            else:
+                if "HOMEDIR" in os.environ.keys():
+                    homedir = os.environ["HOMEDIR"]
+                else:
+                    # if os.path.exists("/root/.iscontainer"):
+                    #     homedir = "/host"
+                    # else:
+                    homedir = os.environ["HOME"]
+                cfgdir = "%s/jumpscale/cfg" % homedir
+            res = {}
+
+            def load(name):
+                path = "%s/%s.toml" % (cfgdir, name)
+                if os.path.exists(path):
+                    return pytoml.loads(j.sal.fs.fileGetContents(path))
+                else:
+                    return {}
+
+            res["cfg_jumpscale"] = load("jumpscale")
+            res["cfg_state"] = load("state")
+            res["cfg_me"] = load("me")
+            res["env"] = getenv()
+
+            # res["uname"] = subprocess.Popen("uname -mnprs", stdout=subprocess.PIPE,
+            #                                 shell=True).stdout.read().decode().strip()
+            # res["hostname"] = subprocess.Popen("hostname", stdout=subprocess.PIPE,
+            #                                    shell=True).stdout.read().decode().strip()
+            res["uname"] = None
+            res["hostname"] = socket.gethostname()
+
+            if "darwin" in sys.platform.lower():
+                res["os_type"] = "darwin"
+            elif "linux" in sys.platform.lower():
+                res["os_type"] = "ubuntu"  # dirty hack, will need to do something better, but keep fast
+            else:
+                print("need to fix for other types (check executorlocal")
+                sys.exit(1)
+
+            path = "%s/.profile_js" % (homedir)
+            if os.path.exists(path):
+                res["bashprofile"] = j.sal.fs.fileGetContents(path)
+            else:
+                res["bashprofile"] = ""
+
+            res["path_jscfg"] = cfgdir
+
+            if os.path.exists("/root/.iscontainer"):
+                res["iscontainer"] = True
+            else:
+                res["iscontainer"] = False
+
+            return res
+
+        if self._stateOnSystem == None:
+            self._stateOnSystem = do()  # don't use cache
+
+        return self._stateOnSystem
+
     def executeRaw(self, cmd, die=True, showout=False):
         return self.execute(cmd, die=die, showout=showout)
 

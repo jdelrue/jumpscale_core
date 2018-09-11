@@ -7,15 +7,15 @@ import re
 ## RI = Regex Replace case insensitive
 
 DO= """
-RI| j.application.JSBaseClass | j.application.JSBaseClass
-RI| j.core.cache. | j.core.cache.
-RI| j.core.text. | j.core.text.
+RI| j.application.JSBase$ | j.application.JSBaseClass
+RI| j.data.cache. | j.core.cache.
+RI| j.data.text. | j.core.text.
 RI| from Jumpscale import j | from Jumpscale import j 
-RI| j.application.JSBaseClass | j.application.JSBaseClass
-RI| .JSBaseClassConfig | .JSBaseClassConfig
-RI| .JSBaseClassConfigs | .JSBaseClassConfigs
-RI| j.logger. | j.logger.
-# RI| j.core.text. | j.core.text.
+RI| j.application.jsbase_get_class() | j.application.JSBaseClass
+RI| .base_class_config | .JSBaseClassConfig
+RI| .base_class_configs | .JSBaseClassConfigs
+RI| j.logging. | j.logger.
+# RI| j.data.text. | j.core.text.
 """
 
 ERRORS = """

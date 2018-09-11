@@ -5,7 +5,7 @@ JSBASE = j.application.JSBaseClass
 from .ExecutorSSH import ExecutorSSH
 import os
 
-
+JSBASE = j.application.JSBaseClass
 class ExecutorAsyncSSH(ExecutorSSH):
 
     def __init__(
