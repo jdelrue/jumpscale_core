@@ -20,7 +20,7 @@ class JSBaseClassConfigs(JSBASE):
                             type(self._child_class))
 
         self._single_item = single_item
-
+        self._child_class = child_class
         # self.getall()
 
     def get(self, instance="main", data=None, create=True,
