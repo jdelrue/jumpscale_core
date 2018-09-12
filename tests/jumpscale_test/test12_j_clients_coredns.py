@@ -73,12 +73,42 @@ class TestCoreDNS(TestcasesBase):
         self.assertTrue(get == b'newval')
 
     @parameterized.expand([('x1', 'txt'),
+                           ])
+    def test002_etcd_keys(self, subzone, qtype):
+
+        if subzone:
+            zone = "%s/%s" % (self.zone, subzone)
+        else:
+            zone = self.zone
+        dzone = zone.split("/")
+        dzone.reverse()
+        dzone = '.'.join(dzone)
+
+        z = self.d.zone_get(zone)
+
+        cdns = z.get_records('', qtype)
+        dresp = dig(dzone, qtype)
+        compare_output(cdns, dresp)
+
+        return
+
+        z = d.zone_get('local/skydns/x5')
+        print (z.get_records('','srv'))
+
+        z = d.zone_get('local/skydns/x1')
+        print (z.get_records('','txt'))
+
+        z = d.zone_get('local/skydns/x3')
+        print (z.get_records(''))
+        print (z.get_records('', 'aaaa'))
+
+    @parameterized.expand([
                            ('', 'txt'),
                            ('', 'cname'),
                            ('', 'srv'),
                            ('', 'aaaa'),
                            ('', None)])
-    def test002_etcd_keys(self, subzone, qtype):
+    def test003_etcd_keys_fail(self, subzone, qtype):
 
         if subzone:
             zone = "%s/%s" % (self.zone, subzone)
