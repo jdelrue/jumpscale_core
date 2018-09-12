@@ -72,7 +72,9 @@ class Jumpscale(JSBase): # deliberately deriving from JSBase
     def __init__(self, logging_enabled=False, filter=None, config_dir=None):
         JSBase.__init__(self)
         self._shell = None
+        #pr = Jumpscale._profileStart()
         self.bootstrap(logging_enabled, filter, config_dir)
+        #Jumpscale._profileStop(pr)
 
     def shell(self,name="",loc=True):
         """ runs an embedded IPython shell - do not use remotely
