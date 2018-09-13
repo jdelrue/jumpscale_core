@@ -23,7 +23,7 @@ class Application(object):
         self._systempid = None
 
         self.interactive = True
-
+        self._logger = None
         self.schemas = None
 
     @property
