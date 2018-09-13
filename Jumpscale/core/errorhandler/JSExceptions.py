@@ -1,4 +1,4 @@
-
+from Jumpscale import j
 import pssh.exceptions
 
 import copy

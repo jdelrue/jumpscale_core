@@ -245,7 +245,7 @@ class RegexTools(JSBASE):
                 "Cannot do j.data.regex.getRegexMatches when "
                 "pattern or text parameter is empty")
         pattern = self._patternFix(pattern)
-        rm = self.RegexMatches()
+        rm = RegexMatches()
         for match in re.finditer(pattern, text, flags):
             rm.addMatch(match)
         return rm
@@ -263,7 +263,7 @@ class RegexTools(JSBASE):
         pattern = self._patternFix(pattern)
 
         for match in re.finditer(pattern, text, flags):
-            rm = self.RegexMatch()
+            rm = RegexMatch()
             rm.start = match.start()
             rm.end = match.end()
             rm.founditem = match.group()
