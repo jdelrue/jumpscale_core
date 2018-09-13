@@ -50,10 +50,36 @@ class State(object):
         self.readonly = readonly
         self.executor = executor
         if executor is not None:
-            # TODO need to load the toml file from the executor, will always put on home or can put in local redis!
-            self._config = self._j.core.config
+            if self._j.core._db_fakeredis:
+                #make sure we use real redis
+                self._j.clients.redis.core_start()
+                self._j.core._db = None
+                if self._j.core._db_fakeredis:
+                    raise RuntimeError("should have been real redis by now")
+                # raise RuntimeError("make sure you run local core redis, can use ")
+            data = self._j.core.db.hget("jumpscale:configs",self.executor.id)
+            if data == None:
+                #means there is no config yet, need to put
+                with open(os.path.join(self._j.core.dir_jumpscale_core, "Jumpscale", "core", "jumpscale.toml"), 'rb') as ff:
+                    conf = ff.read().decode()
+                conf = conf.replace("{{HOME}}", self._dir_home)
+                self._config = pytoml.loads(conf)
+                self.configSave()
+            else:
+                self._config = pytoml.loads(data)
         else:
             self._config = self._j.core.config
+
+    @property
+    def _dir_home(self):
+        env = self.executor.env
+        if "HOMEDIR" in env:
+            return os.environ["HOMEDIR"]
+        elif "HOME" in env:
+            return os.environ["HOME"]
+        else:
+            return "/root"
+        return self._dir_home
 
     @property
     def config(self):
@@ -71,11 +97,13 @@ class State(object):
             _, versions[name] = repo.getBranchOrTag()
         return versions
 
-    def stateKey(self,key):
-        #if executor known need to use other key per executor
+    @property
+    def _stateHKey(self):
+        #if executor known need to use other key for the hset per executor
         if self.executor is not None:
-            self._j.shell()
-        return key
+            return "jumpscale:state:%s"%self.executor.id
+        else:
+            return "jumpscale:state:local"
 
     def stateSet(self, key, val, save=True):
         """Set a section in Jumpscale's state.toml
@@ -89,11 +117,10 @@ class State(object):
         :return: true if new value is set, false if already exists
         :rtype: bool
         """
-        key = self.stateKey(key)
         if not isinstance(val, dict):
             raise RuntimeError("state set input needs to be dict")
         val = pytoml.dumps(val)
-        self._j.core.db.hset("jumpscale:state",key,val)
+        self._j.core.db.hset(self._stateHKey,key,val)
 
     def stateGet(self, key, defval={}, set=False):
         """gets a section from state.toml
@@ -107,10 +134,9 @@ class State(object):
         :return: the section data
         :rtype: dict
         """
-        key = self.stateKey(key)
         if not isinstance(defval, dict):
             raise RuntimeError("defval needs to be dict")
-        res = self._j.core.db.hget("jumpscale:state", key, val)
+        res = self._j.core.db.hget(self._stateHKey, key)
         if res==None and defval is not {}:
             res = defval
             if set:
@@ -129,8 +155,7 @@ class State(object):
         :return: true if the section exists
         :rtype: bool
         """
-        key = self.stateKey(key)
-        return not self._j.core.db.hget("jumpscale:state", key) == None
+        return not self._j.core.db.hget(self._stateHKey, key) == None
 
 
     def configExists(self, key):
@@ -436,6 +461,8 @@ class State(object):
                             self._config_changed = True
         self.configSave()
 
+
+
     def configSave(self):
         """
         Writes config to specified path
@@ -455,26 +482,23 @@ class State(object):
             file.write(data)
             file.close()
         else:
-            path = "/tmp/jumpscale.toml"
-            data = pytoml.dumps(self.config)
-            self.executor.file_write(path, data, sudo=False)
-            self.executor.reset()  # make sure all caching is reset
+            self._j.core.db.hset("jumpscale:configs",self.executor.id,pytoml.dumps(self.config))
 
     @property
     def config_js(self):
-        return self._config
+        return self.config
 
     @property
     def config_my(self):
-        return self._config["myself.config"]
+        return self.config["myself.config"]
 
     @property
     def config_system(self):
-        return self._config["system"]
+        return self.config["system"]
 
 
     def __repr__(self):
-        return str(self._config)
+        return str(self.config)
 
     def __str__(self):
-        return str(self._config)
+        return str(self.config)

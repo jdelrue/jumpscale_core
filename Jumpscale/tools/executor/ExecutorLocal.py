@@ -26,7 +26,7 @@ class ExecutorLocal(ExecutorBase):
         return j.sal.fs.exists(path)
 
     @property
-    def stateOnSystem(self):
+    def state_on_system(self):
         """
         is dict of all relevant param's on system
         """
@@ -96,10 +96,10 @@ class ExecutorLocal(ExecutorBase):
 
             return res
 
-        if self._stateOnSystem == None:
-            self._stateOnSystem = do()  # don't use cache
+        if self._state_on_system == None:
+            self._state_on_system = do()  # don't use cache
 
-        return self._stateOnSystem
+        return self._state_on_system
 
     def executeRaw(self, cmd, die=True, showout=False):
         return self.execute(cmd, die=die, showout=showout)

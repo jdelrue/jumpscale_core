@@ -26,20 +26,23 @@ class ExecutorBase(JSBASE):
         self.CURDIR = ""
         self._logger = None
         self.reset()
-        self._dirpaths_init = False
-
-    def reset(self):
-        self._iscontainer = None
-        self._state = None
-        self._stateOnSystem = None
-        self._prefab = None
 
     @property
     def state(self):
-        if self._state is None:
+        if self._state == None:
             from Jumpscale.core.State import State
             self._state = State(j, executor=self)
         return self._state
+
+    @property
+    def config(self):
+        return self.state.config
+
+    def reset(self):
+        # self._dirpaths_init = False
+        self._state_on_system = None
+        self._prefab = None
+        self._state = None
 
     @property
     def logger(self):
@@ -55,7 +58,7 @@ class ExecutorBase(JSBASE):
 
     @property
     def env(self):
-        return self.stateOnSystem["env"]
+        return self.state_on_system["env"]
 
     def _docheckok(self, cmd, out):
         out = out.rstrip("\n")
@@ -143,15 +146,6 @@ class ExecutorBase(JSBASE):
     def exists(self, path):
         raise NotImplemented()
 
-    def configSave(self):
-        """
-        Config Save
-        """
-        if self.type == "local":
-            j.shell()
-            j.core.state = self._state
-        self.state.configSave()
-
     # interface to implement by child classes
     def execute(
             self,
@@ -180,7 +174,7 @@ class ExecutorBase(JSBASE):
         """
         means we don't work with ssh-agent ...
         """
-        return self.stateOnSystem["iscontainer"]
+        return self.state_on_system["iscontainer"]
 
     @property
     def isBuildEnv(self):
@@ -194,7 +188,7 @@ class ExecutorBase(JSBASE):
 
 
     @property
-    def stateOnSystem(self):
+    def state_on_system(self):
         """
         is dict of all relevant param's on system
         """
@@ -320,150 +314,28 @@ class ExecutorBase(JSBASE):
             return res
 
 
-        if self._stateOnSystem is None:
-            self._stateOnSystem = self.cache.get("stateOnSystem", do)
-        return self._stateOnSystem
+        if self._state_on_system is None:
+            self._state_on_system = self.cache.get("state_on_system", do)
+        return self._state_on_system
 
     def enableDebug(self):
         self.state.configSetInDictBool("system", "debug", True)
         self.state.configSave()
         self.cache.reset()
 
-    def _getDirPathConfig(self):
 
-        if self.isBuildEnv:
-            T = "BASEDIR = \"%s\"\n"%os.environ["PBASE"]
-            T += '''
-            HOMEDIR = "{{HOME}}"
-            CODEDIR = "{{BASEDIR}}/code"
-            HOSTDIR = "{{TMPDIR}}/host"
-            HOSTCFGDIR = "{{TMPDIR}}/hostcfg"
-            CFGDIR = "{{BASEDIR}}/cfg"
-            VARDIR = "{{TMPDIR}}/var"
-            '''
-        elif self.isContainer:
-            T = '''
-            HOMEDIR = "~"
-            BASEDIR = "/opt"
-            CODEDIR = "/opt/code"
-            HOSTDIR = "/host"
-            HOSTCFGDIR = "/hostcfg"
-            CFGDIR = "{{BASEDIR}}/cfg"
-            VARDIR = "/var"
-            '''
-
-        elif self.platformtype.isMac:
-            T = '''
-            HOMEDIR = "~"
-            BASEDIR = "{{HOMEDIR}}/opt/"
-            CODEDIR = "{{HOMEDIR}}/code"
-            HOSTDIR = "{{HOMEDIR}}/opt/"
-            HOSTCFGDIR = "{{HOMEDIR}}/opt/jumpscale/cfg/"
-            CFGDIR = "{{HOSTCFGDIR}}"
-            VARDIR = "{{BASEDIR}}/var"
-            '''
-        else:
-            T = '''
-            HOMEDIR = "~"
-            BASEDIR = "/opt"
-            CODEDIR = "/opt/code"
-            HOSTDIR = "{{HOMEDIR}}/jumpscale/"
-            HOSTCFGDIR = "{{HOMEDIR}}/jumpscale/cfg/"
-            CFGDIR = "{{BASEDIR}}/cfg"
-            VARDIR = "{{BASEDIR}}/var"
-            '''
-
-        BASE = '''        
-        TMPDIR = "{{TMPDIRSYSTEM}}/jumpscale/"
-        BASEDIRJS = "{{BASEDIR}}/jumpscale"
-        JSAPPSDIR= "{{BASEDIRJS}}/apps"
-        TEMPLATEDIR ="{{VARDIR}}/templates"
-        DATADIR = "{{VARDIR}}/data"
-        BUILDDIR = "{{VARDIR}}/build"
-        LIBDIR = "{{BASEDIR}}/lib/"
-        LOGDIR = "{{VARDIR}}/log"
-        BINDIR="{{BASEDIR}}/bin"
-        '''
-
-        TXT = j.core.text.strip(BASE) + "\n" + j.core.text.strip(T)
-
-        return self._replaceInToml(TXT)
-
-    def _replaceInToml(self, T):
-        T = T.replace("~", self.env["HOME"])
-        if "HOMEDIR" in self.env:
-            T = T.replace("{{HOME}}", self.env["HOMEDIR"])
-        else:
-            T = T.replace("{{HOME}}", "{{TMPDIR}}")
-        # need to see if this works well on mac
-        T = T.replace("{{TMPDIRSYSTEM}}", "/tmp")
-        # will replace  variables in itself
-        counter = 0
-        while "{{" in T and counter < 10:
-            TT = pytoml.loads(T)
-            T = pystache.render(T, **TT)
-            counter += 1
-        TT = pytoml.loads(T)
-
-        if counter > 9:
-            raise RuntimeError(
-                "cannot convert default configfile, "
-                "template arguments still in")
-
-        return T
 
     def initEnv(self):
         """
         init the environment of an executor
         """
         self.reset()
-        T = self._getDirPathConfig()
-        T = T.replace("//", "/")
-        DIRPATHS = pytoml.loads(T)
 
-        if not self.isBuildEnv:
-            # get env dir arguments & overrule them in jumpscale config
-            for key, val in self.env.items():
-                if "DIR" in key and key in DIRPATHS:
-                    DIRPATHS[key] = val
 
-        TSYSTEM = '''
+        TT["system"]["container"] = self.state_on_system["iscontainer"]
 
-        [system]
-        debug = false
-        autopip = false
-        readonly = false
-        container = false
 
-        [myconfig]
-        #giturl = "ssh://git@docs.agitsystem.com:7022/myusername/myconfig.git"
-        giturl = ""
-        sshkeyname = "id_rsa"
-        path = ""
-
-        [logging]
-        enabled = true
-        filter = ["*"]
-        exclude = ["sal.fs"]
-        level =20
-
-        '''
-
-        TSYSTEM = j.core.text.strip(TSYSTEM)
-        TT = pytoml.loads(TSYSTEM)
-
-        TT["dirs"] = DIRPATHS
-
-        # set up a default myconfig path.
-        TT['myconfig']['path'] = TT['dirs']['CODEDIR'] + "/local/stdorg/config"
-
-        # need to see if this works everywhere but think so
-        TT["dirs"]["TMPDIR"] = "/tmp"
-
-        TT["system"]["container"] = self.stateOnSystem["iscontainer"]
-
-        if "plugins" not in TT.keys():
-            TT["plugins"] = {}
+        j.shell()
 
         if not self.state_disabled:
 
@@ -491,48 +363,12 @@ class ExecutorBase(JSBASE):
                     out += "mkdir -p %s\n" % val
                 self.execute(out, sudo=True,showout=False)
 
-            if self.exists(
-                "%s/github/threefoldtech/jumpscale_core/" %
-                    DIRPATHS["CODEDIR"]):
-                TT["plugins"]["Jumpscale"] = "%s/github/threefoldtech/jumpscale_core/Jumpscale/" % DIRPATHS["CODEDIR"]
-                # only check if core exists
-                if self.exists(
-                    "%s/github/threefoldtech/jumpscale_lib/" %
-                        DIRPATHS["CODEDIR"]):
-                    TT["plugins"]["JumpscaleLib"] = "%s/github/threefoldtech/jumpscale_lib/JumpscaleLib/" % DIRPATHS["CODEDIR"]
-                if self.exists(
-                    "%s/github/threefoldtech/jumpscale_prefab/" %
-                        DIRPATHS["CODEDIR"]):
-                    TT["plugins"]["JumpscalePrefab"] = "%s/github/threefoldtech/jumpscale_prefab/JumpscalePrefab/" % DIRPATHS["CODEDIR"]
-                if self.exists("%s/github/threefoldtech/digital_me/" % DIRPATHS["CODEDIR"]):
-                    TT["plugins"]["DigitalMeLib"] = "%s/github/threefoldtech/digital_me/DigitalMeLib/" % DIRPATHS["CODEDIR"]
-                if self.exists("%s/github/threefoldtech/0-robot/" % DIRPATHS["CODEDIR"]):
-                    TT["plugins"]["JumpscaleZrobot"] = "%s/github/threefoldtech/0-robot/JumpscaleZrobot/" % DIRPATHS["CODEDIR"]
-
-                if self.type == "local":
-                    src = "%s/github/threefoldtech/jumpscale_core/cmds/" % DIRPATHS["CODEDIR"]
-                    if self.isBuildEnv:
-                        dest = DIRPATHS["BINDIR"]
-                    else:
-                        dest = "/usr/local/bin"
-                    j.sal.fs.symlinkFilesInDir(src, dest,
-                                                    delete=True,
-                                                    includeDirs=False,
-                                                    makeExecutable=True)
 
         if TT["system"]["container"] is True:
             self.state.configUpdate(TT, True)  # will overwrite
         else:
             self.state.configUpdate(TT, False)  # will not overwrite
 
-        # XXX state occurs in two places, this code results in them
-        # getting out-of-sync as j.core.state can be **DIFFERENT**
-        # from j.tools.executorLocal.state, resulting in unpredictable
-        # behaviour.  a property in j.core has been put in its place
-        # which REFERENCES tools.executorLocal.state, which MAY
-        # be over-ridden if desired
-        #if self.type == "local":
-        #    j.core.state = self.state
 
         self.cache.reset()
         #print (self.state._configJS)
@@ -543,9 +379,9 @@ class ExecutorBase(JSBASE):
     def env_check_init(self):
         """ check that system has been initialise, if not, do so
         """
+        j.shell()
+        w
         #print ("env_check_init", self._dirpaths_init)
-        if self._dirpaths_init:
-            return
         if not self.exists(j.core.jsconfig_path) or \
            not self.state.configExists('dirs') or \
            self.state.configGet('dirs', {}) == {}:
@@ -562,6 +398,13 @@ class ExecutorBase(JSBASE):
     @property
     def platformtype(self):
         return j.core.platformtype.get(self)
+
+    @property
+    def cache(self):
+        if self._cache is None:
+            self._cache = j.data.cache.get("executor" + self.id, reset=True, expiration=600)  # 10 min
+        return self._cache
+
 
     def file_read(self, path):
         self.logger.debug("file read:%s" % path)

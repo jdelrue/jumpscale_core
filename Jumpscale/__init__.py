@@ -47,7 +47,7 @@ class Core():
         if not self._db:
             if tcpPortConnectionTest("localhost", 6379):
                 from redis import StrictRedis
-                # print("CORE_REDIS")
+                print("CORE_REDIS")
                 self._db = StrictRedis(host='localhost', port=6379, db=0)
                 self._db_fakeredis = False
             else:

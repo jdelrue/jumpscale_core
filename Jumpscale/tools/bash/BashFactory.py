@@ -45,7 +45,7 @@ class Profile(JSBASE):
         self._includes = []
 
         content = self.executor.file_read(self.pathProfile)
-        # content = self.executor.stateOnSystem["bashprofile"].strip()  ##WHY??
+        # content = self.executor.state_on_system["bashprofile"].strip()  ##WHY??
 
         for match in Profile.env_pattern.finditer(content):
             self._env[match.group(1)] = match.group(2)

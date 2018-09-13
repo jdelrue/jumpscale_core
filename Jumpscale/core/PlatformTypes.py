@@ -147,7 +147,7 @@ class PlatformType(object):
             self._platform = unn.sysname
 
         else:
-            uname = self.executor.stateOnSystem["uname"]
+            uname = self.executor.state_on_system["uname"]
             if uname.find("warning: setlocale") != -1:
                 raise RuntimeError(
                     "run js_shell 'j.tools.bash.local.locale_check()'")
@@ -158,8 +158,8 @@ class PlatformType(object):
                 self._osversion = _osversion
             else:
                 # is for ubuntu
-                if "version_id" in self.executor.stateOnSystem:
-                    expr = self.executor.stateOnSystem["version_id"]
+                if "version_id" in self.executor.state_on_system:
+                    expr = self.executor.state_on_system["version_id"]
                     self._osversion = expr
             self._uname = uname
         return self._uname
@@ -281,7 +281,7 @@ class PlatformType(object):
     @property
     def isVirtualBox(self):
         '''Check whether the system supports VirtualBox'''
-        return self.executor.stateOnSystem.get('vboxdrv', False)
+        return self.executor.state_on_system.get('vboxdrv', False)
 
     # @property
     # def isHyperV(self):
