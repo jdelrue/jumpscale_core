@@ -73,6 +73,9 @@ class TestCoreDNS(TestcasesBase):
         self.assertTrue(get == b'newval')
 
     @parameterized.expand([('x1', 'txt'),
+                           ('', 'a'),
+                           ('', 'txt'),
+                           ('', 'cname'),
                            ])
     def test002_etcd_keys(self, subzone, qtype):
 
@@ -103,8 +106,6 @@ class TestCoreDNS(TestcasesBase):
         print (z.get_records('', 'aaaa'))
 
     @parameterized.expand([
-                           ('', 'txt'),
-                           ('', 'cname'),
                            ('', 'srv'),
                            ('', 'aaaa'),
                            ('', None)])
