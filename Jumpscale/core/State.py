@@ -70,6 +70,8 @@ class State(object):
         else:
             self._config = self._j.core.config
 
+        self._state={}
+
     @property
     def _dir_home(self):
         env = self.executor.env
@@ -97,30 +99,33 @@ class State(object):
             _, versions[name] = repo.getBranchOrTag()
         return versions
 
-    @property
-    def _stateHKey(self):
-        #if executor known need to use other key for the hset per executor
-        if self.executor is not None:
-            return "jumpscale:state:%s"%self.executor.id
-        else:
-            return "jumpscale:state:local"
 
-    def stateSet(self, key, val, save=True):
-        """Set a section in Jumpscale's state.toml
+    def stateSet(self, key,val={}, save=False):
+        """
+
+        Set a section in Jumpscale's
 
         :param key: section name
         :type key: str
         :param val: value to set
         :type val: dict
-        :param save: writes to the file if true
-        :param save: bool, optional
         :return: true if new value is set, false if already exists
         :rtype: bool
         """
         if not isinstance(val, dict):
             raise RuntimeError("state set input needs to be dict")
-        val = pytoml.dumps(val)
-        self._j.core.db.hset(self._stateHKey,key,val)
+        if self.executor is None or self.executor.id == "localhost":
+            val = pytoml.dumps(val)
+            self._j.core.db.hset("jumpscale:state:local",key,val)
+        else:
+            self._state[key]= val
+            if save:
+                self.stateSave()
+
+    def stateSave(self):
+        if self.executor is None or self.executor.id == "localhost":
+            path = "%s/opt/cfg/state.toml"%self.executor.dir_paths["HOMEDIR"]
+            self.executor.file_write(path,pytoml.dumps(self.state._state))
 
     def stateGet(self, key, defval={}, set=False):
         """gets a section from state.toml
@@ -136,16 +141,26 @@ class State(object):
         """
         if not isinstance(defval, dict):
             raise RuntimeError("defval needs to be dict")
-        res = self._j.core.db.hget(self._stateHKey, key)
-        if res==None and defval is not {}:
-            res = defval
-            if set:
-                self.stateSet(key,defval,True)
-        elif res == None:
-            res={}
+        if self.executor is None or self.executor.id == "localhost":
+            res = self._j.core.db.hget(self._stateHKey, key)
+            if res==None and defval is not {}:
+                res = defval
+                if set:
+                    self.stateSet(key,defval,True)
+            elif res == None:
+                res={}
+            else:
+                res = pytoml.loads(res)
+            return res
         else:
-            res = pytoml.loads(res)
-        return res
+            if not key in self._state:
+                if set:
+                    self._state[key] = defval
+                    self.stateSave()
+                else:
+                    return defval
+            return self._state[key]
+
 
     def stateExists(self, key):
         """ checks if a section in jumpscale.toml exists
@@ -155,7 +170,10 @@ class State(object):
         :return: true if the section exists
         :rtype: bool
         """
-        return not self._j.core.db.hget(self._stateHKey, key) == None
+        if self.executor is None or self.executor.id == "localhost":
+            return not self._j.core.db.hget(self._stateHKey, key) == None
+        else:
+            return key in self._state
 
 
     def configExists(self, key):

@@ -79,15 +79,7 @@ class Core():
 
     @property
     def jsconfig_path(self):
-        options = ["%s/opt/cfg/jumpscale.toml" % self.dir_home,
-                     "/opt/jumpscale.toml",
-                     "%s/jumpscale/jumpscale.toml" % self.dir_home]
-        for path in options:
-            if os.path.exists(path):
-                return path
-        return options[0]
-
-
+        return "%s/opt/cfg/jumpscale.toml" % self.dir_home
 
 class Jumpscale():
 

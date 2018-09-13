@@ -39,10 +39,11 @@ class ExecutorBase(JSBASE):
         return self.state.config
 
     def reset(self):
-        # self._dirpaths_init = False
         self._state_on_system = None
         self._prefab = None
         self._state = None
+        self._state_on_system = None
+
 
     @property
     def logger(self):
@@ -177,23 +178,11 @@ class ExecutorBase(JSBASE):
         return self.state_on_system["iscontainer"]
 
     @property
-    def isBuildEnv(self):
-        """
-        means we are building python and we are in the build-dir
-        """
-        if self._isBuildEnv == None:
-            #env arg is set by the env.sh script in the build dir
-            self._isBuildEnv = "PBASE" in os.environ
-        return self._isBuildEnv
-
-
-    @property
     def state_on_system(self):
         """
         is dict of all relevant param's on system
         """
-
-        def do():
+        if self._state_on_system == None:
 
             self.logger.debug("stateonsystem for non local:%s" % self)
             C = """
@@ -201,17 +190,11 @@ class ExecutorBase(JSBASE):
             ls "/root/.iscontainer"  > /dev/null 2>&1 && \
                         echo 'ISCONTAINER = 1' || echo 'ISCONTAINER = 0'
             echo UNAME = \""$(uname -mnprs)"\"
+        
             
-            if [ "$(uname)" == "Darwin" ]; then
-                export PATH_JSCFG="$HOME/jumpscale/cfg"
-            elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-                export PATH_JSCFG="$HOME/jumpscale/cfg"
-            else
-                die "platform not supported"
-            fi
-            echo PATH_JSCFG = \"$PATH_JSCFG\"
+            echo "HOME = $HOME"
+            #TODO:*1 check if it exists if not fall back on /root
             
-            echo "PATH_HOME = $HOME"
             echo HOSTNAME = "$(hostname)"
             
             lsmod > /dev/null 2>&1|grep vboxdrv |grep -v grep  > \
@@ -226,14 +209,16 @@ class ExecutorBase(JSBASE):
             opkg -v > /dev/null 2>&1 && echo 'OS_TYPE="LEDE"'
             cat /etc/os-release | grep "VERSION_ID"
             
+                                 
             echo "CFG_JUMPSCALE = --TEXT--"
-            cat $PATH_JSCFG/jumpscale.toml 2>/dev/null || echo ""
+            #NEEDS TO CORRESPOND WITH jsconfig_path in main __init__.py file
+            cat $HOME/opt/cfg/jumpscale.toml 2>/dev/null || echo ""
             echo --TEXT--
-            
+
             echo "CFG_STATE = --TEXT--"
-            cat $PATH_JSCFG/state.toml 2> /dev/null || echo ""
+            cat $HOME/opt/cfg/state.toml 2>/dev/null || echo ""
             echo --TEXT--
-            
+                        
             echo "BASHPROFILE = --TEXT--"
             cat $HOME/.profile_js 2>/dev/null || echo ""
             echo --TEXT--
@@ -287,15 +272,15 @@ class ExecutorBase(JSBASE):
                         res["cfg_jumpscale"])
             else:
                 res["cfg_jumpscale"] = {}
+
             if res["cfg_state"].strip() != "":
                 try:
                     res["cfg_state"] = pytoml.loads(res["cfg_state"])
                 except Exception as e:
                     raise RuntimeError(
-                        "Could not load jumpscale config file "
+                        "Could not load state file "
                         "(pytoml error)\n%s\n" %
                         res["cfg_state"])
-
             else:
                 res["cfg_state"] = {}
 
@@ -311,12 +296,10 @@ class ExecutorBase(JSBASE):
                     envdict[pname.strip()] = pval.strip()
 
             res["env"] = envdict
-            return res
+            self._state_on_system = res
 
-
-        if self._state_on_system is None:
-            self._state_on_system = self.cache.get("state_on_system", do)
         return self._state_on_system
+
 
     def enableDebug(self):
         self.state.configSetInDictBool("system", "debug", True)
@@ -329,70 +312,57 @@ class ExecutorBase(JSBASE):
         """
         init the environment of an executor
         """
+        print("INITENV") #TMP
         self.reset()
 
+        self.config["system"]["container"] = self.state_on_system["iscontainer"]
 
-        TT["system"]["container"] = self.state_on_system["iscontainer"]
+        if self.isBuildEnv:
+            #ONLY RELEVANT FOR BUILDING PYTHON, needs to check what needs to be done (kristof) #TODO:
+            j.shell()
+            for key, val in DIRPATHS.items():
+                j.sal.fs.createDir(val)
+            githubpath="%s/github/threefoldtech"%DIRPATHS["CODEDIR"]
 
+            #link code dir from host to build dir if it exists
+            if not j.sal.fs.exists(githubpath):
+                sdir1 = "%s/code/github/threefoldtech"%os.environ["HOME"]
+                sdir2 = "/opt/code/github/threefoldtech"
+                if j.sal.fs.exists(sdir1):
+                    sdir = sdir1
+                elif j.sal.fs.exists(sdir2):
+                    sdir = sdir2
+                else:
+                    sdir = None
+                if sdir is not None:
+                    j.sal.fs.symlink(sdir, githubpath, overwriteTarget=True)
 
-        j.shell()
-
-        if not self.state_disabled:
-
-            if self.isBuildEnv:
-                for key, val in DIRPATHS.items():
-                    j.sal.fs.createDir(val)
-                githubpath="%s/github/threefoldtech"%DIRPATHS["CODEDIR"]
-
-                #link code dir from host to build dir if it exists
-                if not j.sal.fs.exists(githubpath):
-                    sdir1 = "%s/code/github/threefoldtech"%os.environ["HOME"]
-                    sdir2 = "/opt/code/github/threefoldtech"
-                    if j.sal.fs.exists(sdir1):
-                        sdir = sdir1
-                    elif j.sal.fs.exists(sdir2):
-                        sdir = sdir2
-                    else:
-                        sdir = None
-                    if sdir is not None:
-                        j.sal.fs.symlink(sdir, githubpath, overwriteTarget=True)
-
-            else:
-                out = ""
-                for key, val in DIRPATHS.items():
-                    out += "mkdir -p %s\n" % val
-                self.execute(out, sudo=True,showout=False)
-
-
-        if TT["system"]["container"] is True:
-            self.state.configUpdate(TT, True)  # will overwrite
         else:
-            self.state.configUpdate(TT, False)  # will not overwrite
-
+            out = ""
+            for key, val in self.dir_paths.items():
+                out += "mkdir -p %s\n" % val
+            self.execute(out, sudo=True,showout=False)
 
         self.cache.reset()
-        #print (self.state._configJS)
-        #print (self.state.configJSPath)
+
+        self.config["system"]["executor"]=True
+        self.config["DIRS"]["HOMEDIR"] = self.state_on_system["HOME"]
+        self.state.configSave()
+
+        if "cfg_state" in self.state_on_system:
+            self.state._state = self.state_on_system["cfg_state"]
 
         self.logger.debug("initenv done on executor base")
 
     def env_check_init(self):
         """ check that system has been initialise, if not, do so
         """
-        j.shell()
-        w
-        #print ("env_check_init", self._dirpaths_init)
-        if not self.exists(j.core.jsconfig_path) or \
-           not self.state.configExists('dirs') or \
-           self.state.configGet('dirs', {}) == {}:
+        if "executor" not in self.config["system"]:
+            #means we did not initialize an executor
             self.initEnv()
-        #print ("env_check_init", self.state.configJSPath)
-        #print ("dirs exists", self.state.configExists('dirs'))
-        self._dirpaths_init = True
 
     @property
     def dir_paths(self):
-        self.env_check_init()
         return self.state.configGet('dirs')
 
     @property

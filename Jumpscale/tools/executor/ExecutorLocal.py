@@ -20,52 +20,39 @@ class ExecutorLocal(ExecutorBase):
         self.type = "local"
         self._id = 'localhost'
 
-        self._cache = j.core.cache.get(id="executor:%s" % self.id, expiration=3600)
-
     def exists(self, path):
         return j.sal.fs.exists(path)
+
+    @property
+    def isBuildEnv(self):
+        """
+        means we are building python and we are in the build-dir
+        only used for building python
+        """
+        if self._isBuildEnv == None:
+            #env arg is set by the env.sh script in the build dir
+            self._isBuildEnv = "PBASE" in os.environ
+        return self._isBuildEnv
+
 
     @property
     def state_on_system(self):
         """
         is dict of all relevant param's on system
         """
+        if self._state_on_system == None:
+            print("STATEONSYSTEM") #DEBUG
+            def getenv():
+                res = {}
+                for key, val in os.environ.items():
+                    res[key] = val
+                return res
 
-        def getenv():
-            res = {}
-            for key, val in os.environ.items():
-                res[key] = val
-            return res
+            homedir = j.dirs.HOMEDIR
 
-        def do():
             # print ("INFO: stateonsystem for local")
-
-            if self.isBuildEnv:
-                homedir = os.environ["PBASE"]
-                cfgdir = "%s/cfg" % homedir
-            else:
-                if "HOMEDIR" in os.environ.keys():
-                    homedir = os.environ["HOMEDIR"]
-                else:
-                    # if os.path.exists("/root/.iscontainer"):
-                    #     homedir = "/host"
-                    # else:
-                    homedir = os.environ["HOME"]
-                cfgdir = "%s/jumpscale/cfg" % homedir
             res = {}
-
-            def load(name):
-                path = "%s/%s.toml" % (cfgdir, name)
-                if os.path.exists(path):
-                    return pytoml.loads(j.sal.fs.fileGetContents(path))
-                else:
-                    return {}
-
-            res["cfg_jumpscale"] = load("jumpscale")
-            res["cfg_state"] = load("state")
-            res["cfg_me"] = load("me")
             res["env"] = getenv()
-
             res["uname"] = subprocess.Popen("uname -mnprs", stdout=subprocess.PIPE,
                                             shell=True).stdout.read().decode().strip()
             # res["hostname"] = subprocess.Popen("hostname", stdout=subprocess.PIPE,
@@ -87,19 +74,17 @@ class ExecutorLocal(ExecutorBase):
             else:
                 res["bashprofile"] = ""
 
-            res["path_jscfg"] = cfgdir
-
             if os.path.exists("/root/.iscontainer"):
                 res["iscontainer"] = True
             else:
                 res["iscontainer"] = False
 
-            return res
+            res["HOME"] = j.core.dir_home
 
-        if self._state_on_system == None:
-            self._state_on_system = do()  # don't use cache
+            self._state_on_system = res
 
         return self._state_on_system
+
 
     def executeRaw(self, cmd, die=True, showout=False):
         return self.execute(cmd, die=die, showout=showout)
