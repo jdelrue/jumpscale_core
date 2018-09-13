@@ -10,7 +10,7 @@ import socket
 import os
 import time
 # import sys
-from Jumpscale.core import tcpPortConnectionTest
+from Jumpscale import tcpPortConnectionTest
 
 class RedisFactory(JSBASE):
 
