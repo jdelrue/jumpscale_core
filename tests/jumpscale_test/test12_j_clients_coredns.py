@@ -25,6 +25,7 @@ def dig(zone, qtype):
     resp = map(str.strip, resp) # strip whitespace
     resp = filter(None, resp) # filter empty lines
     resp = filter(lambda x: not x.startswith(';'), resp) # filter comments
+    resp = filter(lambda x: 'SOA' not in x, resp) # filter SOA, XXX not v well!
     return list(resp)
 
 def split_whitespace(lines):
