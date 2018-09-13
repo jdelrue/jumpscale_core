@@ -81,6 +81,9 @@ class TestCoreDNS(TestcasesBase):
                            ('cn1', 'srv'),
                            ('x3', 'srv'),
                            ('x5', 'srv'),
+                           ('', 'aaaa'),
+                           ('x3', 'aaaa'),
+                           ('', None),
                            ])
     def test002_etcd_keys(self, subzone, qtype):
 
@@ -110,9 +113,9 @@ class TestCoreDNS(TestcasesBase):
         print (z.get_records(''))
         print (z.get_records('', 'aaaa'))
 
+    # for testing of things that don't work, get a different test name
     @parameterized.expand([
-                           ('', 'aaaa'),
-                           ('', None)])
+                          ])
     def test003_etcd_keys_fail(self, subzone, qtype):
 
         if subzone:
