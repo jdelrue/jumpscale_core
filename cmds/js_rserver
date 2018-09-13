@@ -11,6 +11,9 @@
     over to start running jumpscale over a remote connection.
 """
 
+import gevent.monkey
+gevent.monkey.patch_all()
+
 import daemon
 from lockfile.pidlockfile import PIDLockFile
 import sys
