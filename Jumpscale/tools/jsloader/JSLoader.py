@@ -430,7 +430,7 @@ class JSLoaderDONTUSE():
             may be restricted to a single plugin library (pluginsearch)
 
             to call:
-            python -c 'from Jumpscale import j;j.tools.jsloader.generate_json()'
+            python -c 'from Jumpscale import j;j.core.jsgenerator.generate()
         """
 
         if pluginsearch is None:  # reset the plugins, redoing them all
@@ -614,5 +614,5 @@ class JSLoaderDONTUSE():
         self.generate_json()
         print ("GENERATE NOW DEPRECATED. DO NOT USE. IT IS CRITICAL TO")
         print ("DELETE /usr/lib/python3/dist-packages/jumpscale.py")
-        # print ("PLEASE USE j.tools.jsloader.generate_json('<LIBNAME>')")
+        # print ("PLEASE USE j.core.jsgenerator.generate()
         return

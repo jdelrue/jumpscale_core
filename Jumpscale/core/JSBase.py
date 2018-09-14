@@ -9,9 +9,7 @@ class JSBase:
         self._classname = None
         self._cache_expiration = 3600
         self._logger_force = False
-
-        if "_location" not in self.__dict__:
-            self._location=None
+        self._location=None
 
     @property
     def __name__(self):

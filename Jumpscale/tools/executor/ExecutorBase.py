@@ -372,7 +372,7 @@ class ExecutorBase(JSBASE):
     @property
     def cache(self):
         if self._cache is None:
-            self._cache = j.data.cache.get("executor" + self.id, reset=True, expiration=600)  # 10 min
+            self._cache = j.core.cache.get("executor" + self.id, reset=True, expiration=600)  # 10 min
         return self._cache
 
 

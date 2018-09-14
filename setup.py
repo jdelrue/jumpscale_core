@@ -25,7 +25,7 @@ def _post_install(libname, libpath):
             j.sal.fs.remove("/usr/local/bin/%s" % item)
 
     # re-generates the Jumpscale core plugin json (similar to .pth)
-    j.tools.jsloader.generate_json('Jumpscale')
+    j.core.jsgenerator.generate()
 
 
 class install(_install):
@@ -82,7 +82,7 @@ packages = find_packages() # .... so just install everything for now
 
 setup(
     name='Jumpscale',
-    version='9.4.0-rc4',
+    version='9.5.1',
     description='Automation framework for cloud workloads',
     long_description=long_description,
     url='https://github.com/threefoldtech/jumpscale_core',
