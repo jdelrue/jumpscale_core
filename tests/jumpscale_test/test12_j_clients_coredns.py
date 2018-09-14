@@ -53,7 +53,7 @@ records_for_test = [
                        ('x3', 'aaaa', '2003::8:1'),
                     ]
 
-def add_test_record(d, zzone, key, rtype, rrdata, priority=None, port=None):
+def add_record(d, zzone, key, rtype, rrdata, priority=None, port=None):
 
         ResourceRecord = d.ResourceRecord
 
@@ -71,7 +71,7 @@ def add_test_record(d, zzone, key, rtype, rrdata, priority=None, port=None):
 
         return z, rr, zone
 
-def add_test_records(d, zzone):
+def add_records(d, zzone):
 
         for r in records_for_test:
             if len(r) == 3:
@@ -81,7 +81,7 @@ def add_test_records(d, zzone):
             else:
                 (key, rtype, name, priority, port) = r
 
-            add_test_record(d, zzone, key, rtype, name, priority, port)
+            add_record(d, zzone, key, rtype, name, priority, port)
 
 
 class TestCoreDNSSetGet(TestcasesBase):
@@ -96,7 +96,7 @@ class TestCoreDNSSetGet(TestcasesBase):
         #self.assertRaises(KeyError, self.db.get, 'hello')
         #self.assertRaises(KeyError, self.db.delete, 'hello')
 
-        (z, rr, zone) = add_test_record(self.d, self.zone,
+        (z, rr, zone) = add_record(self.d, self.zone,
                                         key, rtype, rrdata, priority, port)
         q = z.get('')
 
