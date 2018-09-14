@@ -5,7 +5,6 @@ import pytoml
 import unittest
 import uuid
 
-
 class TestJSTATE(TestcasesBase):
 
     def get_state(self):

@@ -7,7 +7,7 @@ import unittest
 import string
 import uuid
 from pwd import getpwuid
-
+from nose.plugins.attrib import attr
 
 class TestUNIX(TestcasesBase):
 
@@ -88,6 +88,7 @@ class TestUNIX(TestcasesBase):
         fake_group = self.random_string()
         self.assertFalse(self._j.sal.unix.unixGroupExists(fake_group))
 
+    @attr(unsafe=True)
     def test05_create_new_group(self):
         """ JS-033
 
@@ -105,6 +106,7 @@ class TestUNIX(TestcasesBase):
         self.assertIn(group_name, os.popen(
             "cat /etc/group | cut -d : -f 1").read().splitlines())
 
+    @attr(unsafe=True)
     def test06_add_user_to_group(self):
         """ JS-034
 
@@ -142,6 +144,7 @@ class TestUNIX(TestcasesBase):
         with self.assertRaises(AssertionError):
             self._j.sal.unix.addUserToGroup(user_name, fake_group_name)
 
+    @attr(unsafe=True)
     def test07_change_file_owner(self):
         """ JS-035
 
@@ -193,6 +196,7 @@ class TestUNIX(TestcasesBase):
         with self.assertRaises(KeyError):
             self._j.sal.unix.chown(file_path, user_name, fake_group_name)
 
+    @attr(unsafe=True)
     @unittest.skip(
         "https://github.com/threefoldtech/jumpscale_core/issues/163")
     def test08_change_folder_owner_recursively(self):
