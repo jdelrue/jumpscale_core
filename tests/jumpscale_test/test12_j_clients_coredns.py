@@ -45,15 +45,48 @@ def compare_output(_coredns, _dig):
                            "%s\n%s\n" % (_coredns, _dig)
 
 
-class TestCoreDNSSetGet(TestcasesBase):
-
-    @parameterized.expand([
+records_for_test = [
                        ('', 'a', '1.1.1.1'),
                        ('x1', 'txt', 'this is a random text message'),
                        ('x2', 'cname', 'cn1.skydns.local skydns.local'),
                        ('x5', 'srv', 'skydns-local.server', 10, 8080),
                        ('x3', 'aaaa', '2003::8:1'),
-                        ])
+                    ]
+
+def add_test_record(d, zzone, key, rtype, rrdata, priority=None, port=None):
+
+        ResourceRecord = d.ResourceRecord
+
+        if key:
+            zone = "%s/%s" % (zzone, key)
+        else:
+            zone = zzone
+
+        z = d.zone_get(zone)
+
+        name = z._get_zonename() + "."
+        rr = ResourceRecord(name, rtype, ttl=60,
+                               rrdata=rrdata, port=port, priority=priority)
+        z.set('', rr)
+
+        return z, rr, zone
+
+def add_test_records(d, zzone):
+
+        for r in records_for_test:
+            if len(r) == 3:
+                (key, rtype, name) = r
+                port = None
+                priority = None
+            else:
+                (key, rtype, name, priority, port) = r
+
+            add_test_record(d, zzone, key, rtype, name, priority, port)
+
+
+class TestCoreDNSSetGet(TestcasesBase):
+
+    @parameterized.expand(records_for_test)
     def test001_etcd_set(self, key, rtype, rrdata, priority=None, port=None):
 
         self.d = self._j.clients.coredns.get()
@@ -63,25 +96,13 @@ class TestCoreDNSSetGet(TestcasesBase):
         #self.assertRaises(KeyError, self.db.get, 'hello')
         #self.assertRaises(KeyError, self.db.delete, 'hello')
 
-        ResourceRecord = self.d.ResourceRecord
-
-        if key:
-            zone = "%s/%s" % (self.zone, key)
-        else:
-            zone = self.zone
-
-        z = self.d.zone_get(zone)
-
-        name = z._get_zonename() + "."
-        # add value and check it
-        arec1 = ResourceRecord(name, rtype, ttl=60,
-                               rrdata=rrdata, port=port, priority=priority)
-        z.set('', arec1)
+        (z, rr, zone) = add_test_record(self.d, self.zone,
+                                        key, rtype, rrdata, priority, port)
         q = z.get('')
 
-        self.assertTrue(str(q) == str(arec1), "%s != %s" % (str(q), str(arec1)))
+        self.assertTrue(str(q) == str(rr), "%s != %s" % (str(q), str(rr)))
 
-        self.d.zone_del(zone)
+        self.d.zone_del(zone) # bit drastic, deletes entire zone on each expand
 
 class TestCoreDNS(TestcasesBase):
 
