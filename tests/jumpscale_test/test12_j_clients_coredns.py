@@ -45,19 +45,63 @@ def compare_output(_coredns, _dig):
                            "%s\n%s\n" % (_coredns, _dig)
 
 
+class TestCoreDNSSetGet(TestcasesBase):
+
+    @parameterized.expand([
+                       ('', 'a', '1.1.1.1'),
+                       ('x1', 'txt', 'this is a random text message'),
+                       ('x2', 'cname', 'cn1.skydns.local skydns.local'),
+                       ('x5', 'srv', 'skydns-local.server', 10, 8080),
+                       ('x3', 'aaaa', '2003::8:1'),
+                        ])
+    def test001_etcd_set(self, key, rtype, rrdata, priority=None, port=None):
+
+        self.d = self._j.clients.coredns.get()
+        self.zone = "local/%s" % self.random_string()
+
+        # check get and delete on non-existent value
+        #self.assertRaises(KeyError, self.db.get, 'hello')
+        #self.assertRaises(KeyError, self.db.delete, 'hello')
+
+        ResourceRecord = self.d.ResourceRecord
+
+        if key:
+            zone = "%s/%s" % (self.zone, key)
+        else:
+            zone = self.zone
+
+        z = self.d.zone_get(zone)
+
+        name = z._get_zonename() + "."
+        # add value and check it
+        arec1 = ResourceRecord(name, rtype, ttl=60,
+                               rrdata=rrdata, port=port, priority=priority)
+        z.set('', arec1)
+        q = z.get('')
+
+        self.assertTrue(str(q) == str(arec1), "%s != %s" % (str(q), str(arec1)))
+
+        self.d.zone_del(zone)
+
 class TestCoreDNS(TestcasesBase):
 
     def setUp(self):
         super().setUp()
+        # create a random zone
         self.d = self._j.clients.coredns.get()
-        #self.zone = self.random_string()
-        self.zone = 'local/skydns'
+        #self.zone = "local/%s" % self.random_string()
+        self.zone = "local/skydns"
 
     def tearDown(self):
-        #self.etcd.namespace_del(self.ns)
+        # get etcd direct and call delete on all records in the zone
+        #etcd = self.d.etcd
+        #etcd.delete_all()
+
+        # now just remove the zone (doesn't remove data: done above)
+        #self._j.clients.coredns.zone_del(self.zone)
         super().tearDown()
 
-    def _test001_etcd_getset(self):
+    def _test001_etcd_setget(self):
 
         # check get and delete on non-existent value
         self.assertRaises(KeyError, self.db.get, 'hello')
@@ -147,3 +191,4 @@ class TestCoreDNS(TestcasesBase):
         z = d.zone_get('local/skydns/x3')
         print (z.get_records(''))
         print (z.get_records('', 'aaaa'))
+
