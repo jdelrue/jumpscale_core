@@ -4,7 +4,7 @@ import sys
 
 #WILL MAKE SURE THAT THE GENERATED FILE IS REMOVED SO IT CAN GET REGENERATED
 os.environ["JSRELOAD"]="1"
-os.environ["JSGENERATE_DEBUG"]="1"
+# os.environ["JSGENERATE_DEBUG"]="1"
 
 try:
     from Jumpscale import j
@@ -15,29 +15,4 @@ except:
         if os.path.exists(item) and item not in sys.path:
             sys.path.append(item)
     from Jumpscale import j
-
-# j.tools.bash.local.locale_check()
-
-import click
-
-
-@click.group()
-def cli():
-    pass
-
-
-# print(j.core.state.mascot)
-
-sys.exit(0)
-
-#make sure we don't do autopip
-# j.core.state.configSetInDict('system','autopip',False)
-
-from .core.generator.JSGenerator import JSGenerator
-
-j._shell()
-
-j.core.jsgenerator = JSGenerator(j)
-
-j.core.jsgenerator.generate(methods_find=True)
 

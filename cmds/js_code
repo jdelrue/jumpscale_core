@@ -100,8 +100,8 @@ def jscode(action, name, url, message, branch, accounts, update, force=False, de
             _init_action()
 
         if url is not None:
-            repository_host, repository_type, repository_account, repository_name, dest, repository_url, port = j.clients.git.getGitRepoArgs(
-                url)
+            repository_host, repository_type, repository_account, repository_name, dest, repository_url, port = \
+                j.clients.git.getGitRepoArgs(url)
             if not j.sal.fs.exists(dest):
                 repository_url = j.clients.git.rewriteGitRepoUrl(repository_url)[-2]
                 j.clients.git.pullGitRepo(url=repository_url, branch=branch)

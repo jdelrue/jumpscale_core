@@ -65,9 +65,7 @@ class ConfigManager(JSBASE):
             path = j.sal.fs.joinPaths(path, '%s.toml' % instance)
         if not location:
             if force or j.tools.console.askYesNo(
-                "No location specified, Are you sure you want to " + \
-                        "delete all configs?",
-                    default=True):
+                    "No location specified, Are you sure you want to delete all configs?",default=True):
                 configs = j.sal.fs.listDirsInDir(path) if path else []
                 for config in configs:
                     if not j.sal.fs.getBaseName(config).startswith('.'):
@@ -122,13 +120,7 @@ class ConfigManager(JSBASE):
         self._init = True
         return self.sandbox
 
-    def sandbox_init(
-            self,
-            path="",
-            systemssh=False,
-            passphrase="",
-            reset=False,
-            sshkeyname=""):
+    def sandbox_init(self, path="", systemssh=False, passphrase="", reset=False, sshkeyname=""):
         """
         Will use specified dir as sandbox for config management 
         (will not use system config dir)
@@ -163,11 +155,7 @@ class ConfigManager(JSBASE):
             kpath_full0 = j.sal.fs.pathNormalize(kpath_full)
             if not j.sal.fs.exists("keys"):
                 j.sal.fs.createDir("keys")
-                j.clients.sshkey.key_generate(
-                    path=kpath_full0,
-                    passphrase=passphrase,
-                    load=True,
-                    returnObj=False)
+                j.clients.sshkey.key_generate(path=kpath_full0, passphrase=passphrase, load=True, returnObj=False)
             j.tools.configmanager._keyname = sshkeyname
 
         j.tools.configmanager._path = j.sal.fs.pathNormalize(cpath)
@@ -176,8 +164,7 @@ class ConfigManager(JSBASE):
         data["path"] = kpath_full
         data["passphrase_"] = passphrase
 
-        sshkeyobj = j.clients.sshkey.get(
-            instance=sshkeyname, data=data, interactive=False)
+        sshkeyobj = j.clients.sshkey.get(instance=sshkeyname, data=data, interactive=False)
 
         self.sandbox = True
 
@@ -225,13 +212,7 @@ class ConfigManager(JSBASE):
 
 
 
-
-    def configure(
-            self,
-            location="",
-            instance="main",
-            data={},
-            interactive=True):
+    def configure(self, location="", instance="main", data={}, interactive=True):
         """
         Will display a npyscreen form to edit the configuration
         @param location: jslocation of module to configure for 
@@ -241,8 +222,7 @@ class ConfigManager(JSBASE):
         self.sandbox_check()
         if not data:
             interactive = True
-        jumpscaleobj = js_obj_get(
-            location=location, instance=instance, data=data)
+        jumpscaleobj = self.js_obj_get(location=location, instance=instance, data=data)
         if interactive:
             jumpscaleobj.configure()
         jumpscaleobj.config.save()
@@ -254,7 +234,7 @@ class ConfigManager(JSBASE):
         The configuration will be updated with the value of updatedict
         """
         self.sandbox_check()
-        jumpscaleobj = js_obj_get(location=location, instance=instance)
+        jumpscaleobj = self.js_obj_get(location=location, instance=instance)
         sc = jumpscaleobj.config
         sc.data = updatedict
         sc.save()
@@ -265,20 +245,14 @@ class ConfigManager(JSBASE):
         return a secret config
         """
         self.sandbox_check()
-        if not hasattr(jsobj, '__jslocation__') or \
-                jsobj.__jslocation__ is None or jsobj.__jslocation__ is "":
-            raise RuntimeError(
-                "__jslocation__ has not been set on class %s" %
-                jsobj.__class__)
+        if not hasattr(jsobj, '__jslocation__') or jsobj.__jslocation__ is None or jsobj.__jslocation__ is "":
+            raise RuntimeError("__jslocation__ has not been set on class %s" % jsobj.__class__)
         location = jsobj.__jslocation__
         key = "%s_%s" % (location, instance)
 
         if ui is not None:
             jsobj.ui = ui
-        sc = self.Config( instance=instance,
-            location=location,
-            template=template,
-            data=data)
+        sc = Config(instance=instance, location=location, template=template, data=data)
 
         return sc
 
@@ -295,18 +269,13 @@ class ConfigManager(JSBASE):
                 location = j.sal.fs.getBaseName(j.sal.fs.getcwd())
                 if not location.startswith("j."):
                     raise RuntimeError(
-                        "Cannot find location, are you in right " + \
-                                "directory? now in:%s" %
-                        j.sal.fs.getcwd())
+                        "Cannot find location, are you in right directory? now in:%s" % j.sal.fs.getcwd())
             else:
                 raise RuntimeError(
-                    "location has not been specified, looks " + \
-                            "like we are not in config directory:'%s'" %
-                    self.path)
+                    "location has not been specified, looks like we are not in config directory:'%s'" % self.path)
 
-        obj = jget(location)
-        # If the client is a single item one (i.e itsyouonline), we will always
-        # use the default `main` instance
+        obj = eval(location)
+        # If the client is a single item one (i.e itsyouonline), we will always use the default `main` instance
         if obj._single_item:
             instance = "main"
         if not hasattr(obj, 'get'):
@@ -391,10 +360,7 @@ class ConfigManager(JSBASE):
     def delete(self, location, instance="*"):
         self.sandbox_check()
         if instance != "*":
-            path = j.sal.fs.joinPaths(
-                j.tools.configmanager.path,
-                location,
-                instance + '.toml')
+            path = j.sal.fs.joinPaths(j.tools.configmanager.path, location, instance + '.toml')
             if j.sal.fs.exists(path):
                 j.sal.fs.remove(path)
         else:
@@ -410,6 +376,8 @@ class ConfigManager(JSBASE):
                 git based or local
         @param keypath is the path towards the ssh key which will be used 
                 to use the config manager
+
+        js_shell 'j.tools.configmanager.init()'
 
         """
         def msg(msg):
@@ -434,13 +402,8 @@ class ConfigManager(JSBASE):
                 # if no keys try to load a key from home directory/.ssh and
                 # re-run the method again
                 self.logger.info("found 0 keys from ssh-agent")
-                keys = j.sal.fs.listFilesInDir(
-                    "%s/.ssh" %
-                    j.dirs.HOMEDIR,
-                    exclude=[
-                        "*.pub",
-                        "*authorized_keys*",
-                        "*known_hosts*"])
+                keys = j.sal.fs.listFilesInDir("%s/.ssh" % j.dirs.HOMEDIR,
+                                               exclude=["*.pub", "*authorized_keys*", "*known_hosts*"])
                 if not keys:
                     raise RuntimeError(
                         "Cannot find keys, please load right ssh " + \
@@ -490,13 +453,9 @@ class ConfigManager(JSBASE):
             return
 
         if data != {}:
-            self.logger.debug(
-                "init: silent:%s path:%s withdata:\n" %
-                (silent, configpath))
+            self.logger.debug("init: silent:%s path:%s withdata:\n" % (silent, configpath))
         else:
-            self.logger.debug(
-                "init: silent:%s path:%s nodata\n" %
-                (silent, configpath))
+            self.logger.debug("init: silent:%s path:%s nodata\n" % (silent, configpath))
 
         if silent:
             self.interactive = False
@@ -507,85 +466,79 @@ class ConfigManager(JSBASE):
             j.sal.fs.touch("%s/.jsconfig" % configpath)
             j.core.state.configSetInDict("myconfig", "path", configpath)
 
-        cpath = configpath
-
         if keypath:
             self._keyname = j.sal.fs.getBaseName(keypath)
-            j.core.state.configSetInDict(
-                "myconfig", "sshkeyname", self.keyname)
+            j.core.state.configSetInDict("myconfig", "sshkeyname", self.keyname)
             j.clients.sshkey.key_get(keypath, load=True)
         else:
             ssh_init(ssh_silent=silent)
 
         cfg = j.core.state.config_js
         if "myconfig" not in cfg:
-            die("could not find myconfig in the main configuration " + \
-                    "file, prob need to upgrade")
+            die("could not find myconfig in the main configuration file, prob need to upgrade")
 
-        if not cpath and not cfg["myconfig"].get("path", None):
-            # means config directory not configured
-            cpath, giturl = self._findConfigRepo(die=False)
+        if not configpath:
+            configpath = cfg["myconfig"].get("path", "")
+            if configpath != "":
+                if j.tools.console.askYesNo("is '%s' the right location for your private configuration?"%
+                                            configpath) == False:
+                    configpath = ""
 
-            if silent:
-                if not cpath:
-                    msg("did not find config dir in code dirs, " + \
-                            "will create one in js_shell cfg dir")
-                    cpath = '%s/myconfig/' % j.dirs.CFGDIR
-                    j.sal.fs.createDir(cpath)
-                    msg("Config dir in: '%s'" % cpath)
-                j.core.state.configSetInDict("myconfig", "path", cpath)
-                if not giturl:
-                    j.core.state.configSetInDict("myconfig", "giturl", giturl)
-            else:
+            if configpath == "":
+                # means config directory not configured
+                configpath, giturl = self._findConfigRepo(die=False)
 
-                if cpath:
-                    msg("Found a config repo on: '%s', do you want "
-                            "to use this one?" % cpath)
-                    if not j.tools.console.askYesNo():
-                        giturl = None
-                        cpath = ""
-                    else:
-                        if giturl:
-                            j.clients.git.pullGitRepo(
-                                url=giturl, interactive=True, ssh=True)
-
-                if not cpath:
-                    msg("Do you want to use a git based CONFIG dir, y/n?")
-                    if j.tools.console.askYesNo():
-                        msg("Specify a url like: " + \
-                "'ssh://git@docs.grid.tf:7022/despiegk/config_despiegk.git'")
-                        giturl = j.tools.console.askString("url")
-                        cpath = j.clients.git.pullGitRepo(
-                            url=giturl, interactive=True, ssh=True)
-
-                if not cpath:
-                    msg(
-                        "will create config dir in '%s/myconfig/', "
-                                "your config will not be centralised! "
-                                "Is this ok?" % j.dirs.CFGDIR)
-                    if j.tools.console.askYesNo():
-                        cpath = '%s/myconfig/' % j.dirs.CFGDIR
-                        j.sal.fs.createDir(cpath)
-
-                if cpath:
-                    j.core.state.configSetInDict("myconfig", "path", cpath)
+                if silent:
+                    if not configpath:
+                        msg("did not find config dir in code dirs, will create one in js_shell cfg dir")
+                        configpath = '%s/myconfig/' % j.dirs.CFGDIR
+                        j.sal.fs.createDir(configpath)
+                        msg("Config dir in: '%s'" % configpath)
+                    j.core.state.configSetInDict("myconfig", "path", configpath)
+                    if not giturl:
+                        j.core.state.configSetInDict("myconfig", "giturl", giturl)
                 else:
-                    die("ERROR: please restart config procedure, " + \
-                            "use git based config or need to store locally.")
-                if giturl:
-                    j.core.state.configSetInDict("myconfig", "giturl", giturl)
 
-                j.core.state.configSave()
+                    if configpath:
+                        msg("Found a config repo on: '%s', do you want to use this one?" % configpath)
+                        if not j.tools.console.askYesNo():
+                            giturl = None
+                            configpath = ""
+                        else:
+                            if giturl:
+                                j.clients.git.pullGitRepo(url=giturl, interactive=True, ssh=True)
+
+                    if not configpath:
+                        msg("Do you want to use a git based CONFIG dir, y/n?")
+                        if j.tools.console.askYesNo():
+                            msg("Specify a url like: 'ssh://git@docs.grid.tf:7022/despiegk/config_despiegk.git'")
+                            giturl = j.tools.console.askString("url")
+                            configpath = j.clients.git.pullGitRepo(url=giturl, interactive=True, ssh=True)
+
+                    if not configpath:
+                        msg(
+                            "will create config dir in '%s/myconfig/', your config will not be centralised! Is this ok?" % j.dirs.CFGDIR)
+                        if j.tools.console.askYesNo():
+                            configpath = '%s/myconfig/' % j.dirs.CFGDIR
+                            j.sal.fs.createDir(configpath)
+
+                    if configpath:
+                        j.core.state.configSetInDict("myconfig", "path", configpath)
+                    else:
+                        die("ERROR: please restart config procedure, use git based config or need to store locally.")
+                    if giturl:
+                        j.core.state.configSetInDict("myconfig", "giturl", giturl)
+
+                    j.core.state.configSave()
 
         data = data or {}
         if data:
             from Jumpscale.tools.myconfig.MyConfig import MyConfig as MyConfig
             j.tools._myconfig = MyConfig(data=data)
 
-        if j.tools.myconfig.config.data["email"] == "":
-            if not silent:
-                j.tools.myconfig.configure()
-                j.tools.myconfig.config.save()
+        if not silent:
+            j.tools.myconfig.configure()
+            j.tools.myconfig.config.save()
 
     def __str__(self):
         self.sandbox_check()

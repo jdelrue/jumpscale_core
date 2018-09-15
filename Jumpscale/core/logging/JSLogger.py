@@ -11,6 +11,7 @@ class JSLogger(logging.Logger):
         # self.__only_me = False
         self.factory = factory
         self._j = factory._j
+        # print("LOGGER")
 
     def error(self, msg, *args, **kwargs):
         """

@@ -117,8 +117,7 @@ class GitClient(JSBASE):
         # mode
         if not self._repo:
             if not j.sal.fs.exists(self.BASEDIR):
-                j.tools.executorLocal.execute(
-                    "git config --global http.sslVerify false")
+                j.tools.executorLocal.execute("git config --global http.sslVerify false")
                 self._clone()
             else:
                 self._repo = git.Repo(self.BASEDIR)
@@ -269,7 +268,8 @@ class GitClient(JSBASE):
         """
         add all untracked files
         """
-        cmd = 'cd %s;git add -A :/' % self.BASEDIR
+        # cmd = 'cd %s;git add -A :/' % self.BASEDIR
+        cmd = 'cd %s;git add -A .' % self.BASEDIR
         j.tools.executorLocal.execute(cmd)
 
     def addFiles(self, files=[]):

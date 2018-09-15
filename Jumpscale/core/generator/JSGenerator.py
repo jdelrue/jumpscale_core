@@ -2,7 +2,7 @@ import os
 import fnmatch
 from pathlib import Path
 from jinja2 import Template
-import traceback
+
 
 from .Metadata import Metadata
 
@@ -15,35 +15,9 @@ class JSGenerator():
         """
         self._j = j
         self._generated = False
-        self.errors = []
 
-    def _trace_get(self, ttype, err, tb=None):
 
-        tblist = traceback.format_exception(ttype, err, tb)
 
-        ignore = ["click/core.py", "ipython", "bpython", "loghandler", "errorhandler", "importlib._bootstrap"]
-
-        # if self._limit and len(tblist) > self._limit:
-        #     tblist = tblist[-self._limit:]
-        tb_text = ""
-        for item in tblist:
-            for ignoreitem in ignore:
-                if item.find(ignoreitem) != -1:
-                    item = ""
-            if item != "":
-                tb_text += "%s" % item
-        return tb_text
-
-    def error(self,cat,obj,error):
-        print("ERROR: %s:%s"%(cat,obj))
-        print (error)
-        trace = self._trace_get(ttype=None, err=error)
-        self.errors.append((cat,obj,error,trace))
-        if not "JSGENERATE_DEBUG" in os.environ:
-            msg = "%s:%s:%s"%(cat,obj,error)
-            self.report_errors()
-            raise RuntimeError(msg)
-        return "%s:%s:%s"%(cat,obj,error)
 
     def _check_process_file(self,path):
         bname=os.path.basename(path)
@@ -165,7 +139,7 @@ class JSGenerator():
 
     def report_errors(self):
         out=""
-        for cat,obj,error,trace in self.errors:
+        for cat,obj,error,trace in self._j.application.errors_init:
             out+="## %s:%s\n\n"%(cat,obj)
             out+="%s\n\n"%error
             out += "%s\n\n" % trace
@@ -173,7 +147,7 @@ class JSGenerator():
         file = open(path, "w")
         file.write(out)
         file.close()
-        return len(self.errors)
+        return len(self._j.application.errors_init)
 
     def report_line_changes(self):
         out=""
@@ -183,4 +157,4 @@ class JSGenerator():
         file = open(path, "w")
         file.write(out)
         file.close()
-        return len(self.errors)
+

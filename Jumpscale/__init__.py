@@ -4,20 +4,38 @@ import pytoml
 import sys
 os.environ["LC_ALL"]='en_US.UTF-8'
 
-def tcpPortConnectionTest(ipaddr, port, timeout=None):
-    conn = None
-    try:
-        conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        if timeout:
-            conn.settimeout(timeout)
-        try:
-            conn.connect((ipaddr, port))
-        except BaseException:
-            return False
-    finally:
-        if conn:
-            conn.close()
-    return True
+# def tcpPortConnectionTest(ipaddr, port, timeout=None):
+#     conn = None
+#     try:
+#         conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+#         if timeout:
+#             conn.settimeout(timeout)
+#         try:
+#             conn.connect((ipaddr, port))
+#         except BaseException:
+#             return False
+#     finally:
+#         if conn:
+#             conn.close()
+#     return True
+
+def profileStart():
+    import cProfile
+    pr = cProfile.Profile()
+    pr.enable()
+    return pr
+
+def profileStop(pr):
+    pr.disable()
+    import io
+    import pstats
+    s = io.StringIO()
+    sortby = 'cumulative'
+    ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+    ps.print_stats()
+    print(s.getvalue())
+
+# pr=profileStart()
 
 
 class Core():
@@ -45,12 +63,14 @@ class Core():
     @property
     def db(self):
         if not self._db:
-            if tcpPortConnectionTest("localhost", 6379):
+            # if tcpPortConnectionTest("localhost", 6379):
+            try:
                 from redis import StrictRedis
-                print("CORE_REDIS")
+                # print("CORE_REDIS")
                 self._db = StrictRedis(host='localhost', port=6379, db=0)
                 self._db_fakeredis = False
-            else:
+            except:
+            # else:
                 # print("CORE_MEMREDIS")
                 import fakeredis
                 self._db = fakeredis.FakeStrictRedis()
@@ -107,21 +127,6 @@ class Jumpscale():
 j = Jumpscale()
 j.core = Core(j)
 
-def profileStart():
-    import cProfile
-    pr = cProfile.Profile()
-    pr.enable()
-    return pr
-
-def profileStop(pr):
-    pr.disable()
-    import io
-    import pstats
-    s = io.StringIO()
-    sortby = 'cumulative'
-    ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
-    ps.print_stats()
-    print(s.getvalue())
 
 j._profileStart = profileStart
 j._profileStop = profileStop
@@ -165,15 +170,17 @@ j.core.exceptions = j.exceptions
 
 #THIS SHOULD BE THE END OF OUR CORE, EVERYTHING AFTER THIS SHOULD BE LOADED DYNAMICALLY
 
-
-if "JSRELOAD" in os.environ  and os.path.exists("%s/jumpscale_generated.py"%j.dirs.TMPDIR):
+if "JSRELOAD" in os.environ  and os.path.exists("%s/jumpscale/jumpscale_generated.py"%j.dirs.TMPDIR):
     print("RELOAD JUMPSCALE LIBS")
-    os.remove("%s/jumpscale_generated.py"%j.dirs.TMPDIR)
+    os.remove("%s/jumpscale/jumpscale_generated.py"%j.dirs.TMPDIR)
 
-if not os.path.exists("%s/jumpscale_generated.py"%j.dirs.TMPDIR):
+generated = False
+if not os.path.exists("%s/jumpscale/jumpscale_generated.py"%j.dirs.TMPDIR):
     from .core.generator.JSGenerator import JSGenerator
     j.core.jsgenerator = JSGenerator(j)
     j.core.jsgenerator.generate(methods_find=True)
+    j.core.jsgenerator.report()
+    generated = True
 
 ipath = "%s/jumpscale"%(j.dirs.TMPDIR)
 if ipath not in sys.path:
@@ -181,11 +188,14 @@ if ipath not in sys.path:
 
 import jumpscale_generated
 
-if j.core.jsgenerator.report_errors()>0:
+if generated  and len(j.core.application.errors_init)>0:
     print("THERE ARE ERRORS: look in /tmp/jumpscale/ERRORS_report.md")
-else:
-    print ("INIT DONE")
+# else:
+#     print ("INIT DONE")
 
 # profileStop(pr)
 
 # j.shell()
+
+# import time
+# time.sleep(1000)

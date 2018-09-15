@@ -4,6 +4,7 @@ import atexit
 import struct
 from collections import namedtuple
 import psutil
+import traceback
 from .JSBase import JSBase
 
 
@@ -25,6 +26,38 @@ class Application(object):
         self.interactive = True
         self._logger = None
         self.schemas = None
+
+        self.errors_init = []
+
+    def _trace_get(self, ttype, err, tb=None):
+
+        tblist = traceback.format_exception(ttype, err, tb)
+
+        ignore = ["click/core.py", "ipython", "bpython", "loghandler", "errorhandler", "importlib._bootstrap"]
+
+        # if self._limit and len(tblist) > self._limit:
+        #     tblist = tblist[-self._limit:]
+        tb_text = ""
+        for item in tblist:
+            for ignoreitem in ignore:
+                if item.find(ignoreitem) != -1:
+                    item = ""
+            if item != "":
+                tb_text += "%s" % item
+        return tb_text
+
+
+    def error_init(self,cat,obj,error):
+        print("ERROR: %s:%s"%(cat,obj))
+        print (error)
+        trace = self._trace_get(ttype=None, err=error)
+        self.errors_init.append((cat,obj,error,trace))
+        if not "JSGENERATE_DEBUG" in os.environ:
+            msg = "%s:%s:%s"%(cat,obj,error)
+            # self.report_errors()
+            raise RuntimeError(msg)
+        return "%s:%s:%s"%(cat,obj,error)
+
 
     @property
     def logger(self):

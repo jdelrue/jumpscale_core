@@ -645,6 +645,9 @@ class GitFactory(JSBASE):
         def checkaccount(account):
             # self.logger.info accounts
             # self.logger.info "%s %s"%(account,accounttofind)
+            if account.startswith("NEW"):
+                return False
+
             if account not in accounts:
                 if accounttofind.find("*") != -1:
                     if accounttofind == "*" or account.startswith(
@@ -680,10 +683,10 @@ class GitFactory(JSBASE):
             for top in j.sal.fs.listDirsInDir(
                     codeDir, recursive=False, dirNameOnly=True,
                     findDirectorySymlinks=True):
-                for account in j.sal.fs.listDirsInDir(
-                    "%s/%s" % (j.dirs.CODEDIR, top),
-                    recursive=False, dirNameOnly=True,
-                        findDirectorySymlinks=True):
+                if top.startswith("NEW"):
+                    continue
+                for account in j.sal.fs.listDirsInDir("%s/%s" % (j.dirs.CODEDIR, top),
+                        recursive=False, dirNameOnly=True,findDirectorySymlinks=True):
                     if checkaccount(account):
                         accountdir = "%s/%s/%s" % (j.dirs.CODEDIR,
                                                    top, account)
@@ -695,8 +698,7 @@ class GitFactory(JSBASE):
                                 "%s/%s/%s" % (j.dirs.CODEDIR, top, account),
                                 recursive=False, dirNameOnly=True,
                                     findDirectorySymlinks=True):
-                                repodir = "%s/%s/%s/%s" % (
-                                    j.dirs.CODEDIR, top, account, reponame)
+                                repodir = "%s/%s/%s/%s" % (j.dirs.CODEDIR, top, account, reponame)
                                 if j.sal.fs.exists(path="%s/.git" % repodir):
                                     if name.find("*") != -1:
                                         if name == "*" or reponame.startswith(

@@ -13,6 +13,7 @@ def cli():
 def sandbox():
     """
     js_config sandbox
+    create a sandbox configuration
     """
     j.tools.configmanager.sandbox_init(path="", systemssh=False, passphrase="", reset=False, sshkeyname="")
 
@@ -33,6 +34,7 @@ def init(silent, path, key):
         j.tools.configmanager.init(silent=silent, configpath=path, keypath=key)
     finally:
         j.tools.configmanager.interactive = previous
+    print ("CONFIGURATION DONE")
 
 
 @click.command()

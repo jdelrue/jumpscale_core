@@ -22,12 +22,11 @@ class LoggerFactory():
         self.loggers = {}
         self.exclude = []
 
-
         self.enabled = True
 
         self.init()
 
-        self.logger.debug("started logger factory")
+        # self.logger.debug("started logger factory")
 
     @property
     def handlers(self):
@@ -38,7 +37,7 @@ class LoggerFactory():
     @property
     def logger(self): # JSBase still has a logger property setter
         if self._logger is None:
-            self._logger = JSLogger("logger", self)
+            self._logger = JSLoggerDefault("logger", self)
             self._logger.addHandler(self.handlers.consoleHandler)
         return self._logger
 
@@ -254,7 +253,7 @@ class LoggerFactory():
             if item not in self.exclude:
                 self.exclude.append(item)
 
-        self.logger.debug("start re-init for logging")
+        # self.logger.debug("start re-init for logging")
 
         self.handlers_level_set(level)
 
@@ -292,14 +291,15 @@ class LoggerFactory():
         get info from config file & make sure all logging is done properly
         """
         self.enabled = self._j.core.config["logging"]["enabled"]
-        level = self._j.core.config["logging"]["level"]
-        self.loggers_level_set(level)
-        self.handlers_level_set(level)
-        self.filter = []
-        self.loggers = {}
-        items = self._j.core.config["logging"]["filter"]
-        exclude = self._j.core.config["logging"]["exclude"]
-        self.logger_filters_add(items=items, exclude=exclude, save=False)
+        if self.enabled:
+            level = self._j.core.config["logging"]["level"]
+            self.loggers_level_set(level)
+            self.handlers_level_set(level)
+            self.filter = []
+            self.loggers = {}
+            items = self._j.core.config["logging"]["filter"]
+            exclude = self._j.core.config["logging"]["exclude"]
+            self.logger_filters_add(items=items, exclude=exclude, save=False)
 
     # def enableConsoleMemHandler(self):
     #     self.logger.handlers = []
