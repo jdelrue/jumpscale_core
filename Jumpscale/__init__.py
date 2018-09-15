@@ -4,20 +4,20 @@ import pytoml
 import sys
 os.environ["LC_ALL"]='en_US.UTF-8'
 
-# def tcpPortConnectionTest(ipaddr, port, timeout=None):
-#     conn = None
-#     try:
-#         conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-#         if timeout:
-#             conn.settimeout(timeout)
-#         try:
-#             conn.connect((ipaddr, port))
-#         except BaseException:
-#             return False
-#     finally:
-#         if conn:
-#             conn.close()
-#     return True
+def tcpPortConnectionTest(ipaddr, port, timeout=None):
+    conn = None
+    try:
+        conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        if timeout:
+            conn.settimeout(timeout)
+        try:
+            conn.connect((ipaddr, port))
+        except BaseException:
+            return False
+    finally:
+        if conn:
+            conn.close()
+    return True
 
 def profileStart():
     import cProfile

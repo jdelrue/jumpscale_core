@@ -142,7 +142,7 @@ class State(object):
         if not isinstance(defval, dict):
             raise RuntimeError("defval needs to be dict")
         if self.executor is None or self.executor.id == "localhost":
-            res = self._j.core.db.hget(self._stateHKey, key)
+            res = self._j.core.db.hget("jumpscale:state:local", key)
             if res==None and defval is not {}:
                 res = defval
                 if set:
