@@ -21,8 +21,6 @@ class Dirs(object):
     """ Utility class to configure and store all relevant directory paths
     """
 
-    __jscorelocation__ = "j.core.dirs"
-
     def __init__(self,j):
         ''' jumpscale sandbox base folder
         '''

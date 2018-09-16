@@ -3,8 +3,6 @@ import time
 
 class Cache(object):
 
-    __jscorelocation__ = "j.data.datacache"
-
     def __init__(self,j):
         self._cache = {}
         self._j = j

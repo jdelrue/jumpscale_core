@@ -8,7 +8,6 @@ from .Metadata import Metadata
 
 class JSGenerator():
 
-    __jscorelocation__ = "j.core.jsgenerator"
 
     def __init__(self, j):
         """

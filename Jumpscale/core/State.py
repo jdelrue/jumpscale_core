@@ -43,8 +43,6 @@ class State(object):
 
     """
 
-    __jscorelocation__ = 'j.core.state'
-
     def __init__(self, j, executor=None,readonly=False):
         self._j = j
         self.readonly = readonly

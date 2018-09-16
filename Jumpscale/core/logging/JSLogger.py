@@ -5,7 +5,7 @@ class JSLogger(logging.Logger):
 
     def __init__(self, name, factory):
         super(JSLogger, self).__init__(name)
-        self.level=10
+        self.level = 10         #https://docs.python.org/3/library/logging.html#levels  10 is debug
         self.DEFAULT = False
         # self.custom_filters = {}
         # self.__only_me = False
@@ -79,5 +79,5 @@ class JSLogger(logging.Logger):
 
     # def __str__(self):
     #     return "LOGGER:%s:%s"%(self.name,self.level)
-
+    #
     # __repr__ = __str__

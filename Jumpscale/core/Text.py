@@ -25,7 +25,6 @@ except BaseException:
 class Text(object):
 
     def __init__(self,j):
-        self.__jscorelocation__ = "j.core.text."
         self._j = j
 
     def unicodedata(self, text):

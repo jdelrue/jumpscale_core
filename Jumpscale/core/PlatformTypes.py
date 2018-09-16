@@ -23,7 +23,6 @@ class PlatformTypes(object):
 
     def __init__(self,j):
         self._j = j
-        self.__jslocation__ = "j.core.platformtype"
         self._myplatform = None
         self._platformParents = {}
         self._platformParents["unix"] = ["generic"]

@@ -8,8 +8,6 @@ from .Handlers import Handlers
 
 class LoggerFactory():
 
-    __jscorelocation__ = "j.core.logging"
-
     def __init__(self, j):
         """
         """
@@ -20,13 +18,21 @@ class LoggerFactory():
         self.__default = None
 
         self.loggers = {}
+        self.filter = []
         self.exclude = []
 
-        self.enabled = True
+        self.enabled = self._j.core.config["logging"]["enabled"]
+        if self.enabled:
+            self.handlers.consoleHandler #makes sure that the console handler is set in the handlers
+            level = self._j.core.config["logging"]["level"]
+            self.loggers_level_set(level)
+            self.handlers_level_set(level)
+            self.loggers = {}
+            items = self._j.core.config["logging"]["filter"]
+            exclude = self._j.core.config["logging"]["exclude"]
+            self.logger_filters_add(items=items, exclude=exclude, save=False)
 
-        self.init()
-
-        # self.logger.debug("started logger factory")
+        # self.logger.info("##### started logger factory")
 
     @property
     def handlers(self):
@@ -87,10 +93,10 @@ class LoggerFactory():
             for item in self.filter:
                 # print("check include:%s"%item)
                 if item == "*":
-                    # print("include: %s:%s" % (item, name))
+                    # print("logger filter include: %s:%s" % (item, name))
                     return True
                 if name.find(item) != -1:
-                    # print("include: %s:%s" % (item, name))
+                    # print("logger filter include: %s:%s" % (item, name))
                     return True
             return False
 
@@ -109,6 +115,7 @@ class LoggerFactory():
                     logger.addHandler(handler)
 
                 self.loggers[name] = logger
+                # print("LOGGER:%s:%s"%(name,logger))
             else:
                 # print("DEFAULT LOGGER:%s" % name)
                 self.loggers[name] = self._default
@@ -119,24 +126,22 @@ class LoggerFactory():
         """ will transform all loggers to empty loggers which only act
             on errors, but ignore logs
         """
-        if self.enabled:
-            self.enabled = False
-            self.filter = []
+        self.enabled = False
+        self.filter = []
+        # for key, logger in self.loggers.items():
+        #     # print("disable logger: %s"%key)
+        #     logger.setLevel(20)
+        self._j.application.debug = False
 
-            # for key, logger in self.loggers.items():
-            #     # print("disable logger: %s"%key)
-            #     logger.setLevel(20)
-            self._j.application.debug = False
+        self.logger_filters_add()
 
-            self.logger_filters_add()
-
-    def enable(self):
-        """
-        """
-        if self.enabled is False:
-            self.enabled = True
-            self.filter = []
-            self.init()
+    # def enable(self):
+    #     """
+    #     """
+    #     if self.enabled is False:
+    #         self.enabled = True
+    #         self.filter = []
+    #         self.init()
 
     # def set_quiet(self, quiet):
     #     self._quiet = quiet
@@ -218,6 +223,7 @@ class LoggerFactory():
 
     def handlers_reset(self):
         self.logger.handlers = []
+        self.handlers_attach()
 
     def logger_filters_get(self):
         return  self._j.core.config["logging"]["filter"]
@@ -286,20 +292,6 @@ class LoggerFactory():
         # print(self._j.tools.jsloader._logger)
         # print(self._j.tools.jsloader.logger)
 
-    def init(self):
-        """
-        get info from config file & make sure all logging is done properly
-        """
-        self.enabled = self._j.core.config["logging"]["enabled"]
-        if self.enabled:
-            level = self._j.core.config["logging"]["level"]
-            self.loggers_level_set(level)
-            self.handlers_level_set(level)
-            self.filter = []
-            self.loggers = {}
-            items = self._j.core.config["logging"]["filter"]
-            exclude = self._j.core.config["logging"]["exclude"]
-            self.logger_filters_add(items=items, exclude=exclude, save=False)
 
     # def enableConsoleMemHandler(self):
     #     self.logger.handlers = []

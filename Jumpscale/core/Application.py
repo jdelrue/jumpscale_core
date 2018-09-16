@@ -11,7 +11,7 @@ from .JSBase import JSBase
 class Application(object):
 
     def __init__(self,j):
-        self.__jscorelocation__ = "j.core.application"
+
         self._j = j
 
         self._calledexit = False
@@ -249,66 +249,6 @@ class Application(object):
         p = psutil.Process()
         info = p.memory_full_info()
         return info.uss / 1024
-
-    def appCheckActive(self, appname):
-        return self.appNrInstances(appname) > 0
-
-    def appNrInstances(self, appname):
-        return len(self.appGetPids(appname))
-
-    def appNrInstancesActive(self, appname):
-        return len(self.appGetPidsActive(appname))
-
-    # TODO: *2 is this still being used?
-    def appGetPids(self, appname):
-        if self._j.core.db is None:
-            raise self._j.exceptions.RuntimeError(
-                "Redis was not running when applications started, cannot get pid's")
-        if not self._j.core.db.hexists("application", appname):
-            return list()
-        else:
-            pids = self._j.data.serializers.json.loads(
-                self._j.core.db.hget("application", appname))
-            return pids
-
-    def appsGetNames(self):
-        if self._j.core.db is None:
-            raise self._j.exceptions.RuntimeError(
-                "Make sure redis is running for port 9999")
-        return self._j.core.db.hkeys("application")
-
-    def appsGet(self):
-
-        defunctlist = self._j.sal.process.getDefunctProcesses()
-        result = {}
-        for item in self.appsGetNames():
-            pids = self.appGetPidsActive(item)
-            pids = [pid for pid in pids if pid not in defunctlist]
-
-            if not pids:
-                self._j.core.db.hdelete("application", item)
-            else:
-                result[item] = pids
-        return result
-
-    def appGetPidsActive(self, appname):
-        pids = self.appGetPids(appname)
-        todelete = []
-        for pid in pids:
-            if not self.isPidAlive(pid):
-                todelete.append(pid)
-            else:
-                environ = self.getEnviron(pid)
-                if environ.get('JSPROCNAME') != appname:
-                    todelete.append(pid)
-        for item in todelete:
-            pids.remove(item)
-        self._j.core.db.hset(
-            "application",
-            appname,
-            self._j.data.serializers.json.dumps(pids))
-
-        return pids
 
     def _setWriteExitcodeOnExit(self, value):
         if not self._j.data.types.bool.check(value):

@@ -147,10 +147,6 @@ from .core.logging.LoggerFactory import LoggerFactory
 j.logger = LoggerFactory(j)
 j.core.logger = j.logger
 
-# IF YOU WANT TO DEBUG THE STARTUP, YOU NEED TO CHANGE THIS ONE
-j.logger.enabled = False
-j.logger.filter = []  # default filter which captures all is *
-
 from .core.Application import Application
 j.application = Application(j)
 j.core.application = j.application
