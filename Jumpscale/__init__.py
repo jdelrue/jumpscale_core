@@ -68,9 +68,9 @@ class Core():
                 from redis import StrictRedis
                 # print("CORE_REDIS")
                 self._db = StrictRedis(host='localhost', port=6379, db=0)
+                self._db.get("jumpscale.config")
                 self._db_fakeredis = False
-            except:
-            # else:
+            except Exception as e:
                 # print("CORE_MEMREDIS")
                 import fakeredis
                 self._db = fakeredis.FakeStrictRedis()
