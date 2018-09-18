@@ -55,7 +55,7 @@ class SSHClientAsync(SSHClientBase):
         self.instance = instance
         SSHClientBase.__init__(self, instance=instance, data=data, parent=parent, interactive=interactive)
         self._client = None
-        self.async = True
+        self._async = True
 
         self.conn = None
 

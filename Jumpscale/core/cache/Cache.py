@@ -37,7 +37,7 @@ class Cache(object):
         c.reset()
         assert c.exists("something") == False
         c.set("something", "OK")
-        self.logger.debug("RESET ALL")
+        
         self.reset()
         assert c.exists("something") == False
 
@@ -64,7 +64,7 @@ class Cache(object):
             if "Cannot get 'somethingElse' from cache" not in str(e):
                 raise RuntimeError("error in test. non expected output")
 
-        self.logger.debug("expiration test")
+        
         time.sleep(2)
 
         assert c.get("somethingElse", return2, expire=1) == 2
@@ -91,13 +91,13 @@ class Cache(object):
         """ js_shell 'j.core.cache.test()'
         """
 
-        self.logger.debug("REDIS CACHE TEST")
+        
         # make sure its redis
         self._j.clients.redis.core_get()
         self._j.core.db_reset()
         c = self.get("test", expiration=1)
         self._testAll(c)
-        self.logger.debug("TESTOK")
+        
 
     def test_without_redis(self):
         """ js_shell 'j.core.cache.test_without_redis()'
@@ -109,12 +109,12 @@ class Cache(object):
         # now stop redis...
         self._j.clients.redis.kill()
         self._j.core.db_reset()
-        self.logger.debug("MEM CACHE TEST")
+        
         c = self.get("test", expiration=1)
         self._testAll(c)
         # ... and restart it again
         self._j.clients.redis.start()
-        self.logger.debug("TESTOK")
+        
 
 
 class CacheCategory(object):
@@ -172,9 +172,7 @@ class CacheCategory(object):
             return res
 
     def reset(self):
-        self.logger.debug("RESET")
         for item in self.list():
-            self.logger.debug("DELETE:%s" % item)
             self.delete(item)
 
     def list(self):

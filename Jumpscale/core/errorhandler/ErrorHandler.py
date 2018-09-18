@@ -127,7 +127,8 @@ class ErrorHandler():
 
     def _trace_print(self, tb_text):
         if pygmentsObj:
-            formatter = pygments.formatters.Terminal256Formatter(style=pygments.styles.get_style_by_name("vim"))
+            #style=pygments.styles.get_style_by_name("vim")
+            formatter = pygments.formatters.Terminal256Formatter()
             lexer = pygments.lexers.get_lexer_by_name("pytb", stripall=True)  # pytb
             tb_colored = pygments.highlight(tb_text, lexer, formatter)
             sys.stderr.write(tb_colored)
