@@ -46,16 +46,24 @@ class Application(object):
                 tb_text += "%s" % item
         return tb_text
 
+    def _check_debug(self):
+        if not "JSGENERATE_DEBUG" in os.environ:
+            return False
+        if os.environ["JSGENERATE_DEBUG"] in ["1", "Y"]:
+            return True
+        return False
 
-    def error_init(self,cat,obj,error):
+    def error_init(self,cat,obj,error,die=True):
+
+
         print("ERROR: %s:%s"%(cat,obj))
         print (error)
         trace = self._trace_get(ttype=None, err=error)
         self.errors_init.append((cat,obj,error,trace))
-        if not "JSGENERATE_DEBUG" in os.environ:
-            msg = "%s:%s:%s"%(cat,obj,error)
-            # self.report_errors()
-            raise RuntimeError(msg)
+        if not self._check_debug():
+                msg = "%s:%s:%s"%(cat,obj,error)
+                # self.report_errors()
+                raise RuntimeError(msg)
         return "%s:%s:%s"%(cat,obj,error)
 
 

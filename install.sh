@@ -100,6 +100,7 @@ ZCodeGetJS() {
         ZCodeGetJS -r jumpscale_core  -b $JUMPSCALEBRANCH || return 1
         ZCodeGetJS -r jumpscale_lib -b $JUMPSCALEBRANCH || return 1
         ZCodeGetJS -r jumpscale_prefab -b $JUMPSCALEBRANCH || return 1
+        ZCodeGetJS -r 0-robot -b $JUMPSCALEBRANCH || return 1
         ZCodeGetJS -r digital_me -b $JUMPSCALEBRANCH || return 1
         ZCodeGetJS -r digital_me_recipes -b $JUMPSCALEBRANCH || return 1
         return 0
@@ -110,7 +111,7 @@ ZCodeGetJS() {
 
     # check if specificed branch or $JUMPSCALEBRANCH exist, if not then fallback to development_dynamic
 
-    JUMPSCALEBRANCHExists ${githttpsurl} ${JUMPSCALEBRANCH} || JUMPSCALEBRANCH=development_dynamic
+    JUMPSCALEBRANCHExists ${githttpsurl} ${JUMPSCALEBRANCH} || JUMPSCALEBRANCH=development_simple
     JUMPSCALEBRANCHExists ${githttpsurl} ${JUMPSCALEBRANCH} || JUMPSCALEBRANCH=development
 
     echo "get code: ${githttpsurl} ${JUMPSCALEBRANCH}"

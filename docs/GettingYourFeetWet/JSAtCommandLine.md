@@ -2,7 +2,6 @@
 
 Jumpscale offers the following command line tools:
 
- * [ays](##ays)
  * [jsdocker](##jsdocker)
  * [jscode](##jscode)
  * [jsdesktop](##jsdesktop)

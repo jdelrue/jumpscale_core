@@ -45,6 +45,12 @@ class Fixer(JSBASE):
 
         print(self.generator.md.line_changes)
 
+        #important to generate the normal non debug version
+        os.environ["JSGENERATE_DEBUG"] = "0"
+        self.generator.generate()
+
+
+
 
     def write_changes(self):
         """
@@ -55,6 +61,11 @@ class Fixer(JSBASE):
 
         for jsmodule in self.generator.md.jsmodules.values():
             jsmodule.write_changes()
+
+        # important to generate the normal non debug version
+        os.environ["JSGENERATE_DEBUG"] = "0"
+        self.generator.generate()
+
 
 
     def line_process(self,line):

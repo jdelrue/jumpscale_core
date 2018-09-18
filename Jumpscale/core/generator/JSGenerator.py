@@ -102,7 +102,7 @@ class JSGenerator():
         file.write("")
         file.close()
 
-        if "JSGENERATE_DEBUG" in os.environ:
+        if self._j.application._check_debug():
             template_name = "template_jumpscale_debug.py"
         else:
             template_name = "template_jumpscale.py"

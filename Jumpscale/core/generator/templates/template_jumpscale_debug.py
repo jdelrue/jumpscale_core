@@ -35,7 +35,7 @@ class group_{{jsgroup.name}}():
             try:
                 self._{{module.jname}} =  {{module.name}}()
             except Exception as e:
-                msg = j.core.application.error_init("execute","{{module.importlocation}}",e)
+                msg = j.core.application.error_init("execute","{{module.importlocation}}",e,die=False)
                 return None
             # print("OK")
         return self._{{module.jname}}

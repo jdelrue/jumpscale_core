@@ -11,6 +11,7 @@ which was acquired by SUN Microsystems from Q-Layer. In the mean time we are
   - [About Jumpscale Core](#about-jumpscale-core)
   - [Installing Jumpscale Core (NEW, need to test!!!)](#installing-jumpscale-core-new-need-to-test)
     - [install](#install)
+    - [Install (and upgrade as opposed to blowing everything away)](#install-and-upgrade-as-opposed-to-blowing-everything-away)
     - [Install using pip3](#install-using-pip3)
   - [Usage](#usage)
   - [Tutorials](#tutorials)
@@ -49,7 +50,7 @@ debian/stretch, debian/testing (2018aug)
 ### install
 
 ```bash
-curl https://raw.githubusercontent.com/threefoldtech/jumpscale_core/development/install.sh?$RANDOM > /tmp/install_jumpscale.sh;bash /tmp/install_jumpscale.sh
+curl https://raw.githubusercontent.com/threefoldtech/jumpscale_core/development_simple/install.sh?$RANDOM > /tmp/install_jumpscale.sh;bash /tmp/install_jumpscale.sh
 ```
 
 ```bash
