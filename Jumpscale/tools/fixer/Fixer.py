@@ -22,7 +22,7 @@ class Fixer(JSBASE):
         self.logger_enable()
 
 
-    def find_changes(self):
+    def _find_changes(self):
         """
         js_shell 'j.tools.fixer.find_changes()'
         :return:
@@ -45,6 +45,15 @@ class Fixer(JSBASE):
 
         print(self.generator.md.line_changes)
 
+
+    def find_changes(self):
+        """
+        js_shell 'j.tools.fixer.find_changes()'
+        :return:
+        """
+
+        self._find_changes()
+
         #important to generate the normal non debug version
         os.environ["JSGENERATE_DEBUG"] = "0"
         self.generator.generate()
@@ -57,7 +66,7 @@ class Fixer(JSBASE):
         js_shell 'j.tools.fixer.write_changes()'
         BE CAREFULL THIS WILL WRITE THE CHANGES AS FOUND IN self.find_changes
         """
-        self.find_changes()
+        self._find_changes()
 
         for jsmodule in self.generator.md.jsmodules.values():
             jsmodule.write_changes()
