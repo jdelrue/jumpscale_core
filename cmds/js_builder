@@ -117,7 +117,7 @@ def container():
     """
     create a build container in zero-os and launch ubuntu with lots of tools pre-installed to make building easy
     """
-    j.tools.builder.get()
+    container=j.tools.builder.get()
     j.shell("TO IMPLEMENT, USE j.tools.builder")
 
 

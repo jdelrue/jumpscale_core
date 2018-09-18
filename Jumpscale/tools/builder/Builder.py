@@ -73,10 +73,10 @@ class Builder(JSBASE):
         js_shell 'j.tools.builder.zos_vb_create(name="test",reset=True)'
         """
 
-        if reset:
-            self.vb_client.reset(name)
-
         vm = self.vb_client.vm_get(name)
+
+        if reset:
+            vm.delete()
 
         if vm.exists:
             vm.start()
