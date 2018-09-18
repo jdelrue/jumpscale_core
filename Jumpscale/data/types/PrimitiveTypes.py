@@ -481,7 +481,7 @@ class JSObject(Bytes):
         return str(v)
 
     def python_code_get(self, value):
-        return ""
+        return "None"
 
     def capnp_schema_get(self, name, nr):
         return "%s @%s :Data;" % (name, nr)
