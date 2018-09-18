@@ -18,7 +18,7 @@ from setuptools.command.develop import develop as _develop
 def _post_install(libname, libpath):
 
     os.environ["JSRELOAD"] = "1"
-    from Jumpscale import j 
+    from Jumpscale import j
 
     # remove leftovers
     if not "PBASE" in os.environ:
@@ -75,7 +75,7 @@ packages = ['Jumpscale',
             'Jumpscale.errorhandling',
             'Jumpscale.tools.executor',
             'Jumpscale.data.cache',
-            'Jumpscale.core.logging.]
+            'Jumpscale.core.logging']
 packages = find_packages() # .... so just install everything for now
 
 setup(
