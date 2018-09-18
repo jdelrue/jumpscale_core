@@ -10,11 +10,12 @@ DO= """
 RI| j.application.JSBase$ | j.application.JSBaseClass
 RI| j.data.cache. | j.core.cache.
 RI| j.data.text. | j.core.text.
-RI| from Jumpscale import j | from Jumpscale import j 
+RI| from jumpscale import j | from Jumpscale import j 
 RI| j.application.jsbase_get_class() | j.application.JSBaseClass
 RI| .base_class_config | .JSBaseClassConfig
 RI| .base_class_configs | .JSBaseClassConfigs
-RI| j.logger. | j.logger.
+RI| j.logging. | j.logger.
+RI | Jumpscale.logging. | Jumpscale.core.logging.
 RI| self._location | self.__jslocation__
 RI| j.data.serializer. | j.data.serializers.
 # RI| j.data.text. | j.core.text.

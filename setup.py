@@ -75,7 +75,7 @@ packages = ['Jumpscale',
             'Jumpscale.errorhandling',
             'Jumpscale.tools.executor',
             'Jumpscale.data.cache',
-            'Jumpscale.logging']
+            'Jumpscale.core.logging.]
 packages = find_packages() # .... so just install everything for now
 
 setup(
