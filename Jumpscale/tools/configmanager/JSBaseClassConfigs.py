@@ -16,15 +16,12 @@ class JSBaseClassConfigs(JSBASE):
         """
         JSBASE.__init__(self)
         if not isclass(child_class):
-            raise TypeError("child_class need to be a class not %s" %
-                            type(self._child_class))
+            raise TypeError("child_class need to be a class not %s" %type(self._child_class))
 
         self._single_item = single_item
         self._child_class = child_class
-        # self.getall()
 
-    def get(self, instance="main", data=None, create=True,
-            die=True, interactive=True, **kwargs):
+    def get(self, instance="main", data=None, create=True,die=True, interactive=True, **kwargs):
         """ Get an instance of the child_class set in the constructor
 
             @param instance: instance name to get. If an instance is
@@ -53,8 +50,7 @@ class JSBaseClassConfigs(JSBASE):
         return self.get(instance=instance, data=data, create=True)
 
     def reset(self):
-        j.tools.configmanager.delete(location=self.__jslocation__,
-                                          instance="*")
+        j.tools.configmanager.delete(location=self.__jslocation__,instance="*")
         self.getall()
 
     def delete(self, instance="", prefix=""):
@@ -62,8 +58,7 @@ class JSBaseClassConfigs(JSBASE):
             for item in self.list(prefix=prefix):
                 self.delete(instance=item)
             return
-        j.tools.configmanager.delete(location=self.__jslocation__,
-                                     instance=instance)
+        j.tools.configmanager.delete(location=self.__jslocation__,instance=instance)
 
     def count(self):
         return len(self.list())

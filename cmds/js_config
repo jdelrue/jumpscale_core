@@ -27,13 +27,8 @@ def init(silent, path, key):
     """
     if silent is None:
         silent = False
+    j.tools.configmanager.init(silent=silent, configpath=path, keypath=key)
 
-    previous = j.tools.configmanager.interactive
-    try:
-        j.tools.configmanager.interactive = not silent
-        j.tools.configmanager.init(silent=silent, configpath=path, keypath=key)
-    finally:
-        j.tools.configmanager.interactive = previous
     print ("CONFIGURATION DONE")
 
 

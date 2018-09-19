@@ -3,15 +3,15 @@ from Jumpscale import j
 from .SSHKey import SSHKey
 
 import os
-JSConfigBase = j.tools.configmanager.JSBaseClassConfigs
+JSConfigsBase = j.tools.configmanager.JSBaseClassConfigs
 from .AgentSSHKeys import *
 
 
-class SSHKeys(JSConfigBase):
+class SSHKeys(JSConfigsBase):
 
     def __init__(self):
         self.__jslocation__ = "j.clients.sshkey"
-        JSConfigBase.__init__(self, SSHKey)
+        JSConfigsBase.__init__(self, SSHKey)
         self._sshagent = None
 
     @property
@@ -22,7 +22,7 @@ class SSHKeys(JSConfigBase):
 
     def key_get(self, path, load=True):
         instance = j.sal.fs.getBaseName(path)
-        sshkey = self.get(instance, data={'path': path}, interactive=j.tools.configmanager.interactive)
+        sshkey = self.get(instance, data={'path': path}, interactive=False)
 
         if load:
             sshkey.load()

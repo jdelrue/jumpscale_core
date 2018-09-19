@@ -109,7 +109,7 @@ class PlatformType(object):
         self._uname = None
         self.executor = executor
 
-        # print("PLATFORMTYPE:%s"%self.executor)
+        print("PLATFORMTYPE:%s"%self.executor)
 
         if name == "":
             self._getPlatform()
@@ -204,14 +204,17 @@ class PlatformType(object):
 
     @property
     def osname(self):
-        if "darwin" in sys.platform.lower():
-            os_type = "darwin"
-        elif "linux" in sys.platform.lower():
-            os_type = "ubuntu"  # dirty hack, will need to do something better, but keep fast
+        if self.executor == None:
+            if "darwin" in sys.platform.lower():
+                osname = "darwin"
+            elif "linux" in sys.platform.lower():
+                osname = "ubuntu"  # dirty hack, will need to do something better, but keep fast
+            else:
+                print("need to fix for other types (check executorlocal")
+                sys.exit(1)
         else:
-            print("need to fix for other types (check executorlocal")
-            sys.exit(1)
-        return os_type
+            osname = self.executor.state_on_system["os_type"]
+        return osname
 
     def checkMatch(self, match):
         """

@@ -132,9 +132,9 @@ class Nodes(JSConfigBase):
         assert n.config.data["selected"] == True
 
         # now tests about updating data
-        d2["port"] = 2222
+        d2["zosclient"] = "1234"
         n2 = self.get(instance='myhost9', data=d2, create=True, die=True)
-        assert n2.config.data["port"] == 2222
+        assert n2.config.data["zosclient"] == "1234"
 
         assert len(self.list(prefix="myhost")) == 15
         assert len(self.list()) == 15 + startnr
@@ -144,7 +144,7 @@ class Nodes(JSConfigBase):
 
         assert len(self.getall()) == startnr
 
-        # print("TEST for nodes ok")
+        print("TEST for nodes ok")
 
     def __repr__(self):
         return self.__str__()

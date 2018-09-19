@@ -14,9 +14,11 @@ JSConfigBase = j.tools.configmanager.JSBaseClassConfig
 
 class SSHKey(JSConfigBase):
 
-    def __init__(self, instance, data=None, parent=None, interactive=True):
+    def __init__(self, instance, data=None, parent=None, interactive=False):
+
         JSConfigBase.__init__(self, instance=instance, data=data,
                               parent=parent, template=TEMPLATE, interactive=interactive)
+
         if data is None:
             data = {}
         self._connected = None

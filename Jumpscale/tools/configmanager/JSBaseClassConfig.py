@@ -30,11 +30,10 @@ class JSBaseClassConfig(JSBASE):
         self._config = None
         self._instance = instance
         self._parent = parent
-        self.interactive = interactive and j.tools.configmanager.interactive
+        self.interactive = interactive
 
-        self._config = j.tools.configmanager._get_for_obj(
-            self, instance=self._instance, data=data,
-            template=self._template, ui=self._ui)
+        self._config = j.tools.configmanager._get_for_obj(self, instance=self._instance, data=data,
+                                                          template=self._template, ui=self._ui)
 
         if self.config.new and data == {} and self.interactive:
             self.configure()
@@ -46,9 +45,7 @@ class JSBaseClassConfig(JSBASE):
     @property
     def logger(self):
         if self._logger is None:
-            self._logger = j.logger.get(
-                "%s.%s" % (self.__jslocation__, self._instance),
-                force=self._logger_force)
+            self._logger = j.logger.get("%s.%s" % (self.__jslocation__, self._instance),force=self._logger_force)
         return self._logger
 
     def reset(self):
@@ -94,8 +91,8 @@ class JSBaseClassConfig(JSBASE):
             msg = self.config_check()
             if msg is not None and msg != "":
                 self.logger.debug(msg)
-                j.tools.console.askString("please correct the information in "
-                                        "next configuraton screen, press enter")
+                j.tools.console.askString(
+                    "please correct the information in next configuraton screen, press enter")
             else:
                 break
 

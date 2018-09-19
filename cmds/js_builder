@@ -118,16 +118,22 @@ def container():
     create a build container in zero-os and launch ubuntu with lots of tools pre-installed to make building easy
     """
     container=j.tools.builder.get()
+    p=container.prefab
     j.shell("TO IMPLEMENT, USE j.tools.builder")
 
 
 @click.command()
-@click.option('--name', '-n', default='main', help='name of the tfbot container')
-def tfbot_build(name, port):
+@click.option('--name', '-n', default='tfbotbuild', help='name of the tfbot container')
+def tfbot_build(name):
     """
     create a tfbot container
     connect to zerotier network 1d7193940435f485, this is an ipv6 zerotier network which connects all tfbot's
     """
+    container=j.tools.builder.get(name=name)
+    p=container.prefab
+    p.js9.jumpscalecore.install()
+    p.core.run("js_shell ' j.servers.zdb.build()'") #build zdb
+
     j.shell("TO IMPLEMENT, USE j.tools.builder")
 
 cli.add_command(zdb)

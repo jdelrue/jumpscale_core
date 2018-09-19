@@ -189,6 +189,13 @@ class ExecutorBase(JSBASE):
             set +ex
             ls "/root/.iscontainer"  > /dev/null 2>&1 && \
                         echo 'ISCONTAINER = 1' || echo 'ISCONTAINER = 0'
+                        
+                        
+            if [ ! -f /tmp/uid.txt ]; then
+                echo $RANDOM > /tmp/uid.txt
+            fi
+            echo UID = `cat /tmp/uid.txt`                    
+                                                            
             echo UNAME = \""$(uname -mnprs)"\"
         
             

@@ -47,7 +47,9 @@ def sync(instance, monitor):
 def get_node(name=""):
     logger.debug("node get: %s" % name)
     if name == None:
-        name = ""
+        name = j.tools.console.askChoice([item.name for item in j.tools.nodemgr.getall()])
+    if name == "":
+        j.shell()
     res = []
     for item in j.tools.nodemgr.getall():
         if item.name == name:
@@ -80,7 +82,7 @@ def get(instance):
 
 @click.command()
 @click.option('--instance', '-i', default=None, help=get_help)
-def ssh(instance):
+def ssh(instance=""):
     """
     will get a node & then ssh into it
     """

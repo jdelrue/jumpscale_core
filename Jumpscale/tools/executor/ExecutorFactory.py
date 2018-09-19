@@ -11,7 +11,7 @@ JSBASE = j.application.JSBaseClass
 
 
 class ExecutorFactory(JSBASE):
-    # _lock = threading.Lock()
+    _lock = threading.Lock()
 
     _executors = {}
     _executors_async = {}

@@ -4,8 +4,7 @@ JSBASE = j.application.JSBaseClass
 
 class Config(JSBASE):
 
-    def __init__(self, instance="main", location=None, template=None,
-                       data=None):
+    def __init__(self, instance="main", location=None, template=None, data=None):
         """
         jsclient_object is e.g. j.clients.packet.net
         """
@@ -87,9 +86,13 @@ class Config(JSBASE):
         """
         @RETURN if 1 means did not find the toml file so is new
         """
+        if reset:
+            self._data={}
         if reset or self._data == {}:
             if not j.sal.fs.exists(self.path):
-                raise RuntimeError("should exist at this point")
+                self._data, error = j.data.serializers.toml.merge(
+                    tomlsource=self.template, tomlupdate=self._data, listunique=True)
+                return 1
             else:
                 content = j.sal.fs.fileGetContents(self.path)
                 try:
@@ -106,8 +109,7 @@ class Config(JSBASE):
 
     def save(self):
         # at this point we have the config & can write (self._data has the encrypted pieces)
-        j.sal.fs.writeFile(
-            self.path, j.data.serializers.toml.fancydumps(self._data))
+        j.sal.fs.writeFile(self.path, j.data.serializers.toml.fancydumps(self._data))
 
     def delete(self):
         j.sal.fs.remove(self.path)

@@ -995,6 +995,9 @@ class Text(object):
         if self._j.data.types.list.check(text):
             return text
 
+        if text is None:
+            return []
+
         if not self._j.data.types.string.check(text):
             raise RuntimeError("need to be string:%s" % text)
 

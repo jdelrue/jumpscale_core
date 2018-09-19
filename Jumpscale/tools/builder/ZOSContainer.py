@@ -116,7 +116,7 @@ class ZOSContainer(JSBASE):
         if self.model.authorized is False:
 
             sshclient = j.clients.ssh.new(addr=self.zos_private_address, port=self.model.port, instance=self.name,
-                                          die=True, login="root",
+                                          die=True, login="root",passwd='rooter',
                                           stdout=True, allow_agent=False, use_paramiko=True)
 
             print("waiting for ssh to start for container:%s\n    (if the ZOS VM is new, will take a while, OS files are being downloaded)"%self.name)
@@ -132,7 +132,9 @@ class ZOSContainer(JSBASE):
                     raise e
 
             self.logger.info("ssh connected")
-            sshclient.ssh_authorize(user="root", key=j.clients.sshkey.list()[0])
+            key = j.clients.sshkey.list()[0]
+
+            sshclient.ssh_authorize(user="root", key=key)
 
             self.model.authorized = True
             self.model_save()

@@ -34,7 +34,6 @@ class ConfigManager(JSBASE):
     def __init__(self):
         JSBASE.__init__(self)
         self._path = ""
-        self.interactive = True  # std needs to be on True
         self.sandbox = False
         self._keyname = ""  # if set will overrule from the main js config file
         self._init = False
@@ -334,8 +333,8 @@ class ConfigManager(JSBASE):
 
         if not location:
             res = []
-            for location in j.sal.fs.listDirsInDir(
-                    self.path, recursive=False, dirNameOnly=True):
+            # print("LISTCONFIG IN PATH:%s"%self.path)
+            for location in j.sal.fs.listDirsInDir(self.path, recursive=False, dirNameOnly=True):
                 if ".git" in location:
                     continue
                 for instance in self.list(location):
@@ -349,6 +348,7 @@ class ConfigManager(JSBASE):
         # jsclient_object = eval(location)
 
         for cfg_path in j.sal.fs.listFilesInDir(root):
+            # print("LISTCONFIG IN PATH:%s"%root)
             cfg_name = j.sal.fs.getBaseName(cfg_path)
             if cfg_name in ('.git', '.jsconfig'):
                 continue
@@ -577,10 +577,14 @@ class ConfigManager(JSBASE):
         js_shell 'j.tools.configmanager.test()'
         """
 
-        def testinit():
+        tdir = "/tmp/tests/secretconfig"
+        j.sal.fs.remove(tdir)
 
-            tdir = "/tmp/tests/secretconfig"
-            # j.sal.process.execute("cd %s && git init" % tdir)
+        def testinit():
+            self._path=""
+            j.core.state.config["myconfig"]["path"] = tdir
+
+
 
             MYCONFIG = """
             fullname = "kristof@something"
@@ -589,18 +593,17 @@ class ConfigManager(JSBASE):
             """
             data = j.data.serializers.toml.loads(MYCONFIG)
 
-            self.init(configpath=tdir, data=data, silent=True)
-
+            j.tools.myconfig.config.data= data
             assert j.tools.myconfig.config.data == data
 
             return data
 
-        data = testinit()
+        data=testinit()
         self._test_myconfig_singleitem(data)
         testinit()
         self._test_myconfig_multiitem()
 
-        # j.sal.fs.remove(tdir)
+        j.sal.fs.remove(tdir)
 
     def _test_myconfig_singleitem(self, data):
 
@@ -609,19 +612,15 @@ class ConfigManager(JSBASE):
         assert len(j.sal.fs.listFilesInDir(tdir)) == 1
 
         # check that the saved data is ok
-        assert j.data.serializers.toml.fancydumps(
-            j.tools.myconfig.config.data) == \
-                    j.data.serializers.toml.fancydumps(data)
+        assert j.data.serializers.toml.fancydumps(j.tools.myconfig.config.data) == j.data.serializers.toml.fancydumps(data)
 
         self.delete("j.tools.myconfig")  # should remove all
         assert len(j.sal.fs.listFilesInDir(tdir)) == 0
 
         # j.tools.configmanager.reset()
         j.tools.myconfig.reset()  # will remove data from mem
-        assert j.tools.myconfig.config._data == {
-            'email': '', 'fullname': '', 'login_name': ''}
-        assert j.tools.myconfig.config.data == {
-            'email': '', 'fullname': '', 'login_name': ''}
+        assert j.tools.myconfig.config._data == {'email': '', 'fullname': '', 'login_name': ''}
+        assert j.tools.myconfig.config.data == {'email': '', 'fullname': '', 'login_name': ''}
 
         j.tools.myconfig.config.load()
         assert j.tools.myconfig.config.data == {
@@ -655,19 +654,21 @@ class ConfigManager(JSBASE):
 
         MYCONFIG = """
         name = ""
-        addr = "192.168.1.1"
-        port = 22
         clienttype = "ovh"
-        active = true
+        sshclient = ""
+        active = false
         selected = true
         category = "me"
         description = "some descr"
         secretconfig_ = "my secret config"
+        pubconfig = ""
+        installed = false
+        zosclient = ""        
         """
         data = j.data.serializers.toml.loads(MYCONFIG)
 
         for i in range(10):
-            data["addr"] = "192.168.1.%s" % i
+            data["sshclient"] = "192.168.1.%s" % i
             data["name"] = "test%s" % i
             obj = j.tools.nodemgr.get("test%s" % i, data=data)
 
@@ -676,8 +677,8 @@ class ConfigManager(JSBASE):
         j.tools.nodemgr.items = {}
 
         obj = j.tools.nodemgr.get("test5")
-        assert obj.config._data["addr"] == "192.168.1.5"
-        assert obj.config.data["addr"] == "192.168.1.5"
+        assert obj.config._data["sshclient"] == "192.168.1.5"
+        assert obj.config.data["sshclient"] == "192.168.1.5"
         # needs to be encrypted
         assert obj.config._data["secretconfig_"] != "my secret config"
         assert obj.config.data["secretconfig_"] == "my secret config"
@@ -691,5 +692,7 @@ class ConfigManager(JSBASE):
         i = j.tools.nodemgr.get("test1")
         assert i.name == "test1"
 
-        # j.tools.nodemgr.reset()
-        # assert len(j.sal.fs.listFilesInDir(tdir)) == 0
+        j.tools.nodemgr.reset()
+        assert len(j.sal.fs.listFilesInDir(tdir)) == 0
+
+        print ("TEST MYCONFIG MULTIITEM OK")

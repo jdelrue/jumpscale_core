@@ -64,6 +64,7 @@ class SSHClientParamiko(SSHClientBase):
         self._transport = None
         self._client = None
         self._prefab = None
+        self.logger_enable()
 
     def _test_local_agent(self):
         """

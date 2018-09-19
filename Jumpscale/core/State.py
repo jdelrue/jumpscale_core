@@ -60,14 +60,13 @@ class State(object):
                 #means there is no config yet, need to put
                 with open(os.path.join(self._j.core.dir_jumpscale_core, "Jumpscale", "core", "jumpscale.toml"), 'rb') as ff:
                     conf = ff.read().decode()
-                conf = conf.replace("{{HOME}}", self._dir_home)
+                conf = conf.replace("{{HOME}}", self.executor.state_on_system["home"])
                 self._config = pytoml.loads(conf)
                 self.configSave()
             else:
                 self._config = pytoml.loads(data)
         else:
             self._config = self._j.core.config
-
         self._state={}
 
     @property
@@ -97,6 +96,14 @@ class State(object):
             _, versions[name] = repo.getBranchOrTag()
         return versions
 
+    @property
+    def _stateHKey(self):
+        if self.executor is None:
+            executorid="localhost"
+        else:
+            executorid=self.executor.id
+        return "state:%s"%executorid
+
 
     def stateSet(self, key,val={}, save=False):
         """
@@ -110,20 +117,11 @@ class State(object):
         :return: true if new value is set, false if already exists
         :rtype: bool
         """
-        if not isinstance(val, dict):
-            raise RuntimeError("state set input needs to be dict")
-        if self.executor is None or self.executor.id == "localhost":
+        # if not isinstance(val, dict):
+        #     raise RuntimeError("state set input needs to be dict")
+        if isinstance(val, dict):
             val = pytoml.dumps(val)
-            self._j.core.db.hset("jumpscale:state:local",key,val)
-        else:
-            self._state[key]= val
-            if save:
-                self.stateSave()
-
-    def stateSave(self):
-        if self.executor is None or self.executor.id == "localhost":
-            path = "%s/opt/cfg/state.toml"%self.executor.dir_paths["HOMEDIR"]
-            self.executor.file_write(path,pytoml.dumps(self.state._state))
+        self._j.core.db.hset(self._stateHKey,key,val)
 
     def stateGet(self, key, defval={}, set=False):
         """gets a section from state.toml
@@ -137,27 +135,23 @@ class State(object):
         :return: the section data
         :rtype: dict
         """
-        if not isinstance(defval, dict):
-            raise RuntimeError("defval needs to be dict")
-        if self.executor is None or self.executor.id == "localhost":
-            res = self._j.core.db.hget("jumpscale:state:local", key)
-            if res==None and defval is not {}:
-                res = defval
-                if set:
-                    self.stateSet(key,defval,True)
-            elif res == None:
-                res={}
-            else:
-                res = pytoml.loads(res)
-            return res
+        # if not isinstance(defval, dict):
+        #     raise RuntimeError("defval needs to be dict")
+        res = self._j.core.db.hget(self._stateHKey, key)
+        if res==None and defval is not {}:
+            res = defval
+            if set:
+                self.stateSet(key,defval,True)
+        elif res == None:
+            res={}
         else:
-            if not key in self._state:
-                if set:
-                    self._state[key] = defval
-                    self.stateSave()
-                else:
-                    return defval
-            return self._state[key]
+            try:
+                res = pytoml.loads(res)
+            except:
+                #UGLY hack, when saved above when not dict, need to be able to fetch back
+                pass
+        return res
+
 
 
     def stateExists(self, key):
@@ -168,11 +162,7 @@ class State(object):
         :return: true if the section exists
         :rtype: bool
         """
-        if self.executor is None or self.executor.id == "localhost":
-            return not self._j.core.db.hget(self._stateHKey, key) == None
-        else:
-            return key in self._state
-
+        return not self._j.core.db.hget(self._stateHKey, key) == None
 
     def configExists(self, key):
         """ checks if a section in jumpscale.toml exists

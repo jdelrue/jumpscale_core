@@ -16,10 +16,7 @@ class MyConfig(JSConfigBase):
     """
     """
 
-    def __init__(self, data=None):
-        if not hasattr(self, '__jslocation__'):
-            self.__jslocation__ = "j.tools.myconfig"
-        if data is None:
-            data = {}
-        JSConfigBase.__init__(self, instance="main", data=data,
-                              template=TEMPLATE, interactive=True)
+    def __init__(self):
+        self.__jslocation__ = "j.tools.myconfig"
+        JSConfigBase.__init__(self, instance="main", data={},
+                              template=TEMPLATE, interactive=False)
