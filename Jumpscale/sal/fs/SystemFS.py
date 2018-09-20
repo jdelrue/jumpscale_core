@@ -96,6 +96,8 @@ class SystemFS(JSBASE):
         """Remove a File
         @param path: string (File path required to be removed)
         """
+        if os.path.islink(path):
+            os.unlink(path)
         if not self.exists(path):
             return
         if self.isFile(path) or self.isLink(path):
@@ -751,6 +753,9 @@ class SystemFS(JSBASE):
         for direntry in dircontent:
             fullpath = self.joinPaths(path, direntry)
 
+            if self.isLinkAndBroken(fullpath):
+                continue
+
             if followSymlinks:
                 if self.isLink(fullpath):
                     fullpath = self.readLink(fullpath)
@@ -787,7 +792,7 @@ class SystemFS(JSBASE):
                                 if matcher(fullpath, excludeItem):
                                     exclmatch = True
                         if exclmatch is False:
-                            if not(followSymlinks is False and self.isLink(fullpath)):
+                            if not(followSymlinks is False and self.isLink(fullpath,check_valid=True)):
                                 r, _ = self._listAllInDir(fullpath, recursive, filter, minmtime, maxmtime, depth=newdepth, type=type,
                                                               exclude=exclude, followSymlinks=followSymlinks, listSymlinks=listSymlinks)
                                 if len(r) > 0:
@@ -922,7 +927,7 @@ class SystemFS(JSBASE):
 
         if overwriteTarget and self.exists(target):
             if self.isLink(target):
-                self.unlink(target)
+                self.remove(target)
             elif self.isDir(target):
                 self.removeDirTree(target)
             else:
@@ -1039,11 +1044,22 @@ class SystemFS(JSBASE):
         statobj = self.statPath(path, follow_symlinks=False)
         return not (stat.S_IXUSR & statobj.st_mode == 0)
 
+    def isLinkAndBroken(self,path,remove_if_broken=True):
+        if os.path.islink(path):
+            rpath = self.readLink(path)
+            if not self.exists(rpath):
+                if remove_if_broken:
+                    j.sal.fs.remove(path)
+                return True
+        return False
+
     @path_check(path={"required", "exists"})
-    def isLink(self, path, checkJunction=False):
+    def isLink(self, path, checkJunction=False,check_valid=False):
         """Check if the specified path is a link
         @param path: string
         @rtype: boolean (True if the specified path is a link)
+
+        @PARAM check_valid if True, will remove link if the dest is not there and return False
         """
         if path[-1] == os.sep:
             path = path[:-1]
@@ -1064,6 +1080,9 @@ class SystemFS(JSBASE):
                 return False
 
         if(os.path.islink(path)):
+            if check_valid:
+                j.shell()
+                w
             self.logger.debug('path %s is a link' % path)
             return True
         self.logger.debug('path %s is not a link' % path)
