@@ -46,23 +46,15 @@ def destroy():
 
 
 @click.command()
-@click.option('--name', '-n', default='zdb_builder', help='name of the zdb instance')
-@click.option('--mode', '-m', default='seq', help='seq or user mode')
+@click.option('--name', '-n', default='zdb', help='name of the zdb instance')
+@click.option('--mode', '-m', default='user', help='seq or user mode')
 @click.option('--port', '-p', default=4500, help='port which will be exposed for the zerodb container, there is no admin passwd!')
 @click.option('--size', '-s', default=50, help='maximum amount of storage for the zerodb in GiB')
-def zdb(name, mode, port, size):
+def zdb(name, mode, port, size,stop=True):
     """
     create a zdb container
     """
-    node = j.clients.zos.get('builder')
-    logger = j.logger.get()
-
-    if node.addr == 'localhost':
-        # assume that if remote is localhost
-        # we try to reach a virtual machine with port forwarding
-        # from localhost to the machine, let's grab the reachable
-        # address of the virtual machine
-        node = j.clients.virtualbox.zero_os_private(node)
+    node = j.tools.builder.zos_client_get(name="builder")
 
     print("finding best disk where to deploy zdb...")
     # find best disk where to deploy zdb
@@ -71,6 +63,8 @@ def zdb(name, mode, port, size):
     # used the disk with the more space available
 
     zdbs=node.zerodbs.list()
+
+    j.shell()
 
 
     name2 = "builder_zdb_%s" % name
@@ -110,6 +104,8 @@ def zdb(name, mode, port, size):
     print('in jumpscale use as:\n    j.clients.zdb.get(\'%s\')' % name)
     print('reach it publicly at %s:%s' % (node.addr, zdb.node_port))
     print('reach it internally at %s:9900' % str(zdb.container.default_ip().ip))
+
+    j.shell()
 
 
 @click.command()
