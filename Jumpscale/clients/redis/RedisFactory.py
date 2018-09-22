@@ -23,6 +23,7 @@ class RedisFactory(JSBASE):
         JSBASE.__init__(self)
         self.cache_clear()
         self._running = None
+        self.logger_enable()
 
     def cache_clear(self):
         """
@@ -34,6 +35,7 @@ class RedisFactory(JSBASE):
 
     @property
     def REDIS_CLIENT_CLASS(self):
+        self.logger.debug("REDIS CLASS")
         return Redis
 
     def get(
@@ -73,11 +75,13 @@ class RedisFactory(JSBASE):
 
         if key not in self._redis or not fromcache:
             if unixsocket is None:
+                self.logger.debug("REDIS:%s:%s"%(ipaddr,port))
                 self._redis[key] = Redis(ipaddr, port, password=password, ssl=ssl, ssl_certfile=ssl_certfile, \
                                          ssl_keyfile=ssl_keyfile,
                                          # socket_timeout=timeout,
                                          **args)
             else:
+                self.logger.debug("REDIS:%s" % unixsocket)
                 self._redis[key] = Redis(unix_socket_path=unixsocket,
                                          # socket_timeout=timeout,
                                          password=password,
