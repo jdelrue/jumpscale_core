@@ -580,6 +580,8 @@ class Date(String):
 
     def toString(self, val, local=True):
         val = self.clean(val)
+        if val==0:
+            return ""
         return j.data.time.epoch2HRDateTime(val, local=local)
 
     def toHR(self, v):

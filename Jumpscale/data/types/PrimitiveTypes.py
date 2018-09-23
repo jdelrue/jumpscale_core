@@ -197,7 +197,7 @@ class Boolean():
         return value is True or value is False
 
     def get_default(self):
-        return True
+        return False
 
     def clean(self, value):
         """
@@ -258,19 +258,24 @@ class Integer():
         return isinstance(value, int)
 
     def toString(self, value):
+        if int(value) == 4294967295:
+            return "-"  #means not set yet
         if self.check(value):
             return str(value)
         else:
             raise ValueError("Invalid value for integer: '%s'" % value)
 
     def toHR(self, v):
+        if int(v) == 4294967295:
+            return "-"  #means not set yet
         return self.clean(v)
 
     def fromString(self, s):
         return j.core.text.getInt(s)
 
     def get_default(self):
-        return 0
+        #return this high number, is like None, not set yet
+        return 4294967295
 
     def clean(self, value):
         """
