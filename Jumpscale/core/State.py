@@ -60,7 +60,7 @@ class State(object):
                 #means there is no config yet, need to put
                 with open(os.path.join(self._j.core.dir_jumpscale_core, "Jumpscale", "core", "jumpscale.toml"), 'rb') as ff:
                     conf = ff.read().decode()
-                conf = conf.replace("{{HOME}}", self.executor.state_on_system["home"])
+                conf = conf.replace("{{HOME}}", self.executor.state_on_system["HOME"])
                 self._config = pytoml.loads(conf)
                 self.configSave()
             else:
