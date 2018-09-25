@@ -114,7 +114,7 @@ class RedisFactory(JSBASE):
     def _set_patch(self, client):
         client.response_callbacks['SET'] = lambda r: r
 
-    def getQueue(self, ipaddr, port, name, namespace="queues", fromcache=True):
+    def getQueue(self, name, redisclient=None, namespace="queues", fromcache=True):
         """
         get an instance of redis queue, store it in cache so we can easily retrieve it later
 
@@ -124,12 +124,18 @@ class RedisFactory(JSBASE):
         :param namespace: value of namespace for the queue
         :param fromcache: if False, will create a new one instead of checking cache
         """
-        if not fromcache:
-            return RedisQueue(self.get(ipaddr, port, fromcache=False), name, namespace=namespace)
+        if "host" not in redisclient.connection_pool.connection_kwargs:
+            ipaddr = redisclient.connection_pool.connection_kwargs["path"]
+            port=0
+        else:
+            ipaddr=redisclient.connection_pool.connection_kwargs["host"]
+            port = redisclient.connection_pool.connection_kwargs["port"]
+
+        # if not fromcache:
+        #     return RedisQueue(self.get(ipaddr, port, fromcache=False), name, namespace=namespace)
         key = "%s_%s_%s_%s" % (ipaddr, port, name, namespace)
-        if key not in self._redisq:
-            self._redisq[key] = RedisQueue(
-                self.get(ipaddr, port), name, namespace=namespace)
+        if fromcache==False or key not in self._redisq:
+            self._redisq[key] = RedisQueue(redisclient, name, namespace=namespace)
         return self._redisq[key]
 
 
