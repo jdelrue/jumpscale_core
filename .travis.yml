@@ -10,16 +10,25 @@ branches:
     - development
     - development_simple
 
-python:
-  - "3.7"
+services:
+  - docker
 
 before_install:
-  - sudo apt-get install -y python3.5 python3.5-dev
-  - sudo rm -f /usr/bin/python
-  - sudo rm -f /usr/bin/python3
-  - sudo ln -s /usr/bin/python3.5 /usr/bin/python
-  - sudo ln -s /usr/bin/python3.5 /usr/bin/python3
+  - docker build --build-arg jumpscale_branch=$JUMPSCALEBRANCH -t threefoldtech/js .
 
-install: sudo ./install/travis_ci/prepare.sh
+script:
+  - docker run --name js -w /opt/code/github/threefoldtech/jumpscale_core threefoldtech/js /bin/bash run_tests.sh
 
-script: sudo ./run_tests.sh
+# python:
+#   - "3.7"
+#
+# before_install:
+#   - sudo apt-get install -y python3.5 python3.5-dev
+#   - sudo rm -f /usr/bin/python
+#   - sudo rm -f /usr/bin/python3
+#   - sudo ln -s /usr/bin/python3.5 /usr/bin/python
+#   - sudo ln -s /usr/bin/python3.5 /usr/bin/python3
+#
+# install: sudo ./install/travis_ci/prepare.sh
+#
+# script: sudo ./run_tests.sh
