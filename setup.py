@@ -9,7 +9,7 @@ if os.environ.get("PYSTUCK", None):
     pystuck.run_server()
 
 from setuptools import setup, find_packages
-#from distutils.core import setup <- needed for dynamic bootstrap (TODO)
+# from distutils.core import setup <- needed for dynamic bootstrap (TODO)
 from distutils.sysconfig import get_python_lib
 from setuptools.command.install import install as _install
 from setuptools.command.develop import develop as _develop
@@ -22,9 +22,10 @@ def _post_install(libname, libpath):
 
     # remove leftovers
     if not "PBASE" in os.environ:
-        #should only be done when not in build dir
+        # should only be done when not in build dir
         for item in j.sal.fs.find("/usr/local/bin/", fileregex="js_*"):
             j.sal.fs.remove("/usr/local/bin/%s" % item)
+
 
 class install(_install):
 
@@ -76,7 +77,7 @@ packages = ['Jumpscale',
             'Jumpscale.tools.executor',
             'Jumpscale.data.cache',
             'Jumpscale.core.logging']
-packages = find_packages() # .... so just install everything for now
+packages = find_packages()  # .... so just install everything for now
 
 setup(
     name='Jumpscale',
