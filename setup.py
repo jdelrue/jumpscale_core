@@ -99,7 +99,7 @@ setup(
         'colored_traceback',
         'colorlog>=2.10.0',
         'httplib2>=0.9.2',
-        'ipython>=5.1.0',
+        'ipython<6.5.0,>=6.0.0',
         'jinja2',
         'libtmux>=0.7.1',
         'netaddr>=0.7.18',
