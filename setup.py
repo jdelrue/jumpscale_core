@@ -9,7 +9,7 @@ if os.environ.get("PYSTUCK", None):
     pystuck.run_server()
 
 from setuptools import setup, find_packages
-#from distutils.core import setup <- needed for dynamic bootstrap (TODO)
+# from distutils.core import setup <- needed for dynamic bootstrap (TODO)
 from distutils.sysconfig import get_python_lib
 from setuptools.command.install import install as _install
 from setuptools.command.develop import develop as _develop
@@ -22,9 +22,10 @@ def _post_install(libname, libpath):
 
     # remove leftovers
     if not "PBASE" in os.environ:
-        #should only be done when not in build dir
+        # should only be done when not in build dir
         for item in j.sal.fs.find("/usr/local/bin/", fileregex="js_*"):
             j.sal.fs.remove("/usr/local/bin/%s" % item)
+
 
 class install(_install):
 
@@ -76,7 +77,7 @@ packages = ['Jumpscale',
             'Jumpscale.tools.executor',
             'Jumpscale.data.cache',
             'Jumpscale.core.logging']
-packages = find_packages() # .... so just install everything for now
+packages = find_packages()  # .... so just install everything for now
 
 setup(
     name='Jumpscale',
@@ -98,7 +99,7 @@ setup(
         'colored_traceback',
         'colorlog>=2.10.0',
         'httplib2>=0.9.2',
-        'ipython>=5.1.0',
+        'ipython<6.5.0,>=6.0.0',
         'jinja2',
         'libtmux>=0.7.1',
         'netaddr>=0.7.18',
@@ -129,9 +130,27 @@ setup(
         'development': develop
     },
     scripts=[
-        'cmds/js_shell',
+        'cmds/js_alerts',
+        'cmds/js_builder',
         'cmds/js_code',
-        'cmds/js_docker',
+        'cmds/js_config',
+        'cmds/js_develtools',
         'cmds/js_doc',
+        'cmds/js_docker',
+        'cmds/js_encrypt',
+        'cmds/js_gedis',
+        'cmds/js_init',
+        'cmds/js_node',
+        'cmds/js_prefab',
+        'cmds/js_raml',
+        'cmds/js_rclient',
+        'cmds/js_reset',
+        'cmds/js_rserver',
+        'cmds/js_shell',
+        'cmds/js_ssh',
+        'cmds/js_sync',
+        'cmds/js_web',
+        'cmds/js_zdeploy',
+        'cmds/tfbot',
     ],
 )
