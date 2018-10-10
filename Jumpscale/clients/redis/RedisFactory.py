@@ -34,7 +34,7 @@ class RedisFactory(JSBASE):
         self._config = {}
 
     @property
-    def REDIS_CLIENT_CLASS(self):
+    def _REDIS_CLIENT_CLASS(self):
         self.logger.debug("REDIS CLASS")
         return Redis
 

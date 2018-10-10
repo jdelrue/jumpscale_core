@@ -101,7 +101,7 @@ class Path(String):
         String.__init__(self)
         self._RE = re.compile('.*')
 
-    def get_default():
+    def get_default(self):
         return ""
 
 
@@ -113,7 +113,7 @@ class Url(String):
         String.__init__(self)
         self._RE = re.compile('.*')
 
-    def get_default():
+    def get_default(self):
         return ""
 
 
@@ -248,6 +248,9 @@ class Numeric(String):
         return "%s @%s :Data;" % (name, nr)
 
     def bytes2cur(self, bindata, curcode="usd", roundnr=None):
+        if bindata == b'':
+            return 0
+
         if len(bindata) not in [6, 10]:
             raise j.exceptions.Input("len of data needs to be 6 or 10")
 
@@ -525,6 +528,9 @@ class Numeric(String):
         return self.clean(txt)
 
     def toHR(self, v):
+        return self.toString(v)
+
+    def toJSON(self,v):
         return self.toString(v)
 
     def toString(self, val):

@@ -1,7 +1,7 @@
 """ Definition of several primitive type properties (integer, string,...)
 """
 from Jumpscale import j
-
+import base64
 
 class String():
 
@@ -23,6 +23,9 @@ class String():
         return self.clean(v)
 
     def toHR(self, v):
+        return self.clean(v)
+
+    def toJSON(self,v):
         return self.clean(v)
 
     def check(self, value):
@@ -79,7 +82,7 @@ class StringMultiLine(String):
 
     def toString(self, v):
         v = self.clean(v)
-        return out
+        return v
 
     def python_code_get(self, value):
         """
@@ -89,11 +92,11 @@ class StringMultiLine(String):
         # value = value.replace("\n", "\\n")
         out0 = ""
         out0 += "'''\n"
-        for item in val.split("\n"):
+        for item in value.split("\n"):
             out0 += "%s\n" % item
         out0 = out0.rstrip()
-        out += "%s\n'''\n\n" % out0
-        return out
+        out0 += "%s\n'''\n\n" % out0
+        return out0
 
     def toml_string_get(self, value, key=""):
         """
@@ -130,13 +133,14 @@ class Bytes():
         return s.encode()
 
     def toString(self, v):
-        if self.check(v):
-            return v.decode()
-        else:
-            raise ValueError("Could not convert to bytes:%s" % v)
+        v = self.clean(v)
+        return base64.b64encode(v).decode()
 
     def toHR(self, v):
         return "...BYTES..."
+
+    def toJSON(self,v):
+        return self.toString(v)
 
     def check(self, value):
         '''Check whether provided value is a array of bytes'''
@@ -147,18 +151,20 @@ class Bytes():
 
     def clean(self, value):
         """
-        used to change the value to a predefined standard for this type
+        only support b64encoded strings and binary strings
         """
+        if isinstance(value,str):
+            value = base64.b64decode(value)
+        else:
+            if not self.check(value):
+                raise RuntimeError("byte input required")
         return value
 
     def python_code_get(self, value):
         """
         produce the python code which represents this value
         """
-        raise NotImplemented()
-        value = self.clean(value)
-        value = value.replace("\n", "\\n")
-        return "'%s'" % value
+        return self.clean(value)
 
     def capnp_schema_get(self, name, nr):
         return "%s @%s :Data;" % (name, nr)
@@ -184,7 +190,7 @@ class Boolean():
     #     return s.lower().strip() == "true"
 
     def toString(self, boolean):
-        if self.check(s):
+        if self.check(boolean):
             return str(boolean)
         else:
             raise ValueError("Invalid value for boolean: '%s'" % boolean)
@@ -198,6 +204,9 @@ class Boolean():
 
     def get_default(self):
         return False
+
+    def toJSON(self,v):
+        return self.clean(v)
 
     def clean(self, value):
         """
@@ -277,6 +286,9 @@ class Integer():
         #return this high number, is like None, not set yet
         return 4294967295
 
+    def toJSON(self,v):
+        return self.clean(v)
+
     def clean(self, value):
         """
         used to change the value to a predefined standard for this type
@@ -327,6 +339,9 @@ class Float():
             raise ValueError("Invalid value for float: '%s'" % value)
 
     def toHR(self, v):
+        return self.clean(v)
+
+    def toJSON(self,v):
         return self.clean(v)
 
     def fromString(self, s):
@@ -405,7 +420,7 @@ class Percent(Integer):
 
     def toString(self, v):
         v = self.clean(v)
-        v = round(value / 100, 2)
+        v = round(v / 100, 2)
         if int(v) == v:
             v = int(v)
         return "%s/%" % v

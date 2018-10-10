@@ -74,6 +74,9 @@ class Dictionary():
     def toString(self, v):
         return j.data.serializers.json.dumps(v, True, True)
 
+    def toJSON(self,v):
+        return self.toString(v)
+
     def capnp_schema_get(self, name, nr):
         raise RuntimeError("not implemented")
 

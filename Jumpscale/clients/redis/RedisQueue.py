@@ -15,9 +15,18 @@ class RedisQueue(JSBASE):
         """Return the approximate size of the queue."""
         return self.__db.llen(self.key)
 
+    @property
     def empty(self):
         """Return True if the queue is empty, False otherwise."""
         return self.qsize() == 0
+
+    def reset(self):
+        """
+        make empty
+        :return:
+        """
+        while self.empty == False:
+            self.get_nowait()
 
     def put(self, item):
         """Put item into the queue."""
