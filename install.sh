@@ -342,7 +342,7 @@ export LogFile='/tmp/jumpscale_install.log'
 echo "init" > $LogFile
 
 if [ "$(uname)" != "Darwin" ] ; then
-    export CODEDIR=${CODEDIR:-/opt/code}
+    export CODEDIR=${CODEDIR:-/root/code}
 else
     export CODEDIR=${CODEDIR:-~/code}
 fi
