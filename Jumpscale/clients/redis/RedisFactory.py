@@ -115,6 +115,7 @@ class RedisFactory(JSBASE):
 
     def _set_patch(self, client):
         client.response_callbacks['SET'] = lambda r: r
+        client.response_callbacks['DEL'] = lambda r: r
 
     def getQueue(self, name, redisclient=None, namespace="queues", fromcache=True):
         """
