@@ -691,8 +691,7 @@ class GitFactory(JSBASE):
                         accountdir = "%s/%s/%s" % (j.dirs.CODEDIR,
                                                    top, account)
                         if j.sal.fs.exists(path="%s/.git" % accountdir):
-                            raise j.exceptions.RuntimeError(
-                                "there should be no .git at %s level" % accountdir)
+                            raise j.exceptions.RuntimeError("there should be no .git at %s level" % accountdir)
                         else:
                             for reponame in j.sal.fs.listDirsInDir(
                                 "%s/%s/%s" % (j.dirs.CODEDIR, top, account),

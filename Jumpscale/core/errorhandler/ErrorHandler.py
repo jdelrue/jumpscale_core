@@ -62,10 +62,12 @@ class ErrorHandler():
 
         # print ("jumpscale EXCEPTIONHOOK")
         if self.inException:
-            self.logger.error("ERROR IN EXCEPTION HANDLING ROUTINES, which causes recursive errorhandling behavior.")
-            self.logger.error(exceptionObject)
+            print("**ERROR IN EXCEPTION HANDLING ROUTINES, which causes recursive errorhandling behavior.**")
+            print(exceptionObject)
             sys.exit(1)
             return
+
+        print(err)
 
         if "trace_do" in err.__dict__:
             if err.trace_do:
