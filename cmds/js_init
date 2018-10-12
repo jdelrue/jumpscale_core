@@ -28,7 +28,8 @@ get_help = 'find issues with code and potentially even fix.'
 
 
 @click.command()
-def scan():
+# @click.option('--path', '-p', help='path to scane', default=None)
+def scan(path=None):
     """
     find files which can be fixed
     and print
@@ -37,7 +38,8 @@ def scan():
 
 
 @click.command()
-def fix():
+# @click.option('--path', '-p', help='path to scane', default=None)
+def fix(path=None):
     """
     fix broken files, best to do a scan first so you know what will be changed.
     """

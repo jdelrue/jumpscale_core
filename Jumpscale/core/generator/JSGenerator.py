@@ -28,7 +28,7 @@ class JSGenerator():
                 return False
         return True
 
-    def generate(self,methods_find=False, action_method=None, action_args={}):
+    def generate(self,methods_find=False, action_method=None, action_args={},path=None):
         """
         walk over all found jumpscale libraries
         look for the classes where there is a __jslocation__ inside these are classes which need to be loaded
@@ -38,7 +38,10 @@ class JSGenerator():
         self.md = Metadata(self._j)
 
         #find the directory in which we have all repo's of threefoldtech
-        rootDir = os.path.dirname( self._j.core.dir_jumpscale_core.rstrip("/"))
+        if path:
+            rootDir = path
+        else:
+            rootDir = os.path.dirname( self._j.core.dir_jumpscale_core.rstrip("/"))
 
         p = Path(rootDir)
         for dpath in p.iterdir():
