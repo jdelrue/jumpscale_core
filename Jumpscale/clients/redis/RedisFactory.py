@@ -88,7 +88,7 @@ class RedisFactory(JSBASE):
                                          ssl=ssl, ssl_certfile=ssl_certfile,
                                          ssl_keyfile=ssl_keyfile, **args)
 
-        self.key = "redis_%s"%key
+        # self.key = "redis_%s"%key
 
         if ardb_patch:
             self._ardb_patch(self._redis[key])
