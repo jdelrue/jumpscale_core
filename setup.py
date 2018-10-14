@@ -151,6 +151,6 @@ setup(
         'cmds/js_sync',
         'cmds/js_web',
         'cmds/js_zdeploy',
-        'cmds/tfbot',
+        'cmds/3bot',
     ],
 )
