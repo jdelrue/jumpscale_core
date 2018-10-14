@@ -50,7 +50,7 @@ class RedisFactory(JSBASE):
             ssl=False,
             ssl_certfile=None,
             ssl_keyfile=None,
-            timeout=4,
+            timeout=10,
             ping=True,
             die=True,
             **args):
