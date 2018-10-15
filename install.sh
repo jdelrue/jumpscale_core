@@ -175,7 +175,13 @@ ZCodeGet() {
 
     Z_mkdir_pushd $CODEDIR/$type/$account || return 1
 
+    mkdir ~/.ssh
     touch ~/.ssh/known_hosts
+    if [ "$(uname)" != "Darwin" ] ; then
+        apt install sudo -y
+        Z_apt_install openssh-client git
+    fi
+
     # check if docs.grid.tf (gogs) in the url
     if grep -q docs.grid.tf <<< $giturl; then
         ssh-keyscan -t rsa docs.grid.tf >> ~/.ssh/known_hosts 2>&1 >> $LogFile || die "ssh keyscan" || return 1
@@ -302,7 +308,7 @@ ZInstall_host_base(){
             sudo apt-get update >> ${LogFile} 2>&1 || die "could not update packages" || return 1
 
             echo "[+] installing git, python, mc, tmux, curl"
-            Z_apt_install mc wget python3 git unzip rsync tmux curl || return 1
+            Z_apt_install mc wget python3 git unzip rsync tmux curl|| return 1
 
             if [ -n "$JSFULL" ] ; then
                 echo "[+] installing development tools: build essential & pythondev"
@@ -386,6 +392,6 @@ find ../ -iname *.plugins.json  -exec rm {} \; > /dev/null 2>&1
 
 echo "INSTALL Jumpscale on branch $JUMPSCALEBRANCH"
 # set -x
-# ZInstall_host_base || die "Could not prepare the base system" || exit 1
+ZInstall_host_base || die "Could not prepare the base system" || exit 1
 ZCodeGetJS || die "Could not download jumpscale code" || exit 1
 ZInstall_jumpscale || die "Could not install core of jumpscale" || exit 1
