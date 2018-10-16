@@ -16,5 +16,6 @@ services:
 before_install:
   - docker build --build-arg jumpscale_branch=$JUMPSCALEBRANCH -t threefoldtech/js .
 
+
 script:
   - docker run --name js -w /opt/code/github/threefoldtech/jumpscale_core threefoldtech/js /bin/bash run_tests.sh
