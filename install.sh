@@ -367,6 +367,10 @@ if [ -z "$HOMEDIR" ] || [ ! -d "$HOMEDIR" ]; then
 fi
 
 cd /tmp
+if [[ `python3 --version` != *"3.6"* ]]; then
+  echo "[-] ERROR, should python version equal or bigger that 3.6"
+  exit 1
+fi
 #remove old stuff
 rm -rf /usr/local/bin/js9_*
 rm -rf /usr/local/bin/js_*
