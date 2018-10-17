@@ -377,8 +377,6 @@ if [[ `python3 --version` != *"3.6"* ]]; then
   exit 1
 fi
 
-
-
 #remove old stuff
 rm -rf /usr/local/bin/js9_*
 rm -rf /usr/local/bin/js_*
