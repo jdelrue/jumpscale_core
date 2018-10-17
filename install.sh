@@ -367,10 +367,18 @@ if [ -z "$HOMEDIR" ] || [ ! -d "$HOMEDIR" ]; then
 fi
 
 cd /tmp
+if [[ `cat /etc/lsb-release | grep "DISTRIB_RELEASE"` != *"18"* ]]; then
+  echo "[-] ERROR, should your os is Ubuntu 18.04 LTS "
+  exit 1
+fi
+
 if [[ `python3 --version` != *"3.6"* ]]; then
   echo "[-] ERROR, should python version equal or bigger that 3.6"
   exit 1
 fi
+
+
+
 #remove old stuff
 rm -rf /usr/local/bin/js9_*
 rm -rf /usr/local/bin/js_*
