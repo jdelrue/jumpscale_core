@@ -1,4 +1,4 @@
-# Logging
+# Logging (OUTDATED)
 
 When you create a new module in Jumpscale add a `logger` in the module using `j.logger.get("module_name")` and use the proper verb when logging.
 

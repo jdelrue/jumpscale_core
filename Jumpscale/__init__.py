@@ -78,7 +78,8 @@ class Core():
         return self._db
 
     def db_reset(self):
-        j.data.cache._cache = {}
+        if hasattr(j.data,"cache"):
+            j.data.cache._cache = {}
         self._db = None
 
     @property

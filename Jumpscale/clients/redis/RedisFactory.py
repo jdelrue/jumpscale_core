@@ -22,7 +22,6 @@ class RedisFactory(JSBASE):
     def __init__(self):
         JSBASE.__init__(self)
         self.cache_clear()
-        self._running = None
         self.logger_enable()
 
     def cache_clear(self):
@@ -176,14 +175,12 @@ class RedisFactory(JSBASE):
         # XXX far too drastic j.sal.process.killall("redis-server")
 
     def core_running(self):
-        if self._running==None:
-            self._running=j.sal.nettools.tcpPortConnectionTest("localhost",6379)
-        return self._running
+        return j.sal.nettools.tcpPortConnectionTest("localhost",6379)
 
     def core_check(self):
         if not self.core_running():
             self.core_start()
-        return self._running        
+        return self.core_running()
 
     def core_start(self, timeout=20):
         """ installs and starts a redis instance in separate ProcessLookupError
@@ -194,8 +191,8 @@ class RedisFactory(JSBASE):
                 # prefab.system.package.install('redis')
                 j.sal.process.execute("brew unlink redis", die=False)
                 j.sal.process.execute("brew install redis;brew link redis")
-            if not j.sal.process.checkInstalled("redis-server"):
-                raise RuntimeError("Cannot find redis-server even after install")
+                if not j.sal.process.checkInstalled("redis-server"):
+                    raise RuntimeError("Cannot find redis-server even after install")
             j.sal.process.execute("redis-cli -s %s/redis.sock shutdown" %
                                   j.dirs.TMPDIR, die=False, showout=False)
             j.sal.process.execute("redis-cli shutdown", die=False, showout=False)
@@ -227,8 +224,8 @@ class RedisFactory(JSBASE):
         #     self.logger.info("start redis in background (win)")
         #     os.system(cmd)
 
-        cmd = "echo never > /sys/kernel/mm/transparent_hugepage/enabled"
-        os.system(cmd)
+        # cmd = "echo never > /sys/kernel/mm/transparent_hugepage/enabled"
+        # os.system(cmd)
         if not j.core.platformtype.myplatform.isMac:
             cmd = "sysctl vm.overcommit_memory=1"
             os.system(cmd)
@@ -246,7 +243,7 @@ class RedisFactory(JSBASE):
         while time.time() < limit_timeout:
             if tcpPortConnectionTest("localhost", 6379):
                 break
-            time.sleep(2)
+            time.sleep(0.1)
         else:
             raise j.exceptions.Timeout("Couldn't start redis server")
 

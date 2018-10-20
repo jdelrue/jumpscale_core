@@ -51,7 +51,8 @@ class State(object):
             if self._j.core._db_fakeredis:
                 #make sure we use real redis
                 self._j.clients.redis.core_start()
-                self._j.core._db = None
+                self._j.core.db_reset()
+                self._j.core.db  #gets the db to be fetched
                 if self._j.core._db_fakeredis:
                     raise RuntimeError("should have been real redis by now")
                 # raise RuntimeError("make sure you run local core redis, can use ")
