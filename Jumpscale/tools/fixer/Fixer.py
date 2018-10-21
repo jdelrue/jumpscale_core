@@ -46,34 +46,41 @@ class Fixer(JSBASE):
         print(self.generator.md.line_changes)
 
 
-    def find_changes(self):
+
+    def find_changes(self,path=None, extensions=["py","txt","md"], recursive=True):
         """
         js_shell 'j.tools.fixer.find_changes()'
         :return:
         """
 
-        self._find_changes()
+        if path is None:
+            self._find_changes()
 
-        #important to generate the normal non debug version
-        os.environ["JSGENERATE_DEBUG"] = "0"
-        self.generator.generate()
+            #important to generate the normal non debug version
+            os.environ["JSGENERATE_DEBUG"] = "0"
+            self.generator.generate()
+        else:
+            self.replacer.dir_process(path=path,extensions=extensions,recursive=recursive,write=False)
 
 
 
 
-    def write_changes(self):
+    def write_changes(self,path=None, extensions=["py","txt","md"], recursive=True):
         """
         js_shell 'j.tools.fixer.write_changes()'
         BE CAREFULL THIS WILL WRITE THE CHANGES AS FOUND IN self.find_changes
         """
-        self._find_changes()
+        if path is None:
+            self._find_changes()
 
-        for jsmodule in self.generator.md.jsmodules.values():
-            jsmodule.write_changes()
+            for jsmodule in self.generator.md.jsmodules.values():
+                jsmodule.write_changes()
 
-        # important to generate the normal non debug version
-        os.environ["JSGENERATE_DEBUG"] = "0"
-        self.generator.generate()
+            # important to generate the normal non debug version
+            os.environ["JSGENERATE_DEBUG"] = "0"
+            self.generator.generate()
+        else:
+            self.replacer.dir_process(path=path,extensions=extensions,recursive=recursive,write=True)
 
 
 

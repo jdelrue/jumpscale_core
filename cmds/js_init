@@ -28,22 +28,22 @@ get_help = 'find issues with code and potentially even fix.'
 
 
 @click.command()
-# @click.option('--path', '-p', help='path to scane', default=None)
+@click.option('--path', '-p', help='path to scane', default=None)
 def scan(path=None):
     """
     find files which can be fixed
     and print
     """
-    j.tools.fixer.find_changes()
+    j.tools.fixer.find_changes(path=path)
 
 
 @click.command()
-# @click.option('--path', '-p', help='path to scane', default=None)
+@click.option('--path', '-p', help='path to scane', default=None)
 def fix(path=None):
     """
     fix broken files, best to do a scan first so you know what will be changed.
     """
-    j.tools.fixer.write_changes()
+    j.tools.fixer.write_changes(path=path)
 
 
 @click.command()

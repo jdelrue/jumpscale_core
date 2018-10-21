@@ -31,6 +31,7 @@ class FixerReplacer(JSBASE):
     def __init__(self):
         JSBASE.__init__(self)
         self.rules=[]
+        self.logger_enable()
 
         for rule in DO.split("\n"):
             if rule.strip()=="":
@@ -58,6 +59,36 @@ class FixerReplacer(JSBASE):
             line = line1
         return changed,line
 
+    def file_process(self,path,write=False,root=""):
+        out=""
+        nr=0
+
+
+        for line in j.sal.fs.fileGetContents(path).split("\n"):
+            nr+=1
+            changed,line2 = self.line_process(line)
+            if changed:
+                path2 = j.sal.fs.pathRemoveDirPart(path,root)
+                if path2 not in self.changes:
+                    self.changes[path2]={}
+                changes = self.changes[path2]
+                changes["line"]=nr
+                changes["from"]=line
+                changes["to.."]=line2
+                out+="%s\n"%line2
+            else:
+                out+="%s\n"%line
+        if len(self.changes)>0 and write:
+            j.sal.fs.writeFile(path, out)
+
+    def dir_process(self,path,extensions=["py","txt","md"],recursive=True,write=False):
+        path = j.sal.fs.pathNormalize(path)
+        self.changes={}
+        for ext in extensions:
+            for p in j.sal.fs.listFilesInDir(path, recursive=recursive, filter="*.%s"%ext, followSymlinks=False):
+                self.logger.debug("process file:%s"%p)
+                self.file_process(root=path,path=p,write=write)
+        print(j.data.serializers.yaml.dumps(self.changes))
 
 class ReplaceIgnoreCase():
 
