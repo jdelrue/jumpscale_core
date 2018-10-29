@@ -36,7 +36,7 @@ class NACLFactory(JSBASE):
         default words which are securely stored on your filesystem
         js_shell 'print(j.data.nacl.default.words)'
         """
-        return j.data.nacl.default.words
+        return self.default.words
 
     def remember(self):
         """

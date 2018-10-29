@@ -127,6 +127,9 @@ class List():
     def clean(self, val, toml=False, sort=False, ttype=None):
         if ttype is None:
             ttype = self.SUBTYPE
+        else:
+            if j.data.types.string.check(val):
+                val = [i for i in val]
         if len(val) == 0:
             return val
         if ttype is None:
@@ -161,6 +164,8 @@ class List():
                 out += " %s," % item
             out = out.strip().strip(",").strip()
         return out
+
+
 
     def python_code_get(self, value, sort=False):
         """
