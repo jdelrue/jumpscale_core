@@ -63,6 +63,9 @@ class String():
     def capnp_schema_get(self, name, nr):
         return "%s @%s :Text;" % (name, nr)
 
+    def unique_sort(self,txt):
+        return "".join(j.data.types.list.clean(txt))
+
 
 class StringMultiLine(String):
 
