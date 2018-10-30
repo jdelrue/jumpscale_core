@@ -81,7 +81,7 @@ packages = find_packages()  # .... so just install everything for now
 
 setup(
     name='Jumpscale',
-    version='9.5.1',
+    version='9.6.0',
     description='Automation framework for cloud workloads',
     long_description=long_description,
     url='https://github.com/threefoldtech/jumpscale_core',
