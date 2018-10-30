@@ -1,6 +1,31 @@
 
+# install
+
+```bash
+curl https://raw.githubusercontent.com/threefoldtech/jumpscale_core/development_960/install.sh?$RANDOM > /tmp/install_jumpscale.sh;bash /tmp/install_jumpscale.sh
+```
+
+```bash
+#to define branch:
+export JUMPSCALEBRANCH="development_960"
+curl https://raw.githubusercontent.com/threefoldtech/jumpscale_core/$JUMPSCALEBRANCH/install.sh?$RANDOM > /tmp/install_jumpscale.sh;bash /tmp/install_jumpscale.sh
+```
+
+to follow the install
+
+```bash
+tail -f /tmp/jumpscale_install.log
+```
+
+to test that it worked:
+
+```bash
+js_shell
+```
+
+### Install using pip3 (needs to be tested)
 
 ```
-include_git: https://github.com/threefoldtech/jumpscale_core/blob/development_simple/README.md#installing-jumpscale-core-new-need-to-test
+mkdir -p /opt/code/github/threefoldtech/jumpscale_core
+pip3 install -e git+https://github.com/threefoldtech/jumpscale_core@development#egg=core --src /opt/code/github/threefoldtech/jumpscale_core
 ```
-
