@@ -36,7 +36,7 @@ Z_mkdir_pushd(){
 
 Z_brew_install(){
     echo "brew install: $@" >> $LogFile
-    brew install  $@ >> $LogFile 2>&1 || die "could not brew install $@" || return 1
+    brew install  $@ >> $LogFile 2>&1 || brew upgrade  $@ >> $LogFile 2>&1 || die "could not brew install $@" || return 1
 }
 
 Z_apt_install(){
@@ -175,7 +175,7 @@ ZCodeGet() {
 
     Z_mkdir_pushd $CODEDIR/$type/$account || return 1
 
-    mkdir ~/.ssh
+    mkdir -p ~/.ssh > /dev/null 2>&1
     touch ~/.ssh/known_hosts
     if [ "$(uname)" != "Darwin" ] ; then
         apt install sudo -y
