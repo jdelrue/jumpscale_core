@@ -14,7 +14,7 @@ curl https://raw.githubusercontent.com/threefoldtech/jumpscale_core/$JUMPSCALEBR
 to follow the install
 
 ```bash
-tail -f /tmp/install_jumpscale.sh
+tail -f /tmp/jumpscale_install.log
 ```
 
 to test that it worked:
