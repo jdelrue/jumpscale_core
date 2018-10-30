@@ -8,7 +8,7 @@ branches:
   only:
     - master
     - development
-    - development_simple
+    - development_960
 
 python:
   - "3.7"

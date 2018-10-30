@@ -1,4 +1,4 @@
-
+#!/usr/bin/env bash
 
 die() {
     set +x
@@ -62,7 +62,7 @@ ZCodeGetJSUsage() {
    cat <<EOF
 Usage: ZCodeGet [-r reponame] [-g giturl] [-a account] [-b branch]
    -r reponame: name or repo which is being downloaded
-   -b branchname: defaults to development_simple
+   -b branchname: defaults to development_960
    -h: help
 
 check's out jumpscale repo to $CODEDIR/github/threefoldtech/$reponame
@@ -84,7 +84,7 @@ ZCodeGetJS() {
     local OPTIND
     local account='threefoldtech'
     local reponame=''
-    # local branch=${JUMPSCALEBRANCH:-development_simple} #this is being set elsewhere too
+    # local branch=${JUMPSCALEBRANCH:-development_960} #this is being set elsewhere too
     [ -e $JUMPSCALEBRANCH ] && exit 1
     
     while getopts "r:b:h" opt; do
@@ -109,9 +109,9 @@ ZCodeGetJS() {
     # local giturl="git@github.com:Jumpscale/$reponame.git"
     local githttpsurl="https://github.com/threefoldtech/$reponame.git"
 
-    # check if specificed branch or $JUMPSCALEBRANCH exist, if not then fallback to development_simple
+    # check if specificed branch or $JUMPSCALEBRANCH exist, if not then fallback to development_960
 
-    JUMPSCALEBRANCHExists ${githttpsurl} ${JUMPSCALEBRANCH} || JUMPSCALEBRANCH=development_simple
+    JUMPSCALEBRANCHExists ${githttpsurl} ${JUMPSCALEBRANCH} || JUMPSCALEBRANCH=development_960
     JUMPSCALEBRANCHExists ${githttpsurl} ${JUMPSCALEBRANCH} || JUMPSCALEBRANCH=development
 
     echo "get code: ${githttpsurl} ${JUMPSCALEBRANCH}"
@@ -128,7 +128,7 @@ Usage: ZCodeGet [-r reponame] [-g giturl] [-a account] [-b branch]
    -a account: will default to 'varia', but can be account name
    -r reponame: name or repo which is being downloaded
    -u giturl: e.g. git@github.com:mathieuancelin/duplicates.git
-   -b branchname: defaults to development_simple
+   -b branchname: defaults to development_960
    -k sshkey: path to sshkey to use for authorization when connecting to the repository.
    -h: help
 
@@ -147,7 +147,7 @@ ZCodeGet() {
     local account='varia'
     local reponame=''
     local giturl=''
-    local branch=${JUMPSCALEBRANCH:-development_simple}
+    local branch=${JUMPSCALEBRANCH:-development_960}
     local sshkey=''
     while getopts "a:r:u:b:t:k:h" opt; do
         case $opt in
@@ -301,6 +301,13 @@ ZInstall_host_base(){
 
 
     elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+
+        cd /tmp
+        if [[ `cat /etc/lsb-release | grep "DISTRIB_RELEASE"` != *"18"* ]]; then
+          echo "[-] ERROR, should your os is Ubuntu 18.04 LTS "
+          exit 1
+        fi
+
         dist=''
         dist=`grep DISTRIB_ID /etc/*-release | awk -F '=' '{print $2}'`
         if [ "$dist" == "Ubuntu" ]; then
@@ -341,7 +348,7 @@ ZInstall_host_base(){
 #########################################################
 
 #check if branch given, if not set do development
-export JUMPSCALEBRANCH=${JUMPSCALEBRANCH:-development_simple}
+export JUMPSCALEBRANCH=${JUMPSCALEBRANCH:-development_960}
 # export JSFULL=1 #if set will install in developer mode
 
 export LogFile='/tmp/jumpscale_install.log'
@@ -366,15 +373,12 @@ if [ -z "$HOMEDIR" ] || [ ! -d "$HOMEDIR" ]; then
     return 1
 fi
 
-cd /tmp
-if [[ `cat /etc/lsb-release | grep "DISTRIB_RELEASE"` != *"18"* ]]; then
-  echo "[-] ERROR, should your os is Ubuntu 18.04 LTS "
-  exit 1
-fi
 
 if [[ `python3 --version` != *"3.6"* ]]; then
-  echo "[-] ERROR, should python version equal or bigger that 3.6"
-  exit 1
+    if [[ `python3 --version` != *"3.7"* ]]; then
+        echo "[-] ERROR, should python version equal or bigger that 3.6"
+        exit 1
+     fi
 fi
 
 #remove old stuff
