@@ -1,0 +1,342 @@
+
+#!/usr/bin/env python3
+import click
+from enum import Enum
+import os
+from shutil import which
+from Jumpscale import j
+import logging
+logger = logging.getLogger('zos')
+
+toml = j.data.serializer.toml
+
+
+CONFIG_FILE = j.sal.fs.joinPaths(j.dirs.CFGDIR, "zos.toml")
+ZOS_DEFAULT_CONFIG = {'app': {'debug':False, 'activezos':None}}
+TF_ZEROTIER_PUBLIC_NETWORK = "9bee8941b5717835"
+
+
+def check_bins():
+    bins = ["ssh", "scp"]
+    for b in bins:
+        if not which(b):
+            logger.error("{} is required for zos to work".format(b))
+
+check_bins()            
+
+def get_zerotier_id():
+    zid = os.getenv("GRID_ZEROTIER_ID_TESTING", None)
+    if zid is None:
+        zid = os.getenv("GRID_ZEROTIER_ID", TF_ZEROTIER_PUBLIC_NETWORK) # pub tf network.
+    return zid
+
+ztid = get_zerotier_id()
+
+def ensure_config():
+    j.sal.fs.createDir(j.dirs.CFGDIR)
+    if not j.sal.fs.exists(CONFIG_FILE):
+        # TODO add empty template for app.
+       toml.dump(CONFIG_FILE, ZOS_DEFAULT_CONFIG)
+
+ensure_config()
+
+def get_zos_config():
+    return j.data. serializer.toml.load(CONFIG_FILE)
+
+def get_active_zos():
+    config = get_zos_config()
+    return config.get('app', {}).get('defaultzos', None)
+
+def is_instance_configured(name):
+    config = get_zos_config()
+    instance = config.get(name, False)
+    if instance:
+        return 'address' in instance and 'port' in instance
+    return False
+
+def get_instance_configuration(name):
+    if is_instance_configured(name):
+        return get_zos_config()[name]
+
+def is_configured():
+    activezos = get_active_zos()
+    if activezos:
+        return is_instance_configured(activezos)
+    return False
+
+def mk_container_config_key(containerid):
+    return "container-{activezos}-containerid" 
+
+def get_container_configuration(containerid):
+    if is_configured():
+        activezos = get_active_zos()
+        config = get_zos_config()
+        container_key = mk_container_config_key(containerid)
+        return config.get(container_key, None)
+
+def get_zos_connection():
+    if is_configured():
+        instance_config = get_instance_configuration(get_active_zos())
+        return j.clients.zos_protocol.get(instance='zos', data={'host':instance_config['address'], 'port':instance_config['port']})
+
+def get_container_client(containerid):
+    zcl = get_zos_connection()
+    return zcl.container.client(containerid)
+
+
+def get_containers_info():
+    zcl = get_zos_connection()
+    info = zcl.container.list()
+    containers = []
+    for cid, v in info.items():
+        d = {}
+        d['id'] = cid
+        d['root'] = v['container']['arguments']['root']
+        d['name'] = v['container']['arguments']['name']
+        d['hostname'] = v['container']['arguments']['hostname']
+        d['pid'] = v['container']['pid']
+        ports = ""
+        for hostport, containerport in v["container"]["arguments"]["port"].items():
+            ports += "{}:{},".format(hostport, containerport)
+        d['ports'] = ports
+        containers.append(d)
+    return containers 
+
+def get_containers_info_table():
+    res = get_containers_info()
+    data = [
+        ["ID", "Name", "Hostname", "Ports", "Root"]
+        
+    ]
+    for info in res:
+        data.append([info['id'], info['name'], info['hostname'], info['ports'], info['root'] ]) 
+
+    try:
+        from terminaltables import AsciiTable
+        return AsciiTable(data).table
+    except:
+        logger.error("[-]terminaltables package isn't installed")
+        return data
+
+@click.command()
+@click.option('--name', '-n', required=False, default="local", help="zos machine name")
+@click.option('--disksize', '-d', required=False, default=20, help="disk size in GB")
+@click.option('--memory', '-m', required=False, default=4, help="memory size in GB")
+@click.option('--redisport', '-r', required=False, default=4444, help="redis port forward on virtualbox machine")
+@click.option('--reset', required=False, default=False, is_flag=True, help="reset zos virtualbox machine")
+def init(name="local", disksize=20, memory=4, redisport=6379, reset=False):
+    print(locals())
+    raise NotImplementedError
+
+@click.command()
+@click.option('--name', '-n', required=False, default="local", help="zos machine name")
+@click.option('--address', '-d', required=False, default="127.0.0.1", help="disk size in GB")
+@click.option('--redisport', '-r', required=False, default=4444, help="redis port forward on virtualbox machine")
+@click.option('--setdefault', required=False, default=False, is_flag=True, help="set default zos machine")
+def configure(name="local", address="127.0.0.1", redisport=4444, setdefault=False):
+    config = get_zos_config()
+    config[name] = {'address':address, 'port':redisport}
+    if setdefault:
+        config['app']['defaultzos'] = name
+    
+    toml.dump(CONFIG_FILE, config)
+
+@click.command()
+@click.option('--name', '-n', required=False, default="local", help="zos machine name")
+def remove(name):
+    pass
+
+@click.command()
+def ping():
+    zcl = get_zos_connection()
+    if zcl:
+        print(zcl.ping())
+
+@click.command()
+def showconfig():
+    config = get_zos_config()
+    print(j.data.serializer.toml.dumps(config))
+
+@click.command()
+@click.option('--name', '-n', required=False, default="local", help="zos machine name")
+def setdefault(name):
+    config = get_zos_config()
+    config['app']['defaultzos'] = name
+    toml.dump(CONFIG_FILE, config)
+
+@click.command()
+@click.option('--command', '-c', required=True, help="zero-os command")
+@click.option('--jsonargs', '-j', required=False, default="", help="json arguments")
+def cmd(command, jsonargs=""):
+    zcl = get_zos_connection()
+    args = {}
+    try:
+        args = j.data.serializer.json.loads(jsonargs)
+    except:
+        pass
+    res = zcl.json(command, args)
+    print(res)
+
+@click.command()
+@click.argument('command')
+def execute(command):
+    zcl = get_zos_connection()
+    job = zcl.system(command, stream=True)
+    print(job.stream())
+
+@click.group()
+def container():
+    pass
+
+@click.option('--name', '-n', required=False, default="local", help="container name")
+@click.option('--hostname', '-H', required=False, default="local", help="container hostname")
+@click.option('--root', '-r', required=False, default="local", help="root flist")
+@click.option('--ports', '-p', required=False, default="", help="port forwards in form of 'host:container' ")
+@click.option('--env', '-e', required=False, default="", help="env in form of 'host:container' ")
+@click.option('--privileged', required=False, default=False, is_flag=True, help="privileged container")
+@click.option('--ssh', required=False, default=False, is_flag=True, help="enable ssh")
+@container.command()
+def new(name="", root="", hostname="", ports="", env="", privileged=False, ssh=False):
+    zcl = get_zos_connection()
+    name = name
+    if not name:
+        name = j.tools.builder.random_hostname()
+    if not hostname:
+        hostname = name
+    
+    portmap = {}
+    envmap = {}
+
+    if ports:
+        for pair in ports.split(","):
+            if ":" in pair:
+                hostport, containerport = [x.strip() for x in pair.split(":", maxsplit=1)]
+                envmap[hostport] = int(containerport)
+            else:
+                pass
+                # TODO raise
+   
+    if env:
+        for pair in env.split(","):
+            if ":" in pair:
+                key, val = [x.strip() for x in pair.split(":", maxsplit=1)]
+                envmap[key] = val
+            else:
+                pass
+                # TODO raise
+
+     
+    zcl.create(root_url=root, name=name, hostname=hostname, privileged=privileged, env=envmap, port=portmap)
+    print(locals())
+    pass
+
+@container.command()
+@click.option('--asjson', '-J', required=False, default=False, is_flag=True, help="list containers as json")
+def list(asjson=False):
+    print(locals())
+
+@container.command()
+@click.argument('containerid', required=False)
+def inspect(containerid=None):
+    zcl = get_zos_connection()
+    if containerid:
+        print(zcl.container.list()[containerid])
+    else:
+        print(zcl.container.list())
+
+@container.command()
+@click.argument('containerid', required=False)
+@click.option('--asjson', '-J', required=False, default=False, is_flag=True, help="json output")
+def info(containerid=None, asjson=False):
+    zcl = get_zos_connection()
+    if asjson:
+        print(get_containers_info())
+    else:
+        print(get_containers_info_table())
+
+@container.command()
+@click.argument('containerid')
+def delete(containerid=None):
+    logger.info("removing {}".format(containerid))
+    zcl = get_zos_connection()
+    zcl.container.terminate(containerid)
+
+@container.command()
+@click.argument('containerid', required=False)
+def zerotierinfo(containerid):
+    logger.info("zerotierinfo for {}".format(containerid))
+    ccl = get_container_client(containerid)
+    ccl.zerotier.info()
+
+@container.command()
+@click.argument('containerid', required=False)
+def zerotierlist(containerid):
+    logger.info("zerotierlist for {}".format(containerid))
+    ccl = get_container_client(containerid)
+    ccl.zerotier.list()
+
+@container.command()
+@click.argument('containerid', required=False)
+@click.argument('command')
+def zosexec(containerid, command):
+    logger.info("zerotierlist for {}".format(containerid))
+    ccl = get_container_client(containerid)
+    res = ccl.system(command, stream=True)
+    print(res.stream())
+
+
+@container.command()
+@click.argument('containerid', required=False)
+def sshenable(containerid):
+    pass
+
+@container.command()
+@click.argument('containerid', required=False)
+def sshinfo(containerid):
+    pass
+
+@container.command()
+@click.argument('containerid')
+def shell(containerid):
+    print(locals())
+
+
+@container.command(name="execute")
+@click.argument('containerid')
+@click.argument('command')
+def container_execute(containerid, command):
+    print(locals())
+
+
+@container.command()
+@click.argument('containerid')
+@click.option('--file', '-f', required=False, default=False, help="file path")
+@click.option('--dest', '-d', required=False, default=False, help="destination path")
+def upload(containerid=None, file="", dest=""):
+    print(locals())
+
+@container.command()
+@click.argument('containerid')
+@click.option('--file', '-f', required=False, default=False, help="file path")
+@click.option('--dest', '-d', required=False, default=False, help="destination path")
+def download(containerid=None, file="", dest=""):
+    print(locals())
+
+    pass
+
+@click.group()
+def zosapp():
+    pass
+
+zosapp.add_command(init)
+zosapp.add_command(configure)
+zosapp.add_command(showconfig)
+zosapp.add_command(remove)
+zosapp.add_command(ping)
+zosapp.add_command(setdefault)
+zosapp.add_command(cmd)
+zosapp.add_command(execute)
+zosapp.add_command(container)
+
+if __name__ == "__main__":
+    zosapp()
