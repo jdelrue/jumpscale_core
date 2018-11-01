@@ -10,4 +10,5 @@ RUN apt update && apt install -y curl sudo python3.7 && mkdir /root/.ssh && ln -
 RUN curl https://raw.githubusercontent.com/threefoldtech/jumpscale_core/$JUMPSCALEBRANCH/install.sh?$RANDOM > /tmp/install_jumpscale.sh && bash /tmp/install_jumpscale.sh
 RUN ssh-keygen -t rsa -N "" -f /root/.ssh/id_rsa && js_config init -s -p /opt/cfg/myconfig -k /root/.ssh/id_rsa
 
+
 CMD ["js_shell"]
