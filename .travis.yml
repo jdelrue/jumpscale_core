@@ -18,4 +18,4 @@ before_install:
 
 
 script:
-  - docker run --name js -w /opt/code/github/threefoldtech/jumpscale_core threefoldtech/js /bin/bash run_tests.sh
+  - docker run --name js -w /root/code/github/threefoldtech/jumpscale_core threefoldtech/js /bin/bash run_tests.sh
