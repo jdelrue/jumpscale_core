@@ -853,6 +853,8 @@ class SystemFS(JSBASE):
         filesreturn = []
         for item in items:
             fullpath = os.path.join(path, item)
+            if item.startswith("Icon"):
+                continue
             if self.isDir(fullpath, findDirectorySymlinks):
                 if dirNameOnly:
                     filesreturn.append(item)

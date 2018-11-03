@@ -17,6 +17,8 @@ class Cache(object):
         """
         if id not in self._cache:
             self._cache[id] = CacheCategory(j=self._j, id=id, expiration=expiration, reset=reset)
+            if reset:
+                self._cache[id].reset()
         return self._cache[id]
 
     def resetAll(self):
@@ -88,7 +90,8 @@ class Cache(object):
         assert "somethingElse" not in c.list()
 
     def test(self):
-        """ js_shell 'j.core.cache.test()'
+        """
+        js_shell 'j.core.cache.test()'
         """
 
         
@@ -97,7 +100,9 @@ class Cache(object):
         self._j.core.db_reset()
         c = self.get("test", expiration=1)
         self._testAll(c)
-        
+        j.tools.tutorial.cache()
+        print("CACHE ALL TESTS DONE")
+
 
     def test_without_redis(self):
         """ js_shell 'j.core.cache.test_without_redis()'
@@ -119,7 +124,7 @@ class Cache(object):
 
 class CacheCategory(object):
 
-    def __init__(self, j, id, expiration=10, reset=False):
+    def __init__(self, j, id, expiration=3600, reset=False):
         self._j = j
         self.id = id
         self.db = self._j.core.db
@@ -142,9 +147,18 @@ class CacheCategory(object):
     def exists(self, key):
         return self.db.get(self._key_get(key)) is not None
 
-    def get(self, key, method=None, expire=None, refresh=False, **kwargs):
+    def get(self, key, method=None, expire=None, refresh=False, retry=1, die=True, **kwargs):
         """
 
+        :param key: is a unique key for item to fetch out of the cache
+        :param method: the method to execute
+        :param expire: expiration in seconds (if 0 then will be same as refresh = True)
+        :param refresh: if True will execute again
+        :param retry: std 1, means will only try 1 time, otherwise will try multiple times,
+                    useful for e.g. fetching something from internet
+        :param kwargs: the arguments in kwargs form e.g. a="1"  for the method to execute
+        :param die, normally True, means will raise error if doesnt work, if False will return the error object
+        :return: the output of the method
         """
         # check if key exists then return (only when no refresh)
         res = self.db.get(self._key_get(key))
@@ -158,11 +172,23 @@ class CacheCategory(object):
                 raise self._j.exceptions.RuntimeError(
                     "Cannot get '%s' from cache,not found & method None" % key)
             # print("cache miss")
-            val = method(**kwargs)
+            nr=0
+            while nr<retry:
+                try:
+                    val = method(**kwargs)
+                    break
+                except Exception as e:
+                    nr+=1
+                    if nr==retry:
+                        if die:
+                            raise e
+                        else:
+                            return e
+
+
             # print(val)
             if val is None or val == "":
-                raise self._j.exceptions.RuntimeError(
-                    "cache method cannot return None or empty string.")
+                raise self._j.exceptions.RuntimeError("cache method cannot return None or empty string.")
             self.set(key, val, expire=expire)
             return val
         else:
