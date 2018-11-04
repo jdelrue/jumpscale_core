@@ -1,9 +1,3 @@
-
-License valid for full repo unless if other license file found in subdirectories e.g. BCDB module and others,
-in that case the license file as found in the subdirectory has priority.
-
-
-
                                  Apache License
                            Version 2.0, January 2004
                         http://www.apache.org/licenses/
@@ -192,9 +186,7 @@ in that case the license file as found in the subdirectory has priority.
       same "printed page" as the copyright notice for easier
       identification within third-party archives.
 
-   Copyright 2010 Incubaid NV / CodeScalers 
-   Copyright 2017 GIG Technology NV
-   Copyright 2018 ThreeFold Tech (www.threefold.tech)
+   Copyright ThreeFold Tech (www.threefold.tech)
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.

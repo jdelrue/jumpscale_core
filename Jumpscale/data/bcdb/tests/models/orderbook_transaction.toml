@@ -1,0 +1,16 @@
+
+
+# Transaction
+@url = threefoldtoken.transaction
+@name = transaction
+buy_order_id* = (I)          # id of buy order
+sell_order_id* = (I)         # id of sell order
+amount_bought = (F)         # the trade amount
+currency = (S)              # the currency in which the transaction will happen
+total_price = (F)           # total price of the transaction
+state* = (S)                 # state of the transaction new/pending/failed/succeeded
+buyer_wallet_addr = (S)     # Buyer wallet address
+seller_wallet_addr = (S)    # Seller Wallet address
+buyer_email_addr = (S)      # email addr used through IYO for the buyer
+seller_email_addr = (S)     # email addr used through IYO for the seller
+

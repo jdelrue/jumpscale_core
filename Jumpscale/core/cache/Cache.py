@@ -73,8 +73,7 @@ class Cache(object):
         # still needs to be 2
         assert c.get("somethingElse", return3, expire=1) == 2
         time.sleep(2)
-        assert c.get("somethingElse", return3,
-                     expire=1) == 3  # now needs to be 3
+        assert c.get("somethingElse", return3,expire=1) == 3  # now needs to be 3
 
         assert c.get(
             "somethingElse",
@@ -100,7 +99,7 @@ class Cache(object):
         self._j.core.db_reset()
         c = self.get("test", expiration=1)
         self._testAll(c)
-        j.tools.tutorial.cache()
+        self._j.tools.tutorial.cache()
         print("CACHE ALL TESTS DONE")
 
 
@@ -142,7 +141,8 @@ class CacheCategory(object):
     def set(self, key, value, expire=None):
         if expire is None:
             expire = self.expiration
-        self.db.set(self._key_get(key), pickle.dumps(value), ex=expire)
+        data=pickle.dumps((self._j.data.time.epoch+expire,value))
+        self.db.set(self._key_get(key),data, ex=expire)
 
     def exists(self, key):
         return self.db.get(self._key_get(key)) is not None
@@ -153,49 +153,54 @@ class CacheCategory(object):
         :param key: is a unique key for item to fetch out of the cache
         :param method: the method to execute
         :param expire: expiration in seconds (if 0 then will be same as refresh = True)
-        :param refresh: if True will execute again
+        :param refresh: if True will execute again (will be set into local caching DB)
         :param retry: std 1, means will only try 1 time, otherwise will try multiple times,
                     useful for e.g. fetching something from internet
         :param kwargs: the arguments in kwargs form e.g. a="1"  for the method to execute
         :param die, normally True, means will raise error if doesnt work, if False will return the error object
         :return: the output of the method
         """
-        # check if key exists then return (only when no refresh)
-        res = self.db.get(self._key_get(key))
-        if res is not None:
-            res = pickle.loads(res)
+        if refresh:
+            self.delete(key)
+            res = None
+        else:
+            # check if key exists then return (only when no refresh)
+            res = self.db.get(self._key_get(key))
+            if res is not None:
+                expireEpoch,res = pickle.loads(res)
+                if self._j.data.time.epoch>expireEpoch:
+                    self.delete(key)
+                    res = None
+                else:
+                    print("cache hit")
+                    return res
+
         if expire is None:
             expire = self.expiration
-        #print("key:%s res:%s" % (key, res))
-        if refresh or res is None:
-            if method is None:
-                raise self._j.exceptions.RuntimeError(
-                    "Cannot get '%s' from cache,not found & method None" % key)
-            # print("cache miss")
-            nr=0
-            while nr<retry:
-                try:
-                    val = method(**kwargs)
-                    break
-                except Exception as e:
-                    nr+=1
-                    if nr==retry:
-                        if die:
-                            raise e
-                        else:
-                            return e
 
+        print("key:%s res:%s" % (key, res))
+        if method is None:
+            raise self._j.exceptions.RuntimeError("Cannot get '%s' from cache,not found & method None" % key)
+        print("cache miss")
+        nr=0
+        while nr<retry:
+            try:
+                val = method(**kwargs)
+                break
+            except Exception as e:
+                nr+=1
+                if nr==retry:
+                    if die:
+                        raise e
+                    else:
+                        return e
 
-            # print(val)
-            if val is None or val == "":
-                raise self._j.exceptions.RuntimeError("cache method cannot return None or empty string.")
-            self.set(key, val, expire=expire)
-            return val
-        else:
-            if res is None:
-                raise self._j.exceptions.RuntimeError(
-                    "Cannot get '%s' from cache" % key)
-            return res
+        # print(val)
+        if val is None or val == "":
+            raise self._j.exceptions.RuntimeError("cache method cannot return None or empty string.")
+        self.set(key, val, expire=expire)
+        return val
+
 
     def reset(self):
         for item in self.list():

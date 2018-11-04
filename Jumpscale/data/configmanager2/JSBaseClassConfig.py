@@ -45,7 +45,7 @@ class JSBaseClassConfig(JSBASE):
     @property
     def logger(self):
         if self._logger is None:
-            self._logger = j.logger.get("%s.%s" % (self.__jslocation__, self._instance))
+            self._logger = j.logger.get("%s.%s" % (self.__jslocation__, self._instance),force=self._logger_force)
         return self._logger
 
     def reset(self):
