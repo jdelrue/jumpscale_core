@@ -1,4 +1,5 @@
-# caching tutorial
+# jumpscale baseclasses tutorial
+
 How to use base classes.
 
 video see
