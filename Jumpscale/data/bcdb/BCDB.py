@@ -9,6 +9,7 @@ from .BCDBDecorator import *
 from .BCDBMeta import BCDBMeta
 from .BCDBModel import BCDBModel
 from .BCDBModelSQLITE import BCDBModelSQLITE
+from .KVSSQLite import KVSSQLite
 from gevent import queue
 from Jumpscale.clients.zdb.ZDBClientBase import ZDBClientBase
 import msgpack
@@ -26,8 +27,8 @@ class BCDB(JSBASE):
         """
         JSBASE.__init__(self)
 
-        if name is None or zdbclient is None:
-            raise RuntimeError("name and zdbclient needs to be specified")
+        if name is None:
+            raise RuntimeError("name needs to be specified")
 
         if zdbclient is not None:
             if not isinstance(zdbclient, ZDBClientBase):
@@ -51,10 +52,17 @@ class BCDB(JSBASE):
 
         self.logger_enable()
 
+        if zdbclient is None:
+            self.kvs = KVSSQLite(self) #KEY VALUE STOR IMPLEMENTED IN SQLITE
+        else:
+            self.kvs = None
+
         if self.zdbclient:
             db = self.zdbclient.redis
         else:
-            db = self.sqlitedb
+            db = self.kvs
+
+
 
         self.meta = BCDBMeta(bcdb=self,db=db)
 
@@ -62,9 +70,9 @@ class BCDB(JSBASE):
         self.results={}
         self.results_id = 0
 
-        from .ACL import ACL
-        from .USER import USER
-        from .GROUP import GROUP
+        from .models_system.ACL import ACL
+        from .models_system.USER import USER
+        from .models_system.GROUP import GROUP
 
 
         self.acl = self.model_add(ACL())
@@ -76,6 +84,7 @@ class BCDB(JSBASE):
 
         self._load()
 
+        self.logger_enable()
         self.logger.info("BCDB INIT DONE:%s"%self.name)
 
     def redis_server_start(self,port=6380,secret="123456"):
@@ -191,11 +200,12 @@ class BCDB(JSBASE):
                 raise RuntimeError("schema needs to be of type: j.data.schema.SCHEMA_CLASS")
             schema_text=schema.text
 
+        self.logger.debug("model get from schema:%s"%schema.url)
+
         if schema.key not in self.models:
             tpath = "%s/templates/BCDBModelClass.py" % j.data.bcdb._path
             objForHash = schema_text
-            obj_key = "Model%s"%schema.key
-            myclass = j.tools.jinja2.code_python_render(obj_key=obj_key, path=tpath,
+            myclass = j.tools.jinja2.code_python_render( path=tpath,
                                                 reload=reload, dest=dest,objForHash=objForHash,
                                                 schema_text=schema_text, bcdb=self, schema=schema)
 
@@ -213,11 +223,11 @@ class BCDB(JSBASE):
         :return: class of the model which is used for indexing
 
         """
-
+        self.logger.debug("generate schema:%s"%schema.url)
         if path_parent:
              name = j.sal.fs.getBaseName(path_parent)[:-3]
              dir_path =  j.sal.fs.getDirName(path_parent)
-             dest = "%s/%sIndex.py"%(dir_path,name)
+             dest = "%s/%s_index.py"%(dir_path,name)
 
         if j.data.types.str.check(schema):
             schema = j.data.schema.get(schema)
@@ -231,8 +241,7 @@ class BCDB(JSBASE):
             imodel.enable = True
             imodel.include_schema = True
             tpath = "%s/templates/BCDBModelIndexClass.py" % j.data.bcdb._path
-
-            myclass=j.tools.jinja2.code_python_render(obj_key="BCDBModelIndexClass", path=tpath,
+            myclass=j.tools.jinja2.code_python_render(path=tpath,
                                             reload=False, dest=dest,
                                             schema=schema, bcdb=self, index=imodel)
 
@@ -253,9 +262,10 @@ class BCDB(JSBASE):
         is path to python file which represents the model
 
         """
+        self.logger.debug("model get from file:%s"%path)
         obj_key = j.sal.fs.getBaseName(path)[:-3]
         cl = j.tools.loader.load(obj_key=obj_key,path=path,reload=False)
-        model = cl(bcdb=self)
+        model = cl()
         self.models[model.schema.url] = model
         return model
 
@@ -266,16 +276,36 @@ class BCDB(JSBASE):
         :param path:
         :return: None
         """
+        self.logger.debug("models_add:%s"%path)
+
+        pyfiles_base = []
+        for fpath in j.sal.fs.listFilesInDir(path, recursive=True, filter="*.py", followSymlinks=True):
+            pyfile_base = j.tools.loader._basename(fpath)
+            if pyfile_base.find("_index")==-1:
+                pyfiles_base.append(pyfile_base)
 
         tocheck = j.sal.fs.listFilesInDir(path, recursive=True, filter="*.toml", followSymlinks=True)
         for schemapath in tocheck:
-            dest = "%s/bcdb_model_%s.py" % (j.sal.fs.getDirName(schemapath), j.sal.fs.getBaseName(schemapath, True))
-            schema = j.data.schema.get(schemapath)
-            self.model_get_from_schema(schema=schema, reload=False, dest=dest, overwrite=overwrite)
 
-        tocheck = j.sal.fs.listFilesInDir(path, recursive=True, filter="*.py", followSymlinks=True)
-        for classpath in tocheck:
-            self.model_get_from_file(classpath)
+            bname = j.sal.fs.getBaseName(schemapath)[:-5]
+            if len(pyfiles_base)>0:
+                j.shell()
+
+            schema = j.data.schema.get(schemapath)
+            toml_path = "%s.toml"%(schema.key)
+            if j.sal.fs.getBaseName(schemapath)!=toml_path:
+                toml_path = "%s/%s.toml"%( j.sal.fs.getDirName(schemapath),schema.key)
+                j.sal.fs.renameFile(schemapath,toml_path)
+                schemapath = toml_path
+
+            dest = "%s/%s.py" % (j.sal.fs.getDirName(schemapath), j.sal.fs.getBaseName(schemapath, True))
+
+            self.model_get_from_schema(schema=schema, reload=False, dest=dest)
+
+
+        for pyfile_base in pyfiles_base:
+            path = "%s/%s.py"%(path,pyfiles_base)
+            self.model_get_from_file(path)
 
     def _load(self):
         return self.meta._models_load()
@@ -291,7 +321,7 @@ class BCDB(JSBASE):
                     j.shell()
                     raise RuntimeError("this id: %s is not of right type"%(id))
             else:
-                model =self.zdbclient.meta.model_get_id(schema_id,bcdb=self)
+                model =self.meta.model_get_id(schema_id,bcdb=self)
         else:
             raise RuntimeError("not supported format in table yet")
 
@@ -332,13 +362,14 @@ class BCDB(JSBASE):
         :raises e: [description]
         """
         if self.zdbclient:
-            for key, data in self.zdbclient.iterate(key_start=key_start, reverse=reverse, keyonly=keyonly):
-                if key == 0:  # skip first metadata entry
-                    continue
-                obj = self._unserialize(key, data)
-                yield obj
+            db = self.zdbclient
         else:
-            j.shell()
+            db = self.kvs
+        for key, data in db.iterate(key_start=key_start, reverse=reverse, keyonly=keyonly):
+            if key == 0:  # skip first metadata entry
+                continue
+            obj = self._unserialize(key, data)
+            yield obj
 
     def get_all(self):
         return [obj for obj in self.iterate()]

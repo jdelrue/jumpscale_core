@@ -71,5 +71,4 @@ def main(self):
     bcdb.meta.reset() #make sure we reload from data
     data_valid(bcdb) #means DB was made empty and now we check if data still there, was manually put in
 
-
     return("OK")

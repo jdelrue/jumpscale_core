@@ -3,12 +3,7 @@ from Jumpscale import j
 from peewee import *
 
 
-class BCDBModelIndexClass:
-    # def __init__(self, bcdb):
-
-        # MODEL_CLASS.__init__(self, bcdb=bcdb, url="jumpscale.bcdb.acl.1")
-        # self.url = "jumpscale.bcdb.acl.1"
-        # self._init_index()
+class threefoldtoken_wallet_index:
 
     def _init_index(self):
         pass #to make sure works if no index
@@ -19,22 +14,22 @@ class BCDBModelIndexClass:
             class Meta:
                 database = db
 
-        class Index_jumpscale_bcdb_acl_1(BaseModel):
+        class Index_threefoldtoken_wallet(BaseModel):
             id = IntegerField(unique=True)
-            hash = TextField(index=True)
+            addr = TextField(index=True)
 
-        self.index = Index_jumpscale_bcdb_acl_1
+        self.index = Index_threefoldtoken_wallet
             
         self.index.create_table()
 
 
-        self.index = Index_jumpscale_bcdb_acl_1
+        self.index = Index_threefoldtoken_wallet
         self.index.create_table()
 
     
     def index_set(self,obj):
         idict={}
-        idict["hash"] = obj.hash
+        idict["addr"] = obj.addr
         idict["id"] = obj.id
         if not self.index.select().where(self.index.id == obj.id).count()==0:
             #need to delete previous record from index

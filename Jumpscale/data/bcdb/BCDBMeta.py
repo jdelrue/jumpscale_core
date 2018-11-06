@@ -31,15 +31,16 @@ class BCDBMeta(JSBASE):
         if self._data is None:
             if self._db_is_redis:
                 data = self._db.get(b'\x00\x00\x00\x00')
-                if data is None:
-                    self.logger.debug("save, empty schema")
-                    self._data = self._schema.new()
-                    self._db.execute_command("SET", '', self._data)
-                else:
-                    self.logger.debug("schemas load from db")
-                    self._data = self._schema.get(capnpbin=data)
             else:
-                j.shell()
+                data = self.bcdb.kvs.get(0)
+            if data is None:
+                self.logger.debug("save, empty schema")
+                self._data = self._schema.new()
+                self.save()
+            else:
+                self.logger.debug("schemas load from db")
+                self._data = self._schema.get(capnpbin=data)
+
             self._schemas_load()
         return self._data
 
@@ -53,17 +54,14 @@ class BCDBMeta(JSBASE):
         self.url2id = {}
         self.data
 
-
-
     def save(self):
         if self._data is None:
             self.data
+        self.logger.debug("save:\n%s"%self.data)
         if self._db_is_redis:
-            self.logger.debug("save:\n%s"%self.data)
             self._db.execute_command("SET",b'\x00\x00\x00\x00', self._data._data)
         else:
-            j.shell()
-
+            self.bcdb.kvs.set(0,self._data._data)
 
     def schema_get_id(self,schema_id):
         return self.id2schema[schema_id]
@@ -87,8 +85,9 @@ class BCDBMeta(JSBASE):
         if not isinstance(schema, j.data.schema.SCHEMA_CLASS):
             raise RuntimeError("schema needs to be of type: j.data.schema.SCHEMA_CLASS")
 
-        if "schema_id" in schema.__dict__ or "id" in schema.__dict__:
-            raise RuntimeError("should be no id in schema")
+        # if "schema_id" in schema.__dict__ or "id" in schema.__dict__:
+        #     j.shell()
+        #     raise RuntimeError("should be no id in schema")
 
         if schema.url in self.url2schema:
             return self.schema_get_url(schema.url)

@@ -1,16 +1,12 @@
 from Jumpscale import j
 #GENERATED CODE, can now change
-
-{%- if index.enable %}
 from peewee import *
-{%- endif %}
 
 
-class {{BASENAME}}:
+class GROUP_index:
 
     def _init_index(self):
         pass #to make sure works if no index
-        {%- if index.enable %}
 
         db = self.bcdb.sqlitedb
 
@@ -18,30 +14,25 @@ class {{BASENAME}}:
             class Meta:
                 database = db
 
-        class Index_{{schema.key}}(BaseModel):
+        class Index_jumpscale_bcdb_group(BaseModel):
             id = IntegerField(unique=True)
-            {%- for field in index.fields %}
-            {{field.name}} = {{field.type}}(index=True)
-            {%- endfor %}
+            name = TextField(index=True)
+            dm_id = TextField(index=True)
+            email = TextField(index=True)
 
-        self.index = Index_{{schema.key}}
+        self.index = Index_jumpscale_bcdb_group
         self.index.create_table()
-        {%- endif %}
 
-    {% if index.enable %}
+    
     def index_set(self,obj):
         idict={}
-        {%- for field in index.fields %}
-        {%- if field.jumpscaletype.NAME == "numeric" %}
-        idict["{{field.name}}"] = obj.{{field.name}}_usd
-        {%- else %}
-        idict["{{field.name}}"] = obj.{{field.name}}
-        {%- endif %}
-        {%- endfor %}
+        idict["name"] = obj.name
+        idict["dm_id"] = obj.dm_id
+        idict["email"] = obj.email
         idict["id"] = obj.id
         if not self.index.select().where(self.index.id == obj.id).count()==0:
             #need to delete previous record from index
             self.index.delete().where(self.index.id == obj.id).execute()
         self.index.insert(**idict).execute()
 
-    {% endif %}
+    

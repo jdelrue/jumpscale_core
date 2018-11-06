@@ -41,7 +41,7 @@ class ErrorHandler():
         try:
             ##do something
         except Exception,e:
-            self._j.errorhandler.try_except_error_process(e,die=False) #if you want to continue
+            j.errorhandler.try_except_error_process(e,die=False) #if you want to continue
 
         """
 

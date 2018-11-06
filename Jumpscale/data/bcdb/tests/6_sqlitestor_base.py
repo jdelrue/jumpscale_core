@@ -5,11 +5,16 @@ def main(self):
     """
     to run:
 
-    js_shell 'j.data.bcdb.test(name="models",start=True)'
+    js_shell 'j.data.bcdb.test(name="sqlitestor_base")'
 
-    work with toml files and see if models get generated properly
+    use a bcdb which is using sqlite
 
     """
+
+    bcdb,model = self._load_test_model(reset=True,sqlitestor=True)
+    j.shell()
+    w
+
     mpath = self._dirpath+"/tests/models"
     assert j.sal.fs.exists(mpath)
 
@@ -17,7 +22,7 @@ def main(self):
     for item in j.sal.fs.listFilesInDir(mpath, filter="*.py"):
         j.sal.fs.remove(item)
 
-    bcdb,model = self._load_test_model()
+
 
     bcdb.models_add(mpath)
 

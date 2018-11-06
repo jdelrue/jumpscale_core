@@ -64,7 +64,8 @@ class Jinja2(JSBASE):
         t = self.template_get(path=path,text=text,reload=reload)
         return t.render(**args)
 
-    def code_python_render(self, obj_key, path="",text="",dest="",reload=False, objForHash=None, **args):
+
+    def code_python_render(self, obj_key="", path="",text="",dest="",reload=False, objForHash=None, **args):
         """
 
         :param obj_key:  is name of function or class we need to evaluate when the code get's loaded
@@ -92,10 +93,13 @@ class Jinja2(JSBASE):
             #means the code block is not there yet
             # print("code not here yet")
             if dest == "":
-                dest = j.sal.fs.joinPaths(j.dirs.VARDIR,"CODEGEN",md5+".py")
+                dest = j.sal.fs.joinPaths(j.dirs.VARDIR,"CODEGEN","_%s.py"%md5)
+
+            BASENAME = j.tools.loader._basename(dest)
+
             if not j.sal.fs.exists(dest):
                 #means has not been rendered yet lets do
-                out = t.render(j=j,DIRS=j.dirs,**args)
+                out = t.render(j=j,DIRS=j.dirs,BASENAME=BASENAME,**args)
                 j.sal.fs.writeFile(dest,out)
             else:
                 out = ""

@@ -11,13 +11,14 @@ email* = ""
 
 bcdb = j.data.bcdb.latest
 schema = j.data.schema.get(SCHEMA)
-ACLIndex = bcdb._BCDBModelIndexClass_generate(schema,__file__)
+Index_CLASS = bcdb._BCDBModelIndexClass_generate(schema,__file__)
 MODEL_CLASS = bcdb._BCDBModelClass_get()
 
 
-class USER(ACLIndex,MODEL_CLASS):
+class USER(Index_CLASS,MODEL_CLASS):
     def __init__(self):
         MODEL_CLASS.__init__(self, bcdb=bcdb,schema=schema)
+        self._init()
 
 
     def find(self,name=None,dm_id=None,email=None):

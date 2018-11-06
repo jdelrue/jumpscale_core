@@ -5,6 +5,7 @@ from .BCDBModel import  BCDBModel
 class BCDBModelSQLITE(BCDBModel):
 
 
+
     def _delete2(self,id):
         j.shell()
         return self.zdbclient.delete(id)

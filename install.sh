@@ -232,8 +232,12 @@ ZInstall_jumpscale() {
     mkdir -p $HOME/jumpscale
 
     echo "[+] clean previous JS install"
+    rm -rf /usr/local/lib/python3.5/site-packages/Jumpscale*
+    rm -rf /usr/local/lib/python3.5/site-packages/JS*
     rm -rf /usr/local/lib/python3.6/site-packages/Jumpscale*
     rm -rf /usr/local/lib/python3.6/site-packages/JS*
+    rm -rf /usr/local/lib/python3.7/site-packages/Jumpscale*
+    rm -rf /usr/local/lib/python3.7/site-packages/JS*
 
     echo "[+] install JS"
     pushd $CODEDIR/github/threefoldtech/jumpscale_core
@@ -304,7 +308,7 @@ ZInstall_host_base(){
 
         cd /tmp
         if [[ `cat /etc/lsb-release | grep "DISTRIB_RELEASE"` != *"18"* ]]; then
-          echo "[-] ERROR, should your os is Ubuntu 18.04 LTS "
+          echo "[-] ERROR, only support Ubuntu 18.x "
           exit 1
         fi
 
@@ -315,7 +319,7 @@ ZInstall_host_base(){
             sudo apt-get update >> ${LogFile} 2>&1 || die "could not update packages" || return 1
 
             echo "[+] installing git, python, mc, tmux, curl"
-            Z_apt_install mc wget python3 git unzip rsync tmux curl|| return 1
+            Z_apt_install mc wget python3 git unzip rsync tmux curl python3-distutils || return 1
 
             if [ -n "$JSFULL" ] ; then
                 echo "[+] installing development tools: build essential & pythondev"

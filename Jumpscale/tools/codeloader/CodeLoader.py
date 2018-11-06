@@ -14,8 +14,15 @@ class CodeLoader(JSBASE):
         j.sal.fs.createDir("%s/CODEGEN"%j.dirs.VARDIR)
         self._hash_to_codeobj = {}
 
+    def _basename(self,path):
+        obj_key=j.sal.fs.getBaseName(path)
+        if obj_key.endswith(".py"):
+            obj_key = obj_key[:-3]
+        if obj_key[0] in "0123456789":
+            raise RuntimeError("obj key cannot start with nr")
+        return obj_key
 
-    def load_text(self,obj_key,text="",dest="", reload=False,md5=""):
+    def load_text(self,obj_key="",text="",dest="", reload=False,md5=""):
         """
 
         write text as code file or in CODEGEN location or specified dest
@@ -39,7 +46,7 @@ class CodeLoader(JSBASE):
         return self.load(obj_key=obj_key,path=dest,reload=reload,md5=md5)
 
 
-    def load(self, obj_key, path="",reload=False,md5=""):
+    def load(self, obj_key="", path="",reload=False,md5=""):
         """
 
         example:
@@ -51,6 +58,9 @@ class CodeLoader(JSBASE):
         :param reload: will reload the template and re-render
         :return:
         """
+        if not obj_key:
+            obj_key = self._basename(path)
+
         if md5=="":
             md5=j.data.hash.md5_string(path)
         if reload or md5 not in self._hash_to_codeobj:

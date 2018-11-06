@@ -3,12 +3,7 @@ from Jumpscale import j
 from peewee import *
 
 
-class BCDBModelIndexClass:
-    # def __init__(self, bcdb):
-
-        # MODEL_CLASS.__init__(self, bcdb=bcdb, url="jumpscale.bcdb.user")
-        # self.url = "jumpscale.bcdb.user"
-        # self._init_index()
+class jumpscale_bcdb_test_house_index:
 
     def _init_index(self):
         pass #to make sure works if no index
@@ -19,26 +14,26 @@ class BCDBModelIndexClass:
             class Meta:
                 database = db
 
-        class Index_jumpscale_bcdb_user(BaseModel):
+        class Index_jumpscale_bcdb_test_house(BaseModel):
             id = IntegerField(unique=True)
             name = TextField(index=True)
-            dm_id = TextField(index=True)
-            email = TextField(index=True)
+            active = BooleanField(index=True)
+            cost = FloatField(index=True)
 
-        self.index = Index_jumpscale_bcdb_user
+        self.index = Index_jumpscale_bcdb_test_house
             
         self.index.create_table()
 
 
-        self.index = Index_jumpscale_bcdb_user
+        self.index = Index_jumpscale_bcdb_test_house
         self.index.create_table()
 
     
     def index_set(self,obj):
         idict={}
         idict["name"] = obj.name
-        idict["dm_id"] = obj.dm_id
-        idict["email"] = obj.email
+        idict["active"] = obj.active
+        idict["cost"] = obj.cost_usd
         idict["id"] = obj.id
         if not self.index.select().where(self.index.id == obj.id).count()==0:
             #need to delete previous record from index

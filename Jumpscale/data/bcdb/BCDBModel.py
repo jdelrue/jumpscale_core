@@ -39,7 +39,10 @@ class BCDBModel(JSBASE):
             schema = j.data.schema.get(url=url)
             sid,schema = self.bcdb.meta.schema_set(schema)
 
-        assert self.bcdb.zdbclient.get(0) != None #just test that the metadata has been filled in
+        if  self.bcdb.zdbclient:
+            assert self.bcdb.zdbclient.get(0) != None #just test that the metadata has been filled in
+        else:
+            assert self.bcdb.kvs.get(0) != None #just test that the metadata has been filled in
 
         self.schema = schema
         self.schema_id = sid
@@ -56,7 +59,10 @@ class BCDBModel(JSBASE):
 
         self.objects_in_queue = {}
 
-        self.key = "%s_%s"%(self.zdbclient.nsname,self.url)  #is unique id for a bcdbmodel (unique per zdbclient !)
+        if  self.bcdb.zdbclient:
+            self.key = "%s_%s"%(self.zdbclient.nsname,self.url)  #is unique id for a bcdbmodel (unique per zdbclient !)
+        else:
+            self.key = self.url
         self.key = self.key.replace(".","_")
 
         self.logger_enable()

@@ -11,6 +11,7 @@ class JSBase:
     _cache_expiration = 3600
     _classname = None
     _test_runs = {}
+    _test_runs_error = {}
 
     def __init__(self):
         self._cache = None
@@ -65,11 +66,8 @@ class JSBase:
         return res
 
     def _test_error(self,name,error):
-
-        self.logger.error("ERROR IN TEST:%s"%name)
-        print(str(error))
-        self.__class__._test_runs[name] = error
-
+        j.errorhandler.try_except_error_process(e,die=False)
+        self.__class__._test_runs_error[name] = error
 
     def _test_run(self,name="",obj_key="main",**kwargs):
         """
@@ -86,6 +84,18 @@ class JSBase:
         :return: result of the tests
 
         """
+
+        res = self.__test_run(name=name,obj_key=obj_key,**kwargs)
+        if self.__class__._test_runs_error != {}:
+            for key,e in self.__class__._test_runs_error.items():
+                self.logger.error("ERROR FOR TEST: %s\n%s"%(key,e))
+            self.logger.error("SOME TESTS DIT NOT COMPLETE SUCCESFULLY")
+        else:
+            self.logger.info("ALL TESTS OK")
+        return res
+
+    def __test_run(self,name="",obj_key="main",**kwargs):
+
         self.logger_enable()
         self.logger.info("##: TEST RUN")
         if name.endswith(".py"):
@@ -102,7 +112,7 @@ class JSBase:
                     else:
                         bname2=bname
                     if bname2.startswith(name):
-                        self._test_run(name=bname,obj_key=obj_key,**kwargs)
+                        self.__test_run(name=bname,obj_key=obj_key,**kwargs)
                         return
                 return self._test_error(name,RuntimeError("Could not find, test:%s in %s/tests/"%(name,self._dirpath)))
 
@@ -112,11 +122,18 @@ class JSBase:
                 j.sal.fs.listFilesInDir("%s/tests"%self._dirpath, recursive=False, filter="*.py")]
             items.sort()
             for name in items:
-                self._test_run(name=name,obj_key=obj_key,**kwargs)
+                self.__test_run(name=name,obj_key=obj_key,**kwargs)
+
+
             return
 
         method = j.tools.loader.load(obj_key=obj_key, path=tpath,reload=False,md5="")
-        res = method(self=self,**kwargs)
+        try:
+            res = method(self=self,**kwargs)
+        except Exception as e:
+            j.errorhandler.try_except_error_process(e,die=False)
+            self.__class__._test_runs_error[name]=e
+            return e
         self.__class__._test_runs[name]=res
         return res
 
