@@ -13,11 +13,14 @@ def main(self):
     REQUIREMENTS:
 
     ```
-
-    js_shell 'j.servers.zdb.build()'
-    pip3 install pycapnp,peewee
+    apt-get install python3.6-dev
     mkdir -p /root/opt/bin
-    
+    js_shell 'j.servers.zdb.build()'
+    pip3 install pycapnp peewee cryptocompare
+
+    #MAKE SURE YOU DON't USE THE SSH CONFIG, USE THE LOCAL CONFIG
+    js_shell 'j.tools.myconfig'
+
     ```
 
 
