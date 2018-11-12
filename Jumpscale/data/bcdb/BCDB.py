@@ -62,18 +62,26 @@ class BCDB(JSBASE):
         else:
             db = self.kvs
 
-
-
         self.meta = BCDBMeta(bcdb=self,db=db)
+
+        if self.zdbclient:
+            if self.zdbclient.list()==[] or self.zdbclient.list()==[0]:
+                self.index_rebuild()
+                self.meta = BCDBMeta(bcdb=self,db=db)
 
         #needed for async processing
         self.results={}
         self.results_id = 0
 
+        #need to do this to make sure we load the classes from scratch
+        for item in ["ACL","USER","GROUP"]:
+            key = "Jumpscale.data.bcdb.models_system.%s"%item
+            if key in sys.modules:
+                sys.modules.pop(key)
+
         from .models_system.ACL import ACL
         from .models_system.USER import USER
         from .models_system.GROUP import GROUP
-
 
         self.acl = self.model_add(ACL())
         self.user = self.model_add(USER())
@@ -95,13 +103,14 @@ class BCDB(JSBASE):
 
     def _data_process(self):
         # needs gevent loop to process incoming data
-
+        self.logger.info("DATAPROCESSOR STARTS")
         while True:
             method, args, kwargs, event, returnid = self.queue.get()
             res = method(*args,**kwargs)
             if returnid:
                 self.results[returnid]=res
             event.set()
+        self.logger.warning("DATAPROCESSOR STOPS")
 
     def dataprocessor_start(self):
         """
@@ -122,16 +131,36 @@ class BCDB(JSBASE):
     @queue_method
     def reset(self):
         self.stop()
-        j.shell()
+        j.sal.fs.remove(j.sal.fs.joinPaths(self._data_dir, self.name + ".db"))
+
+    def stop(self):
+        self.logger.warning("STOP BCDB")
+        self.dataprocessor_greenlet.kill()
+        self.sqlitedb.close()
+        self._sqlitedb = None
 
     def index_rebuild(self):
-        self.logger.warning("index and DB out of sync, need to rebuild all")
+        self.logger.warning("REBUILD INDEX")
         if self._sqlitedb is not None:
             self.sqlitedb.close()
         j.sal.fs.remove(j.sal.fs.joinPaths(self._data_dir, self.name + ".db"))
         self._sqlitedb = None
-
+        self.sqlitedb #recreate
+        if self.zdbclient is None:
+            self.kvs = KVSSQLite(self)
         self.cache_flush()
+        self.meta.reset()
+
+        for url,model in self.models.items():
+            # self.logger.warning("init index:%s"%model.schema.url)
+            # if self.zdbclient is None:
+            #     from pudb import set_trace; set_trace()
+            # model.bcdb = self
+            if model.bcdb != self:
+                raise RuntimeError("bcdb on model needs to be same as myself")
+            model._init_index()
+            self.meta.schema_set(model.schema)
+
 
         for obj in self.iterate():
             obj.model.index_set(obj) #is not scheduled
@@ -151,12 +180,12 @@ class BCDB(JSBASE):
     def sqlitedb(self):
         if self._sqlitedb is None:
             self._indexfile = j.sal.fs.joinPaths(self._data_dir, self.name + ".db")
-            self.logger.info("SQLITEDB in %s"%self._indexfile)
+            if j.sal.fs.exists(self._indexfile):
+                self.logger.info("SQLITEDB in %s"%self._indexfile)
+            else:
+                self.logger.warning("NEW SQLITEDB in %s"%self._indexfile)
             j.sal.fs.createDir(self._data_dir)
-            try:
-                self._sqlitedb = SqliteDatabase(self._indexfile)
-            except Exception as e:
-                j.shell()
+            self._sqlitedb = SqliteDatabase(self._indexfile)
         return self._sqlitedb
 
     def reset_data(self):
@@ -171,7 +200,7 @@ class BCDB(JSBASE):
         self.index_rebuild() #will make index empty
 
     def model_get(self, url):
-        url = j.core.text.strip_to_ascii_dense(url).replace(".", "_")
+        # url = j.core.text.strip_to_ascii_dense(url).replace(".", "_")
         if url in self.models:
             return self.models[url]
         raise RuntimeError("could not find model for url:%s" % url)
@@ -187,33 +216,37 @@ class BCDB(JSBASE):
         self.models[model.schema.url] = model
         return self.models[model.schema.url]
 
-    def model_get_from_schema(self, schema, reload=False, dest=""):
+    def model_get_from_schema(self, schema, reload=True, overwrite=True, dest=""):
         """
         :param schema: is schema as text or as schema obj
+        :param reload: will reload template
+        :param overwrite: will overwrite the resulting file even if it already exists
         :return:
         """
         if j.data.types.str.check(schema):
             schema_text=schema
             schema = j.data.schema.get(schema_text)
+            self.logger.debug("model get from schema:%s, original was text."%schema.url)
         else:
+            self.logger.debug("model get from schema:%s"%schema.url)
             if not isinstance(schema, j.data.schema.SCHEMA_CLASS):
                 raise RuntimeError("schema needs to be of type: j.data.schema.SCHEMA_CLASS")
             schema_text=schema.text
 
-        self.logger.debug("model get from schema:%s"%schema.url)
 
-        if schema.key not in self.models:
+        if schema.key not in self.models or overwrite:
             tpath = "%s/templates/BCDBModelClass.py" % j.data.bcdb._path
             objForHash = schema_text
             myclass = j.tools.jinja2.code_python_render( path=tpath,
-                                                reload=reload, dest=dest,objForHash=objForHash,
-                                                schema_text=schema_text, bcdb=self, schema=schema)
+                                                         reload=reload, dest=dest,objForHash=objForHash,
+                                                         schema_text=schema_text, bcdb=self, schema=schema,
+                                                         overwrite=overwrite)
 
             model = myclass()
-            self.models[schema.key] = model
+            self.models[schema.url] = model
             self.meta.schema_set(schema)  # should always be the first record !
 
-        return self.models[schema.key]
+        return self.models[schema.url]
 
 
     def _BCDBModelIndexClass_generate(self,schema, path_parent=None ):
@@ -225,9 +258,9 @@ class BCDB(JSBASE):
         """
         self.logger.debug("generate schema:%s"%schema.url)
         if path_parent:
-             name = j.sal.fs.getBaseName(path_parent)[:-3]
-             dir_path =  j.sal.fs.getDirName(path_parent)
-             dest = "%s/%s_index.py"%(dir_path,name)
+            name = j.sal.fs.getBaseName(path_parent)[:-3]
+            dir_path =  j.sal.fs.getDirName(path_parent)
+            dest = "%s/%s_index.py"%(dir_path,name)
 
         if j.data.types.str.check(schema):
             schema = j.data.schema.get(schema)
@@ -242,8 +275,8 @@ class BCDB(JSBASE):
             imodel.include_schema = True
             tpath = "%s/templates/BCDBModelIndexClass.py" % j.data.bcdb._path
             myclass=j.tools.jinja2.code_python_render(path=tpath,
-                                            reload=False, dest=dest,
-                                            schema=schema, bcdb=self, index=imodel)
+                                                      reload=True, dest=dest,
+                                                      schema=schema, bcdb=self, index=imodel)
 
             self._index_schema_class_cache[schema.key] = myclass
 
@@ -278,6 +311,10 @@ class BCDB(JSBASE):
         """
         self.logger.debug("models_add:%s"%path)
 
+        if not j.sal.fs.isDir(path):
+            raise RuntimeError("path: %s needs to be dir, to load models from"%path)
+
+
         pyfiles_base = []
         for fpath in j.sal.fs.listFilesInDir(path, recursive=True, filter="*.py", followSymlinks=True):
             pyfile_base = j.tools.loader._basename(fpath)
@@ -288,24 +325,26 @@ class BCDB(JSBASE):
         for schemapath in tocheck:
 
             bname = j.sal.fs.getBaseName(schemapath)[:-5]
-            if len(pyfiles_base)>0:
-                j.shell()
+            if bname.startswith("_"):
+                continue
 
-            schema = j.data.schema.get(schemapath)
+            schema_text = j.sal.fs.readFile(schemapath)
+            schema = j.data.schema.get(schema_text)
             toml_path = "%s.toml"%(schema.key)
             if j.sal.fs.getBaseName(schemapath)!=toml_path:
-                toml_path = "%s/%s.toml"%( j.sal.fs.getDirName(schemapath),schema.key)
+                toml_path = "%s/%s.toml"%(j.sal.fs.getDirName(schemapath),schema.key)
                 j.sal.fs.renameFile(schemapath,toml_path)
                 schemapath = toml_path
 
-            dest = "%s/%s.py" % (j.sal.fs.getDirName(schemapath), j.sal.fs.getBaseName(schemapath, True))
-
-            self.model_get_from_schema(schema=schema, reload=False, dest=dest)
+            dest = "%s/%s.py" % (path, bname)
+            self.model_get_from_schema(schema=schema_text, overwrite=True, dest=dest)
 
 
         for pyfile_base in pyfiles_base:
-            path = "%s/%s.py"%(path,pyfiles_base)
-            self.model_get_from_file(path)
+            if pyfile_base.startswith("_"):
+                continue
+            path2 = "%s/%s.py"%(path,pyfile_base)
+            self.model_get_from_file(path2)
 
     def _load(self):
         return self.meta._models_load()
@@ -318,7 +357,6 @@ class BCDB(JSBASE):
             schema_id, acl_id, bdata_encrypted = res
             if model:
                 if schema_id != model.schema_id:
-                    j.shell()
                     raise RuntimeError("this id: %s is not of right type"%(id))
             else:
                 model =self.meta.model_get_id(schema_id,bcdb=self)

@@ -36,7 +36,6 @@ class Jinja2(JSBASE):
     def template_get(self,path="",text="",reload=False):
         """
         returns jinja2 template and will be cached
-        if key used then will use key as the key in the caching
         """
         md5=""
         if path!="":
@@ -55,24 +54,34 @@ class Jinja2(JSBASE):
 
         return self._hash_to_template[md5]
 
-    def template_render(self,path="",text="",dest="",reload=False, **args):
+    def template_render(self,path="",text="",dest=None,reload=False, **args):
         """
         load the template, do not write back
         render & return result as string
         """
         # self.logger.debug("template render:%s"%path)
         t = self.template_get(path=path,text=text,reload=reload)
-        return t.render(**args)
+        txt =  t.render(**args)
+        if dest is None:
+            return txt
+        else:
+            # self.logger.debug("write template:%s on dest:%s"%(path,dest))
+            j.sal.fs.createDir(j.sal.fs.getDirName(dest))
+            j.sal.fs.writeFile(dest,txt)
 
 
-    def code_python_render(self, obj_key="", path="",text="",dest="",reload=False, objForHash=None, **args):
+
+    def code_python_render(self, obj_key="", path="",text="",dest="",reload=False, objForHash=None, overwrite=False, **args):
         """
 
         :param obj_key:  is name of function or class we need to evaluate when the code get's loaded
+        :param objForHash: if not used then will use **args as basis for calculating if we need to render again,
+               otherwise will use obj: objForHash
         :param path: path of the template (is path or text to be used)
         :param text: if not path used, text = is the text of the template (the content)
         :param dest: if not specified will be in j.dirs.VARDIR,"CODEGEN",md5+".py" (md5 is md5 of template+msgpack of args)
-        :param reload: will reload the template and re-render
+        :param reload: will reload the template and also reload the result of the rendering, even if it already existed in mem
+        :param overwrite: will overwrite the destination file
         :param args: arguments for the template (DIRS will be passed by default)
         :return:
         """
@@ -89,7 +98,7 @@ class Jinja2(JSBASE):
         else:
             tohash=dest
         md5=j.data.hash.md5_string(tohash)
-        if md5 not in self._hash_to_codeobj:
+        if md5 not in self._hash_to_codeobj or overwrite:
             #means the code block is not there yet
             # print("code not here yet")
             if dest == "":
@@ -97,7 +106,7 @@ class Jinja2(JSBASE):
 
             BASENAME = j.tools.loader._basename(dest)
 
-            if not j.sal.fs.exists(dest):
+            if overwrite or not j.sal.fs.exists(dest):
                 #means has not been rendered yet lets do
                 out = t.render(j=j,DIRS=j.dirs,BASENAME=BASENAME,**args)
                 j.sal.fs.writeFile(dest,out)
@@ -114,7 +123,7 @@ class Jinja2(JSBASE):
 
     def file_render(self,path,write=True,dest=None,**args):
         """
-        will read file, render & then overwrite the same file
+        will read file, render & then overwrite the same file unless if dest given
 
         std arguments given to renderer:
 

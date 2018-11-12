@@ -11,11 +11,14 @@ class {{BASENAME}}:
     def _init_index(self):
         pass #to make sure works if no index
         {%- if index.enable %}
+        self.logger.info("init index:%s"%self.schema.url)
 
         db = self.bcdb.sqlitedb
+        print(db)
 
         class BaseModel(Model):
             class Meta:
+                print("*%s"%db)
                 database = db
 
         class Index_{{schema.key}}(BaseModel):
@@ -25,7 +28,8 @@ class {{BASENAME}}:
             {%- endfor %}
 
         self.index = Index_{{schema.key}}
-        self.index.create_table()
+        self.index.create_table(safe=True)
+
         {%- endif %}
 
     {% if index.enable %}

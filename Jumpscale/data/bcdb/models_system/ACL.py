@@ -18,7 +18,7 @@ rights = ""
 """
 
 import types
-
+print("***IMPORT ACL****")
 bcdb = j.data.bcdb.latest
 schema = j.data.schema.get(SCHEMA)
 Index_CLASS = bcdb._BCDBModelIndexClass_generate(schema,__file__)
@@ -161,8 +161,8 @@ class ACL(Index_CLASS,MODEL_CLASS):
             self.logger.debug("acl is in index")
             w=self.get(res.id)
             if w is None:
-                #means the index is larger than data on backend, need to rebuild
-                self.logger.warning("have to rebuild index because index is larger than data on backend")
+                #means the index is larger than data on backend
+                raise RuntimeError("Index is corrupt, does not correspond with data at backend")
                 self.index_rebuild()
                 acl.hash=hash
                 return True,acl

@@ -183,14 +183,15 @@ class RedisServer(JSBASE):
             url = splitted[1]
             key = splitted[2]
         if url != "":
-            url_normalized = j.core.text.strip_to_ascii_dense(url).replace(".", "_")
-            if url_normalized in self.bcdb.models:
-                m = self.bcdb.model_get(url_normalized)
+            # url_normalized = j.core.text.strip_to_ascii_dense(url).replace(".", "_")
+            if url in self.bcdb.models:
+                m = self.bcdb.model_get(url)
 
         return (cat, url, key, m)
 
     def set(self, response, key, val):
         cat, url, key, model = self._split(key)
+        self.logger.debug("set:%s:%s:%s"%(cat, url, key))
         if cat == "objects":
             if url == "":
                 response.error("url needs to be known, otherwise cannot set e.g. objects:despiegk.test:new")
@@ -202,8 +203,6 @@ class RedisServer(JSBASE):
         if cat == "schemas":
             s = j.data.schema.get(val)
             self.bcdb.model_get_from_schema(s)
-
-
             response.encode("OK")
             return
 
@@ -211,6 +210,7 @@ class RedisServer(JSBASE):
 
     def get(self, response, key):
         cat, url, key, model = self._split(key)
+        self.logger.debug("get:%s:%s:%s"%(cat, url, key))
         if model is "":
             raise RuntimeError("did not find model from key, maybe models not loaded:%s"%key)
 
@@ -235,19 +235,23 @@ class RedisServer(JSBASE):
 
     def delete(self, response, key):
         cat, url, key, model = self._split(key)
+        self.logger.debug("delete:%s:%s:%s"%(cat, url, key))
         if url == "" or cat == "schemas" or model == '':
+            #DO NOT DELETE SCHEMAS
             response.encode("0")
             return
 
         if cat == "objects":
             if key == "" and url!="":
-                #remove data from model @TODO:hack
-                model.reset_data(zdbclient_admin=self.zdb_admin_hack,force=True)
-                nr_deleted = 1
+                #cannot delete !!! data stays there
+                if model.bcdb.zdbclient is None:
+                    model.delete_all()
+                nr_deleted = 0
             else:
                 nr_deleted = 1
                 # FIXME: what happens if the key doesn't exist ?
                 # there is no exist method on the model for now
+                j.shell()
                 model.delete(key)
             response.encode(nr_deleted)
             return
@@ -277,7 +281,7 @@ class RedisServer(JSBASE):
 
     def hset(self, response, key, id, val):
         cat, url, _, model = self._split(key)
-        model = self.bcdb.models[url.replace('.', '_')]
+        self.logger.debug("hset:%s:%s"%(cat, url))
         if cat != 'objects':
             response.error("category %s not valid" % cat)
             return
@@ -307,6 +311,7 @@ class RedisServer(JSBASE):
 
     def hget(self, response, key, id):
         cat, url, _, model = self._split(key)
+        self.logger.debug("hget:%s:%s"%(cat, url))
         if cat != 'objects':
             response.error("category %s not valid" % cat)
             return
@@ -325,6 +330,7 @@ class RedisServer(JSBASE):
 
     def hdel(self, response, key, id):
         cat, url, _, model = self._split(key)
+        self.logger.debug("hdel:%s:%s"%(cat, url))
         if cat != 'objects':
             response.error("category %s not valid" % cat)
             return
@@ -346,6 +352,7 @@ class RedisServer(JSBASE):
 
     def hlen(self, response, key):
         cat, url, _, model = self._split(key)
+        self.logger.debug("hlen:%s:%s"%(cat, url))
         if cat != 'objects':
             response.error("category %s not valid" % cat)
             return
@@ -353,7 +360,6 @@ class RedisServer(JSBASE):
         if url == "" or cat == "schemas" or model == '':
             response.encode(0)
             return
-
         response.encode(len(model.get_all()))
         return
 

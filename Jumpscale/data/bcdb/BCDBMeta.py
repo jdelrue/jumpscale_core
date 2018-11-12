@@ -24,6 +24,7 @@ class BCDBMeta(JSBASE):
         self._db = db
         self._db_is_redis = str(self._db).find("Redis")!=-1
         self._schema = j.data.schema.get(SCHEMA)
+        self.logger_enable()
         self.reset()
 
     @property
@@ -59,7 +60,10 @@ class BCDBMeta(JSBASE):
             self.data
         self.logger.debug("save:\n%s"%self.data)
         if self._db_is_redis:
-            self._db.execute_command("SET",b'\x00\x00\x00\x00', self._data._data)
+            if self._db.get(b'\x00\x00\x00\x00') == None:
+                self._db.execute_command("SET","", self._data._data)
+            else:
+                self._db.execute_command("SET",b'\x00\x00\x00\x00', self._data._data)
         else:
             self.bcdb.kvs.set(0,self._data._data)
 
@@ -72,7 +76,7 @@ class BCDBMeta(JSBASE):
     def model_get_id(self,schema_id,bcdb):
         if not schema_id in self.id2model:
             schema = self.schema_get_id(schema_id)
-            self.id2model[schema_id] = self._model_load(schema,bcdb)
+            self.id2model[schema_id] = self._model_load(schema)
         return self.id2model[schema_id]
 
     def model_get_url(self,url,bcdb):
@@ -88,8 +92,8 @@ class BCDBMeta(JSBASE):
         # if "schema_id" in schema.__dict__ or "id" in schema.__dict__:
         #     j.shell()
         #     raise RuntimeError("should be no id in schema")
-
-        if schema.url in self.url2schema:
+        self.logger.debug("schema set in meta:%s"%schema.url)
+        if False or schema.url in self.url2schema:
             return self.schema_get_url(schema.url)
         else:
             #not known yet in namespace in ZDB
@@ -105,6 +109,7 @@ class BCDBMeta(JSBASE):
             s.url = schema.url
             s.sid = self._schema_last_id
             s.text = schema.text.strip()+"\n"  #only 1 \n at end
+            self.logger.info("new schema in meta:\n%s"%self.data)
             self.save()
 
             self._schema_load(s.sid, schema)
@@ -122,6 +127,7 @@ class BCDBMeta(JSBASE):
                 self._schema_last_id = schema.sid
 
     def _schema_load(self,sid,schema_obj):
+        self.logger.info("load schema in meta:%s"%schema_obj.url)
         self.url2schema[schema_obj.url]=schema_obj
         self.id2schema[sid]=schema_obj
         self.url2id[schema_obj.url]=sid

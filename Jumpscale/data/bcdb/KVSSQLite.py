@@ -15,7 +15,7 @@ class KVSSQLite(JSBASE):
                 database = self.sqlitedb
 
         class KVS(BaseModel):
-            id = IntegerField(unique=True,index=True)
+            id = PrimaryKeyField()
             value = BlobField()
 
         self._table_model = KVS
@@ -24,11 +24,16 @@ class KVSSQLite(JSBASE):
         self._table_model.create_table()
 
     def set(self,key,val):
-        key=int(key)
-        if self.exists(key):
-            self._table_model.update(value=val).where(self._table_model.id ==key).execute()
+        if key==None:
+            res = self._table_model(value=val)
+            res.save()
+            return res.id
         else:
-            self._table_model.create(id=key,value=val)
+            key=int(key)
+            if self.exists(key):
+                self._table_model.update(value=val).where(self._table_model.id ==key).execute()
+            else:
+                self._table_model.create(id=key,value=val)
         v=  self.get(key)
         return key
 
@@ -47,7 +52,7 @@ class KVSSQLite(JSBASE):
         return res[0].value
 
     def delete(self,key):
-        j.shell()
+         self._table_model.delete_by_id(key)
 
     def iterate(self,key_start=None,**kwargs):
         if key_start:
@@ -55,5 +60,5 @@ class KVSSQLite(JSBASE):
         else:
             items = self._table_model.select()
         for item in items:
-            yield self.get(item.id)
+            yield (item.id,self.get(item.id))
 

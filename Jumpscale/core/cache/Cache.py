@@ -172,7 +172,7 @@ class CacheCategory(object):
                     self.delete(key)
                     res = None
                 else:
-                    print("cache hit")
+                    print("cache hit:%s"%key)
                     return res
 
         if expire is None:
@@ -181,7 +181,7 @@ class CacheCategory(object):
         print("key:%s res:%s" % (key, res))
         if method is None:
             raise self._j.exceptions.RuntimeError("Cannot get '%s' from cache,not found & method None" % key)
-        print("cache miss")
+        print("cache miss:%s (%s)"%(key,method))
         nr=0
         while nr<retry:
             try:

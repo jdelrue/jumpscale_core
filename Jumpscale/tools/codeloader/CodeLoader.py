@@ -61,6 +61,11 @@ class CodeLoader(JSBASE):
         if not obj_key:
             obj_key = self._basename(path)
 
+        if not j.data.types.string.check(path):
+            raise RuntimeError("path needs to be string")
+        if path!="" and not j.sal.fs.exists(path):
+            raise RuntimeError("path:%s does not exist"%path)
+
         if md5=="":
             md5=j.data.hash.md5_string(path)
         if reload or md5 not in self._hash_to_codeobj:

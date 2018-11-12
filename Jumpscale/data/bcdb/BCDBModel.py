@@ -39,7 +39,9 @@ class BCDBModel(JSBASE):
             schema = j.data.schema.get(url=url)
             sid,schema = self.bcdb.meta.schema_set(schema)
 
-        if  self.bcdb.zdbclient:
+        if self.bcdb.zdbclient:
+            # if self.bcdb.zdbclient.get(0) == None:
+            #     self.bcdb.meta.schema_set(schema)
             assert self.bcdb.zdbclient.get(0) != None #just test that the metadata has been filled in
         else:
             assert self.bcdb.kvs.get(0) != None #just test that the metadata has been filled in
@@ -99,6 +101,9 @@ class BCDBModel(JSBASE):
         self._delete2(obj_id)
         if obj_id in self.obj_cache:
             self.obj_cache.pop(obj_id)
+        if self.index:
+            self.index_delete(obj_id)
+
 
     def _delete2(self,id):
         return self.zdbclient.delete(id)
@@ -249,6 +254,11 @@ class BCDBModel(JSBASE):
     def index_set(self, obj):
         pass
 
+    def index_delete(self, obj):
+        if not j.data.types.int.check(obj):
+            obj = obj.id
+        self.index.delete_by_id(obj)
+
     @queue_method_results
     def get(self, id, return_as_capnp=False,usecache=True):
         """
@@ -263,24 +273,36 @@ class BCDBModel(JSBASE):
             raise RuntimeError("id cannot be None or 0")
 
         if self.obj_cache is not None and usecache:
+            # print("use cache")
             if id in self.obj_cache:
                 epoch,obj = self.obj_cache[id]
                 if j.data.time.epoch>self.cache_expiration+epoch:
                      self.obj_cache.pop(id)
+                     # print("dirty cache")
                 else:
-                    print("cache hit")
+                    # print("cache hit")
                     return obj
 
 
         data = self._get2(id)
+
+
+
         if not data:
             return None
 
-        return self.bcdb._unserialize(id, data, return_as_capnp=return_as_capnp,model=self)
+
+        obj = self.bcdb._unserialize(id, data, return_as_capnp=return_as_capnp,model=self)
+        self.obj_cache[id] = (j.data.time.epoch,obj)
+        return obj
 
 
     def _get2(self,id):
         return self.zdbclient.get(id)
+
+    def delete_all(self):
+        for item in self.index.select():
+             self.delete(item.id)
 
     def iterate(self, key='id', key_start=None, reverse=False, keyonly=False):
         """
@@ -306,10 +328,15 @@ class BCDBModel(JSBASE):
             yield self.get(item.id)
 
     def get_all(self):
-        return [obj for obj in self.iterate()]
+        res = []
+        for obj in self.iterate():
+            if obj==None:
+                raise RuntimeError("iterate should not return None, ever")
+            res.append(obj)
+        return res
 
     def __str__(self):
-        out = "model:%s\n" % self.url
+        out = "model:%s\n" % self.schema.url
         out += j.core.text.prefix("    ", self.schema.text)
         return out
 

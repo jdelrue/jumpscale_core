@@ -15,15 +15,24 @@ class BCDBFactory(JSBASE):
         self.__jslocation__ = "j.data.bcdb"
         self._path = j.sal.fs.getDirName(os.path.abspath(__file__))
         self._code_generation_dir = None
+        self.latest=None
         self.bcdb_instances = {}  #key is the name
         self.logger_enable()
 
-
-    def get(self, name, zdbclient=None, cache=True):
-        if not name in self.bcdb_instances or cache==False:
-            if j.data.types.string.check(zdbclient):
+    def new(self, name, zdbclient=None, cache=True):
+        if cache==False or not name in self.bcdb_instances:
+            self.logger.info("new bcdb:%s"%name)
+            if self.latest is not None:
+                self.latest.stop()
+            if zdbclient!=None and j.data.types.string.check(zdbclient):
                 raise RuntimeError("zdbclient cannot be str")
             self.bcdb_instances[name] = BCDB(zdbclient=zdbclient,name=name)
+        return self.bcdb_instances[name]
+
+
+    def get(self, name):
+        if not name in self.bcdb_instances:
+            raise RuntimeError("did not find bcdb with name:%s"%name)
         return self.bcdb_instances[name]
 
     def redis_server_start(self, name="test",
@@ -43,9 +52,13 @@ class BCDBFactory(JSBASE):
 
         you need to feed it with schema's
 
+        if zdbclient_addr is None, will use sqlite embedded backend
+
         trick: use RDM to investigate (Redis Desktop Manager) to investigate DB.
 
         js_shell "j.data.bcdb.redis_server_start(background=True)"
+
+        js_shell "j.data.bcdb.redis_server_start(background=False,zdbclient_addr=None)"
 
 
         :return:
@@ -91,9 +104,12 @@ class BCDBFactory(JSBASE):
             assert r.ping()
 
         else:
-            zdbclient = j.clients.zdb.client_get(nsname=zdbclient_namespace, addr=zdbclient_addr, port=zdbclient_port,
+            if zdbclient_addr not in ["None",None]:
+                zdbclient = j.clients.zdb.client_get(nsname=zdbclient_namespace, addr=zdbclient_addr, port=zdbclient_port,
                                                  secret=zdbclient_secret, mode=zdbclient_mode)
-            bcdb=self.get(name,zdbclient=zdbclient)
+            else:
+                zdbclient=None
+            bcdb=self.new(name,zdbclient=zdbclient,cache=False)
             bcdb.redis_server_start(port=port)
 
 
@@ -130,15 +146,19 @@ class BCDBFactory(JSBASE):
         #pool_type = "managed,unmanaged" (E)  #NOT DONE FOR NOW
         """
 
+        if self.latest != None:
+            self.latest.stop()
+
         if sqlitestor:
-            bcdb = j.data.bcdb.get(name="test", zdbclient=None)
+            bcdb = j.data.bcdb.new(name="test", zdbclient=None,cache=False)
+            assert j.data.bcdb.latest.zdbclient == None
         else:
             if self.bcdb_instances == {}:
                 self.logger.debug("start bcdb in tmux")
                 j.servers.zdb.start_test_instance(reset=reset)
                 zdbclient_admin = j.servers.zdb.client_admin_get()
                 zdbclient = zdbclient_admin.namespace_new("test",secret="1234")
-                bcdb = j.data.bcdb.get(name="test", zdbclient=zdbclient)
+                bcdb = j.data.bcdb.new(name="test", zdbclient=zdbclient)
             else:
                 zdbclient = j.servers.zdb.client_get("test", secret="1234")
                 bcdb = self.bcdb_instances["test"]
@@ -171,225 +191,3 @@ class BCDBFactory(JSBASE):
 
 
 
-    # def test3(self, start=True):
-    #     """
-    #     js_shell 'j.data.bcdb.test3(start=False)'
-    #     """
-    #
-
-    def test4(self,start=True):
-        """
-        js_shell 'j.data.bcdb.test4(start=True)'
-
-        this is a test for the redis interface
-        """
-        if start:
-            j.servers.zdb.start_test_instance(reset=True,namespaces=["test"])
-            self.redis_server_start(port=6380, background=True)
-            j.sal.nettools.waitConnectionTest("127.0.0.1", port=6380, timeoutTotal=5)
-
-        r = j.clients.redis.get(ipaddr="localhost", port=6380)
-
-        S = """
-        @url = despiegk.test2
-        llist2 = "" (LS)
-        name* = ""
-        email* = ""
-        nr* = 0
-        date_start* = 0 (D)
-        description = ""
-        token_price* = "10 USD" (N)
-        cost_estimate:hw_cost = 0.0 #this is a comment
-        llist = []
-        llist3 = "1,2,3" (LF)
-        llist4 = "1,2,3" (L)
-        """
-        S=j.core.text.strip(S)
-        self.logger.debug("set schema to 'despiegk.test2'")
-        r.set("schemas:despiegk.test2", S)
-        self.logger.debug('compare schema')
-        s2=r.get("schemas:despiegk.test2")
-        #test schemas are same
-
-        assert _compare_strings(S, s2)
-
-        self.logger.debug("delete schema")
-        r.delete("schemas:despiegk.test2")
-        self.logger.debug("delete data")
-        r.delete("objects:despiegk.test2")
-
-        r.set("schemas:despiegk.test2", S)
-
-        self.logger.debug('there should be 0 objects')
-        assert r.hlen("objects:despiegk.test2") == 0
-
-
-        schema=j.data.schema.get(S)
-
-        self.logger.debug("add objects")
-        def get_obj(i):
-            o = schema.new()
-            o.nr = i
-            o.name= "somename%s"%i
-            o.token_price = "10 EUR"
-            return o
-
-        try:
-            o = get_obj(0)
-            id = r.hset("objects:despiegk.test2", 0, o._json)
-            raise RuntimeError("should have raise runtime error when trying to write to index 0")
-        except redis.exceptions.ResponseError as err:
-            # runtime error is expected when trying to write to index 0
-            pass
-
-        for i in range(1, 11):
-            # print(i)
-            o = get_obj(i)
-            id = r.hset("objects:despiegk.test2","new",o._json)
-
-        self.logger.debug("validate list")
-        cl=j.clients.zdb.client_get()
-        assert cl.list() == [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
-
-
-        self.logger.debug("validate added objects")
-        #there should be 10 items now there
-        assert r.hlen("objects:despiegk.test2") == 10
-        assert r.hdel("objects:despiegk.test2", 5) == 1
-        assert r.hlen("objects:despiegk.test2") == 9
-        assert r.hget("objects:despiegk.test2", 5) == None
-        assert r.hget("objects:despiegk.test2", 5) == r.hget("objects:despiegk.test2", "5")
-
-        assert cl.list() == [0, 2, 3, 4, 6, 7, 8, 9, 10, 11]
-
-        resp = r.hget("objects:despiegk.test2",i+1)
-        json = j.data.serializers.json.loads(resp)
-        json2 = j.data.serializers.json.loads(o._json)
-        json2['id'] = i+1
-        assert json == json2
-
-        self.logger.debug("update obj")
-        o.name="UPDATE"
-        r.hset("objects:despiegk.test2",11, o._json)
-        resp = r.hget("objects:despiegk.test2", 11)
-        json3 = j.data.serializers.json.loads(resp)
-        assert json3['name'] == "UPDATE"
-        json4 = j.data.serializers.json.loads(o._json)
-        json4['id'] = 11
-
-        assert json != json3 #should have been updated in db, so no longer same
-        assert json4 == json3
-
-        try:
-            r.hset("objects:despiegk.test2",1, o._json)
-        except Exception as e:
-            assert str(e).find("cannot update object with id:1, it does not exist")!=-1
-            #should not be able to set because the id does not exist
-        #restart redis lets see if schema's are there autoloaded
-        self.redis_server_start(port=6380, background=True)
-        r = j.clients.redis.get(ipaddr="localhost", port=6380)
-
-        assert r.hlen("objects:despiegk.test2") == 9
-
-        json =  r.hget("objects:despiegk.test2", 3)
-        ddict = j.data.serializers.json.loads(json)
-
-        assert ddict == {'name': 'somename2',
-             'email': '',
-             'nr': 2,
-             'date_start': 0,
-             'description': '',
-             'token_price': '10 EUR',
-             'cost_estimate': 0.0,
-             'llist2': [],
-             'llist': [],
-             'llist3': [],
-             'llist4': [],
-             'id': 3}
-
-        self.logger.debug("clean up database")
-        r.delete("objects:despiegk.test2")
-
-        #there should be 0 objects
-        assert r.hlen("objects:despiegk.test2") == 0
-
-        cl=j.clients.zdb.client_get()  #need to get new client because namespace removed because of the delete
-        assert cl.list() == [0]
-
-        self.logger.debug("TEST OK")
-
-
-    def _test4_populate_data(self,start=False):
-        """
-        js_shell 'j.data.bcdb.test5_populate_data(start=True)'
-
-        this populates  redis with data so we can test e.g. with RDM (redis desktop manager)
-        """
-        if start:
-            j.servers.zdb.start_test_instance(reset=True,namespaces=["test"])
-            self.redis_server_start(port=6380, background=True)
-            j.sal.nettools.waitConnectionTest("127.0.0.1", port=6380, timeoutTotal=5)
-
-        r = j.clients.redis.get(ipaddr="localhost", port=6380)
-
-        S = """
-        @url = despiegk.test2
-        llist2 = "" (LS)
-        name* = ""
-        email* = ""
-        nr* = 0
-        date_start* = 0 (D)
-        description = ""
-        token_price* = "10 USD" (N)
-        cost_estimate:hw_cost = 0.0 #this is a comment
-        llist = []
-        llist3 = "1,2,3" (LF)
-        llist4 = "1,2,3" (L)
-        """
-        S=j.core.text.strip(S)
-        self.logger.debug("set schema to 'despiegk.test2'")
-        r.set("schemas:despiegk.test2", S)
-        self.logger.debug('compare schema')
-        schema=j.data.schema.get(S)
-
-        self.logger.debug("add objects")
-        def get_obj(i):
-            o = schema.new()
-            o.nr = i
-            o.name= "somename%s"%i
-            o.token_price = "10 EUR"
-            return o
-
-        for i in range(1, 11):
-            # print(i)
-            o = get_obj(i)
-            id = r.hset("objects:despiegk.test2","new",o._json)
-
-        S = """
-        @url = another.test
-        name* = ""
-        nr* = 0
-        token_price* = "10 USD" (N)
-        """
-        S=j.core.text.strip(S)
-        self.logger.debug("set schema to 'another.test'")
-        r.set("schemas:another.test", S)
-        schema=j.data.schema.get(S)
-        for i in range(1, 100):
-            # print(i)
-            o = get_obj(i)
-            id = r.hset("objects:another.test","new",o._json)
-
-
-
-
-
-
-def _compare_strings(s1, s2):
-    # TODO: move somewhere into jumpsclale tree
-    def convert(s):
-        if isinstance(s, bytes):
-            s = s.decode()
-        return s
-
-    return convert(s1).strip() == convert(s2).strip()
