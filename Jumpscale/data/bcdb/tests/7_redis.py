@@ -10,7 +10,22 @@ def main(self):
 
     use a bcdb which is using sqlite
 
+    REQUIREMENTS:
+
+    ```
+
+    js_shell 'j.servers.zdb.build()'
+    pip3 install pycapnp,peewee
+    mkdir -p /root/opt/bin
+    
+    ```
+
+
     """
+
+    #TODO: need to use prefab to check the prerequisites are installed if not DO
+
+
 
     def do(zdb=False):
 
