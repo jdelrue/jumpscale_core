@@ -322,7 +322,7 @@ ZInstall_host_base(){
             Z_apt_install mc wget python3 git unzip rsync tmux curl python3-distutils python3-psutil || return 1            
             Z_apt_install  build-essential python3.6-dev
             mkdir -p /root/opt/bin
-            pip3 install pycapnp peewee cryptocompare
+            
             if [ -n "$JSFULL" ] ; then
                 echo "[+] installing development tools: build essential & pythondev"
                 Z_apt_install  build-essential python3.6-dev
@@ -337,11 +337,13 @@ ZInstall_host_base(){
     else
         curl -sk https://bootstrap.pypa.io/get-pip.py > /tmp/get-pip.py || die "could not download pip" || return 1
         python3 /tmp/get-pip.py  >> ${LogFile} 2>&1 || die "pip install" || return 1
-        rm -f /tmp/get-pip.py
+        rm -f /tmp/get-pip.py        
     fi
 
     echo "[+] upgrade pip"
     pip3 install --upgrade pip >> ${LogFile} 2>&1 || die "pip upgrade" || return 1
+    
+    pip3 install pycapnp peewee cryptocompare
 
     # ZDoneSet "ZInstall_host_base"
 }
