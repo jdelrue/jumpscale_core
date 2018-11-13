@@ -40,8 +40,9 @@ class BCDBModel(JSBASE):
             sid,schema = self.bcdb.meta.schema_set(schema)
 
         if self.bcdb.zdbclient:
-            # if self.bcdb.zdbclient.get(0) == None:
-            #     self.bcdb.meta.schema_set(schema)
+            if self.bcdb.zdbclient.get(0) == None:
+                self.bcdb.meta.schema_set(schema)
+                j.shell()
             assert self.bcdb.zdbclient.get(0) != None #just test that the metadata has been filled in
         else:
             assert self.bcdb.kvs.get(0) != None #just test that the metadata has been filled in

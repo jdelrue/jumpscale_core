@@ -31,7 +31,7 @@ class BCDBFactory(JSBASE):
 
 
     def get(self, name):
-        if not name in self.bcdb_instances:
+        if name not in self.bcdb_instances:
             raise RuntimeError("did not find bcdb with name:%s"%name)
         return self.bcdb_instances[name]
 

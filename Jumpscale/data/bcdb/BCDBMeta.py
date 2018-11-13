@@ -37,10 +37,10 @@ class BCDBMeta(JSBASE):
             if data is None:
                 self.logger.debug("save, empty schema")
                 self._data = self._schema.new()
-                self.save()
             else:
                 self.logger.debug("schemas load from db")
                 self._data = self._schema.get(capnpbin=data)
+            self.save()
 
             self._schemas_load()
         return self._data
@@ -62,6 +62,7 @@ class BCDBMeta(JSBASE):
         if self._db_is_redis:
             if self._db.get(b'\x00\x00\x00\x00') == None:
                 self._db.execute_command("SET","", self._data._data)
+                assert self._db.execute_command("GET",b'\x00\x00\x00\x00') != None
             else:
                 self._db.execute_command("SET",b'\x00\x00\x00\x00', self._data._data)
         else:

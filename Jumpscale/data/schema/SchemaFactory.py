@@ -301,6 +301,7 @@ class SchemaFactory(JSBASE):
 
         assert o3._data == o4._data
 
+
         print("TEST 3 OK")
 
     def test4(self):
