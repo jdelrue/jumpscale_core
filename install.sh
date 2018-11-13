@@ -319,11 +319,13 @@ ZInstall_host_base(){
             sudo apt-get update >> ${LogFile} 2>&1 || die "could not update packages" || return 1
 
             echo "[+] installing git, python, mc, tmux, curl"
-            Z_apt_install mc wget python3 git unzip rsync tmux curl python3-distutils python3-psutil || return 1
-
+            Z_apt_install mc wget python3 git unzip rsync tmux curl python3-distutils python3-psutil || return 1            
+            Z_apt_install  build-essential python3.6-dev
+            mkdir -p /root/opt/bin
+            pip3 install pycapnp peewee cryptocompare
             if [ -n "$JSFULL" ] ; then
                 echo "[+] installing development tools: build essential & pythondev"
-                Z_apt_install  build-essential python3-dev
+                Z_apt_install  build-essential python3.6-dev
             fi
         fi
     else
