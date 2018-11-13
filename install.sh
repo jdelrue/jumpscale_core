@@ -335,9 +335,10 @@ ZInstall_host_base(){
     if [ "$(uname)" == "Darwin" ]; then
         echo "no need to install pip, should be installed already"
     else
-        curl -sk https://bootstrap.pypa.io/get-pip.py > /tmp/get-pip.py || die "could not download pip" || return 1
-        python3 /tmp/get-pip.py  >> ${LogFile} 2>&1 || die "pip install" || return 1
-        rm -f /tmp/get-pip.py        
+        Z_apt_install install python-pip3
+        #curl -sk https://bootstrap.pypa.io/get-pip.py > /tmp/get-pip.py || die "could not download pip" || return 1
+        #python3 /tmp/get-pip.py  >> ${LogFile} 2>&1 || die "pip install" || return 1
+        #rm -f /tmp/get-pip.py        
     fi
 
     echo "[+] upgrade pip"
